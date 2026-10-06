@@ -1,0 +1,17 @@
+{
+    "name": "Fairground.ViewModel",
+    "rootNamespace": "Fairground.ViewModel",
+    "references": [
+        "Fairground.Core",
+        "Fairground.Model"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

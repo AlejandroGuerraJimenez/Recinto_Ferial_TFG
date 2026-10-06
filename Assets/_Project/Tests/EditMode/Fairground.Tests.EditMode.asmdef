@@ -1,0 +1,26 @@
+{
+    "name": "Fairground.Tests.EditMode",
+    "rootNamespace": "Fairground.Tests.EditMode",
+    "references": [
+        "Fairground.Core",
+        "Fairground.Model",
+        "Fairground.ViewModel",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

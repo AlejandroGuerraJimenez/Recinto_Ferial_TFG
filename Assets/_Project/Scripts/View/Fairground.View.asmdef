@@ -1,0 +1,23 @@
+{
+    "name": "Fairground.View",
+    "rootNamespace": "Fairground.View",
+    "references": [
+        "Fairground.Core",
+        "Fairground.Model",
+        "Fairground.ViewModel",
+        "Unity.XR.ARFoundation",
+        "Unity.XR.ARSubsystems",
+        "Unity.XR.CoreUtils",
+        "Unity.XR.Interaction.Toolkit",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
