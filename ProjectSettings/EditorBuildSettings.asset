@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Fairground.unity
     guid: 0ac6844f585901d4993d79b4dd7bf8d5
+  - enabled: 1
+    path: Assets/_Project/Scenes/Attractions/BalloonThrow.unity
+    guid: 7b2e4c91a0d84f6e9f3c1a5b8d0e2f46
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 5027f948aa5afad40b6f731333288123, type: 2}
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}

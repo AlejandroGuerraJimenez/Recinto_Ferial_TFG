@@ -1,18 +1,19 @@
 {
-    "name": "Fairground.View",
-    "rootNamespace": "Fairground.View",
+    "name": "Fairground.Editor",
+    "rootNamespace": "Fairground.Editor",
     "references": [
         "Fairground.Core",
         "Fairground.Model",
         "Fairground.ViewModel",
-        "Unity.XR.ARFoundation",
-        "Unity.XR.ARSubsystems",
+        "Fairground.View",
         "Unity.XR.CoreUtils",
         "Unity.XR.Interaction.Toolkit",
         "Unity.InputSystem",
         "UnityEngine.UI"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
