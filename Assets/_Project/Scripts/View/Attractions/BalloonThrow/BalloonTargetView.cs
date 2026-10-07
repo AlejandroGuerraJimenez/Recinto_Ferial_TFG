@@ -30,11 +30,28 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         void OnTriggerEnter(Collider other) => TryPop(other);
 
+        /// <summary>
+        /// Registers a hit from an already-thrown ball (PlayMode/tests and forced contacts).
+        /// </summary>
+        public bool TryRegisterHitFrom(ThrowableBallView ball)
+        {
+            if (_popped || ball == null || !ball.IsThrown)
+                return false;
+
+            ApplyPop();
+            return true;
+        }
+
         void TryPop(Collider other)
         {
             if (!CanPop(other))
                 return;
 
+            ApplyPop();
+        }
+
+        void ApplyPop()
+        {
             _popped = true;
             ApplyPopFeedback();
             Popped?.Invoke(this);
