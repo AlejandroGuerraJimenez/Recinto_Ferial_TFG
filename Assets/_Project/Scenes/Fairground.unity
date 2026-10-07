@@ -491,6 +491,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2100642002}
   - component: {fileID: 2100642003}
+  - component: {fileID: 2100642004}
   m_Layer: 0
   m_Name: Plane Selection
   m_TagString: Untagged
@@ -530,6 +531,20 @@ MonoBehaviour:
   m_RightController: {fileID: 0}
   m_RayDistance: 8
   m_EnableEditorStandIn: 1
+--- !u!114 &2100642004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100642001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4e8f1a23b5d4e6f9a0c1d2e3f4a5b6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fairground.View::Fairground.View.FairgroundAttractionFlow
+  planeSelection: {fileID: 2100642003}
+  attractionId: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -12,7 +12,6 @@ EditorBuildSettings:
     path: Assets/_Project/Scenes/Attractions/BalloonThrow.unity
     guid: 7b2e4c91a0d84f6e9f3c1a5b8d0e2f46
   m_configObjects:
-    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 5027f948aa5afad40b6f731333288123, type: 2}
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 024961cb37cbcb2458053c32df43906f, type: 2}

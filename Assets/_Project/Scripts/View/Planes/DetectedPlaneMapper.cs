@@ -1,6 +1,5 @@
 using System;
 using Fairground.Model;
-using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
@@ -41,23 +40,28 @@ namespace Fairground.View
             return new DetectedPlane(plane.trackableId.ToString(), WorldPose(plane), CopyBoundary(plane), MapClassification(plane.classifications), MapAlignment(plane.alignment));
         }
 
-        static Pose WorldPose(ARPlane plane) => new Pose(plane.transform.position, plane.transform.rotation);
+        static PlanePose WorldPose(ARPlane plane)
+        {
+            var position = plane.transform.position;
+            var rotation = plane.transform.rotation;
+            return new PlanePose(position.x, position.y, position.z, rotation.x, rotation.y, rotation.z, rotation.w);
+        }
 
-        static Vector2[] CopyBoundary(ARPlane plane)
+        static PlanePoint[] CopyBoundary(ARPlane plane)
         {
             var source = plane.boundary;
             if (!source.IsCreated || source.Length == 0)
-                return Array.Empty<Vector2>();
+                return System.Array.Empty<PlanePoint>();
 
             return Filled(plane);
         }
 
-        static Vector2[] Filled(ARPlane plane)
+        static PlanePoint[] Filled(ARPlane plane)
         {
             var source = plane.boundary;
-            var boundary = new Vector2[source.Length];
+            var boundary = new PlanePoint[source.Length];
             for (var i = 0; i < source.Length; i++)
-                boundary[i] = source[i];
+                boundary[i] = new PlanePoint(source[i].x, source[i].y);
             return boundary;
         }
     }

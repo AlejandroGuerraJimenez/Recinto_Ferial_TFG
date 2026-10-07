@@ -21,6 +21,7 @@ namespace Fairground.Model.Attractions.BalloonThrow
         public int Score { get; private set; }
         public int ThrowsRemaining { get; private set; }
         public int BalloonsRemaining { get; private set; }
+        public int ThrowsInFlight { get; private set; }
         public int BalloonsPopped => _rules.BalloonCount - BalloonsRemaining;
 
         public void Start()
@@ -28,6 +29,7 @@ namespace Fairground.Model.Attractions.BalloonThrow
             Score = 0;
             ThrowsRemaining = _rules.StartingThrows;
             BalloonsRemaining = _rules.BalloonCount;
+            ThrowsInFlight = 0;
             Phase = BalloonThrowPhase.Playing;
         }
 
@@ -37,6 +39,7 @@ namespace Fairground.Model.Attractions.BalloonThrow
                 return false;
 
             ThrowsRemaining--;
+            ThrowsInFlight++;
             RefreshPhase();
             return true;
         }
@@ -52,13 +55,28 @@ namespace Fairground.Model.Attractions.BalloonThrow
             return true;
         }
 
+        public bool ResolveThrow()
+        {
+            if (ThrowsInFlight <= 0)
+                return false;
+
+            ThrowsInFlight--;
+            RefreshPhase();
+            return true;
+        }
+
         bool CanRegisterThrow() => Phase == BalloonThrowPhase.Playing && ThrowsRemaining > 0;
 
         bool CanRegisterHit() => Phase == BalloonThrowPhase.Playing && BalloonsRemaining > 0;
 
         void RefreshPhase()
         {
-            Phase = _endCondition.Evaluate(_rules, BalloonsPopped, ThrowsRemaining, BalloonsRemaining);
+            Phase = _endCondition.Evaluate(
+                _rules,
+                BalloonsPopped,
+                ThrowsRemaining,
+                BalloonsRemaining,
+                ThrowsInFlight);
         }
     }
 }

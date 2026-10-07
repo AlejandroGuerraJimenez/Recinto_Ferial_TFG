@@ -22,6 +22,7 @@ namespace Fairground.View.Attractions.BalloonThrow
         float _despawnAt = -1f;
 
         public event Action<ThrowableBallView> Thrown;
+        public event Action<ThrowableBallView> Resolved;
         public bool IsThrown => _isThrown;
 
         void Awake()
@@ -36,12 +37,16 @@ namespace Fairground.View.Attractions.BalloonThrow
         {
             if (_grabInteractable != null)
                 _grabInteractable.selectExited.RemoveListener(OnSelectExited);
+            NotifyResolved();
         }
 
         void Update()
         {
             if (_despawnAt > 0f && Time.time >= _despawnAt)
+            {
+                NotifyResolved();
                 Destroy(gameObject);
+            }
         }
 
         public void Launch(Vector3 velocity)
@@ -81,6 +86,15 @@ namespace Fairground.View.Attractions.BalloonThrow
             _isThrown = true;
             _despawnAt = Time.time + lifetimeSeconds;
             Thrown?.Invoke(this);
+        }
+
+        void NotifyResolved()
+        {
+            if (!_isThrown)
+                return;
+
+            _isThrown = false;
+            Resolved?.Invoke(this);
         }
     }
 }

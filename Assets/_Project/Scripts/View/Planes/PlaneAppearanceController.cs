@@ -48,7 +48,7 @@ namespace Fairground.View
 
         static bool IsTrackingVisible(PlaneSurfaceVisual visual)
         {
-            var plane = visual.GetComponent<ARPlane>();
+            var plane = visual.Trackable;
             return plane == null || IsTracked(plane);
         }
 

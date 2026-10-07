@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Fairground.Model
 {
@@ -11,14 +10,14 @@ namespace Fairground.Model
     {
         public DetectedPlane(
             string id,
-            Pose pose,
-            IReadOnlyList<Vector2> boundary,
+            PlanePose pose,
+            IReadOnlyList<PlanePoint> boundary,
             PlaneSemanticClassification classification,
             PlaneAlignmentKind alignment)
         {
             Id = id ?? string.Empty;
             Pose = pose;
-            Boundary = boundary ?? System.Array.Empty<Vector2>();
+            Boundary = boundary ?? System.Array.Empty<PlanePoint>();
             Classification = classification;
             Alignment = alignment;
         }
@@ -26,9 +25,9 @@ namespace Fairground.Model
         public string Id { get; }
 
         /// <summary>World pose of the plane origin.</summary>
-        public Pose Pose { get; }
+        public PlanePose Pose { get; }
 
-        public IReadOnlyList<Vector2> Boundary { get; }
+        public IReadOnlyList<PlanePoint> Boundary { get; }
 
         public PlaneSemanticClassification Classification { get; }
 

@@ -1,40 +1,95 @@
+using System.Collections;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEngine.XR.Management;
+#endif
 
 namespace Fairground.View.Attractions.BalloonThrow
 {
     /// <summary>
-    /// Desktop Strategy for editor play without XR headset.
+    /// Desktop Strategy for editor play without an active XR headset display.
     /// </summary>
     public sealed class DesktopPlaySupport : MonoBehaviour
     {
         [SerializeField] Transform cameraTransform;
+        [SerializeField] Camera targetCamera;
         [SerializeField] BallSpawnerView ballSpawner;
-        [SerializeField] float lookSensitivity = 2.2f;
+        [SerializeField] float lookSensitivity = 0.12f;
         [SerializeField] float throwSpeed = 7.5f;
-        [SerializeField] KeyCode throwKey = KeyCode.Space;
 
         float _yaw;
         float _pitch;
         bool _desktopMode;
+        BalloonThrowInput _input;
 
-        public void Configure(Transform camera, BallSpawnerView spawner)
+        public void Configure(Transform camera, BallSpawnerView spawner, BalloonThrowInput input)
         {
             cameraTransform = camera;
+            targetCamera = camera != null ? camera.GetComponent<Camera>() : null;
             ballSpawner = spawner;
+            _input = input;
+        }
+
+        void Awake()
+        {
+#if !UNITY_EDITOR
+            enabled = false;
+#endif
         }
 
         void Start()
         {
-            _desktopMode = !IsXrSessionActive();
-            if (!_desktopMode || cameraTransform == null)
+#if UNITY_EDITOR
+            StartCoroutine(InitializeWhenReady());
+#else
+            enabled = false;
+#endif
+        }
+
+#if UNITY_EDITOR
+        IEnumerator InitializeWhenReady()
+        {
+            yield return null;
+            yield return null;
+
+            if (IsHeadsetDisplayActive())
             {
                 enabled = false;
-                return;
+                yield break;
             }
 
+            if (cameraTransform == null || _input == null)
+            {
+                enabled = false;
+                yield break;
+            }
+
+            // With URP, stereoTargetEye is invalid. Stop XR so Game View renders mono.
+            StopXrForEditorDesktop();
+            yield return null;
+
+            _desktopMode = true;
+            PrepareDesktopCamera();
+            PlaceCameraForBooth();
             CaptureInitialLook();
             LockCursor(true);
         }
+
+        static void StopXrForEditorDesktop()
+        {
+            var manager = XRGeneralSettings.Instance != null
+                ? XRGeneralSettings.Instance.Manager
+                : null;
+            if (manager == null)
+                return;
+
+            if (manager.isInitializationComplete)
+            {
+                manager.StopSubsystems();
+                manager.DeinitializeLoader();
+            }
+        }
+#endif
 
         void OnDisable()
         {
@@ -44,12 +99,37 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         void Update()
         {
-            if (!_desktopMode || cameraTransform == null)
+            if (!_desktopMode || cameraTransform == null || _input == null)
                 return;
 
             ApplyLook();
             HandleThrowInput();
             HandleCursorUnlock();
+        }
+
+        void PrepareDesktopCamera()
+        {
+            if (targetCamera == null)
+                targetCamera = cameraTransform.GetComponent<Camera>();
+
+            if (targetCamera == null)
+                return;
+
+            targetCamera.targetDisplay = 0;
+            targetCamera.enabled = true;
+            targetCamera.clearFlags = CameraClearFlags.SolidColor;
+            var color = targetCamera.backgroundColor;
+            color.a = 1f;
+            if (color.r + color.g + color.b < 0.05f)
+                color = new Color(0.35f, 0.55f, 0.75f, 1f);
+            targetCamera.backgroundColor = color;
+        }
+
+        void PlaceCameraForBooth()
+        {
+            cameraTransform.SetPositionAndRotation(
+                new Vector3(0f, 1.5f, 0f),
+                Quaternion.identity);
         }
 
         void CaptureInitialLook()
@@ -61,14 +141,15 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         void ApplyLook()
         {
-            _yaw += Input.GetAxis("Mouse X") * lookSensitivity;
-            _pitch = Mathf.Clamp(_pitch - Input.GetAxis("Mouse Y") * lookSensitivity, -80f, 80f);
+            Vector2 delta = _input.LookDelta;
+            _yaw += delta.x * lookSensitivity;
+            _pitch = Mathf.Clamp(_pitch - delta.y * lookSensitivity, -80f, 80f);
             cameraTransform.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
         }
 
         void HandleThrowInput()
         {
-            if (!Input.GetKeyDown(throwKey) && !Input.GetMouseButtonDown(0))
+            if (!_input.ThrowPressed)
                 return;
 
             PlaceBallAtCamera();
@@ -86,7 +167,8 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         void HandleCursorUnlock()
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (UnityEngine.InputSystem.Keyboard.current != null
+                && UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
                 LockCursor(false);
         }
 
@@ -96,11 +178,9 @@ namespace Fairground.View.Attractions.BalloonThrow
             Cursor.visible = !locked;
         }
 
-        static bool IsXrSessionActive()
+        static bool IsHeadsetDisplayActive()
         {
-            string display = UnityEngine.XR.XRSettings.loadedDeviceName;
-            return !string.IsNullOrEmpty(display)
-                   && !string.Equals(display, "None", System.StringComparison.OrdinalIgnoreCase);
+            return UnityEngine.XR.XRSettings.isDeviceActive;
         }
     }
 }

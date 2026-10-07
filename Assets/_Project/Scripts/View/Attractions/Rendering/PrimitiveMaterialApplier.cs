@@ -3,10 +3,17 @@ using UnityEngine;
 namespace Fairground.View.Attractions.Rendering
 {
     /// <summary>
-    /// Applies a simple lit color to primitive renderers.
+    /// Applies a URP Lit color to primitive renderers using a build-safe material template.
     /// </summary>
     public static class PrimitiveMaterialApplier
     {
+        static Material _template;
+
+        public static void SetTemplate(Material template)
+        {
+            _template = template;
+        }
+
         public static void Apply(GameObject target, Color color)
         {
             var renderer = target != null ? target.GetComponent<Renderer>() : null;
@@ -18,11 +25,20 @@ namespace Fairground.View.Attractions.Rendering
 
         static Material CreateMaterial(Color color)
         {
-            var material = new Material(ResolveShader()) { color = color };
+            var source = ResolveTemplate();
+            var material = source != null ? new Material(source) : new Material(ResolveShader());
             if (material.HasProperty("_BaseColor"))
                 material.SetColor("_BaseColor", color);
-
+            material.color = color;
             return material;
+        }
+
+        static Material ResolveTemplate()
+        {
+            if (_template != null)
+                return _template;
+
+            return Resources.Load<Material>("AttractionPrimitiveLit");
         }
 
         static Shader ResolveShader()

@@ -25,9 +25,9 @@ namespace Fairground.Model.Attractions.BalloonThrow
 
         public bool IsWin(int balloonsPopped) => balloonsPopped >= BalloonCount;
 
-        public bool IsLose(int throwsRemaining, int balloonsRemaining)
+        public bool IsLose(int throwsRemaining, int balloonsRemaining, int throwsInFlight)
         {
-            return throwsRemaining <= 0 && balloonsRemaining > 0;
+            return throwsRemaining <= 0 && balloonsRemaining > 0 && throwsInFlight <= 0;
         }
 
         static void GuardNonNegative(int value, string name)

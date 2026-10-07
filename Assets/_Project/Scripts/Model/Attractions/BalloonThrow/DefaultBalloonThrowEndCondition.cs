@@ -6,12 +6,13 @@ namespace Fairground.Model.Attractions.BalloonThrow
             BalloonThrowRules rules,
             int balloonsPopped,
             int throwsRemaining,
-            int balloonsRemaining)
+            int balloonsRemaining,
+            int throwsInFlight)
         {
             if (rules.IsWin(balloonsPopped))
                 return BalloonThrowPhase.Won;
 
-            if (rules.IsLose(throwsRemaining, balloonsRemaining))
+            if (rules.IsLose(throwsRemaining, balloonsRemaining, throwsInFlight))
                 return BalloonThrowPhase.Lost;
 
             return BalloonThrowPhase.Playing;

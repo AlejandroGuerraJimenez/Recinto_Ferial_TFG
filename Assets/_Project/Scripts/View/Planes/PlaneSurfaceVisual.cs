@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Fairground.Model;
 using UnityEngine;
+using UnityEngine.XR.ARFoundation;
 
 namespace Fairground.View
 {
@@ -29,6 +30,8 @@ namespace Fairground.View
         Material _borderInstance;
         Mesh _standaloneMesh;
         bool _initialized;
+        ARPlane _arPlane;
+        PlaneVisualStyle _appliedStyle = PlaneVisualStyle.Hidden;
 
         public DetectedPlane Snapshot { get; private set; }
 
@@ -39,6 +42,8 @@ namespace Fairground.View
         public Material FillTemplate => m_FillMaterial;
 
         public Material BorderTemplate => m_BorderMaterial;
+
+        public ARPlane Trackable => _arPlane;
 
         void Awake() => EnsureInitialized();
 
@@ -61,6 +66,7 @@ namespace Fairground.View
             Snapshot = snapshot;
             HasSnapshot = true;
             IsCandidate = isCandidate;
+            _appliedStyle = (PlaneVisualStyle)(-1);
         }
 
         public void BuildStandaloneMesh(IReadOnlyList<Vector2> boundary)
@@ -73,6 +79,10 @@ namespace Fairground.View
 
         public void ApplyStyle(PlaneVisualStyle style)
         {
+            if (_appliedStyle == style)
+                return;
+
+            _appliedStyle = style;
             var visible = style != PlaneVisualStyle.Hidden;
             SetRenderers(visible);
             if (visible)
@@ -90,6 +100,7 @@ namespace Fairground.View
 
         void CacheComponents()
         {
+            _arPlane = GetComponent<ARPlane>();
             _meshRenderer = GetComponent<MeshRenderer>();
             _lineRenderer = GetComponent<LineRenderer>();
             _meshCollider = GetComponent<MeshCollider>();

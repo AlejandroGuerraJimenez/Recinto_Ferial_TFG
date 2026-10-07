@@ -41,14 +41,41 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         }
 
         [Test]
-        public void Session_ThrowsExhausted_LosesWhenBalloonsRemain()
+        public void Session_ThrowsExhausted_LosesWhenBalloonsRemainAfterBallsResolve()
         {
             var session = CreateSession(10, 2, 3);
             session.Start();
             Assert.IsTrue(session.TryRegisterThrow());
             Assert.IsTrue(session.TryRegisterThrow());
+            Assert.AreEqual(BalloonThrowPhase.Playing, session.Phase);
+            Assert.IsTrue(session.ResolveThrow());
+            Assert.IsTrue(session.ResolveThrow());
             Assert.AreEqual(BalloonThrowPhase.Lost, session.Phase);
             Assert.IsFalse(session.TryRegisterThrow());
+        }
+
+        [Test]
+        public void Session_LastThrow_CanWinBeforeBallResolves()
+        {
+            var session = CreateSession(10, 1, 1);
+            session.Start();
+            Assert.IsTrue(session.TryRegisterThrow());
+            Assert.AreEqual(BalloonThrowPhase.Playing, session.Phase);
+            Assert.IsTrue(session.TryRegisterBalloonHit());
+            Assert.AreEqual(BalloonThrowPhase.Won, session.Phase);
+            Assert.IsTrue(session.ResolveThrow());
+            Assert.AreEqual(BalloonThrowPhase.Won, session.Phase);
+        }
+
+        [Test]
+        public void Session_LastThrow_LosesAfterBallResolvesWithoutHit()
+        {
+            var session = CreateSession(10, 1, 2);
+            session.Start();
+            Assert.IsTrue(session.TryRegisterThrow());
+            Assert.AreEqual(BalloonThrowPhase.Playing, session.Phase);
+            Assert.IsTrue(session.ResolveThrow());
+            Assert.AreEqual(BalloonThrowPhase.Lost, session.Phase);
         }
 
         [Test]
@@ -74,6 +101,21 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             Assert.AreEqual(AttractionId.BalloonThrow, vm.AttractionId);
         }
 
+        [Test]
+        public void ViewModel_FromCounts_OwnsSpawnAndRestart()
+        {
+            var vm = new BalloonThrowViewModel(10, 1, 2);
+            vm.StartGame();
+            Assert.IsTrue(vm.CanSpawnBall);
+            Assert.AreEqual(2, vm.BalloonCount);
+            Assert.IsTrue(vm.NotifyBallThrown());
+            Assert.IsFalse(vm.CanSpawnBall);
+            vm.Restart();
+            Assert.IsTrue(vm.CanSpawnBall);
+            Assert.AreEqual(1, vm.ThrowsRemaining);
+            Assert.AreEqual(0, vm.Score);
+        }
+
         static BalloonThrowSession CreateSession(int points, int throws, int balloons)
         {
             return new BalloonThrowSession(new BalloonThrowRules(points, throws, balloons));
@@ -85,7 +127,8 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
                 BalloonThrowRules rules,
                 int balloonsPopped,
                 int throwsRemaining,
-                int balloonsRemaining)
+                int balloonsRemaining,
+                int throwsInFlight)
             {
                 return BalloonThrowPhase.Won;
             }

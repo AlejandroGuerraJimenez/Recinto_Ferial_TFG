@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace Fairground.View.Attractions
 {
@@ -8,8 +9,8 @@ namespace Fairground.View.Attractions
     public sealed class AttractionVrCameraSetup : MonoBehaviour
     {
         [SerializeField] Camera targetCamera;
-        [SerializeField] bool useSkybox = true;
-        [SerializeField] Color solidBackground = new Color(0.15f, 0.35f, 0.55f, 1f);
+        [SerializeField] bool useSkybox;
+        [SerializeField] Color solidBackground = new Color(0.35f, 0.55f, 0.75f, 1f);
 
         void Awake() => Apply();
 
@@ -29,6 +30,8 @@ namespace Fairground.View.Attractions
                 ApplySkybox();
             else
                 ApplySolidColor();
+
+            ForceOpaqueRender();
         }
 
         bool ResolveCamera()
@@ -50,6 +53,22 @@ namespace Fairground.View.Attractions
             var color = solidBackground;
             color.a = 1f;
             targetCamera.backgroundColor = color;
+        }
+
+        void ForceOpaqueRender()
+        {
+            var color = targetCamera.backgroundColor;
+            color.a = 1f;
+            targetCamera.backgroundColor = color;
+            targetCamera.opaqueSortMode = UnityEngine.Rendering.OpaqueSortMode.Default;
+            targetCamera.allowHDR = true;
+
+            if (targetCamera.GetUniversalAdditionalCameraData() is { } urp)
+            {
+                urp.renderType = CameraRenderType.Base;
+                urp.requiresColorOption = CameraOverrideOption.Off;
+                urp.requiresDepthOption = CameraOverrideOption.Off;
+            }
         }
     }
 }

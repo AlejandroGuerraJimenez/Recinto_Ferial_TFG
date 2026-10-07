@@ -1,5 +1,5 @@
 using Fairground.Core.Attractions;
-using Fairground.Model.Attractions.BalloonThrow;
+using Fairground.View.Attractions.BalloonThrow.Factories;
 using Fairground.ViewModel.Attractions.BalloonThrow;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -16,12 +16,15 @@ namespace Fairground.View.Attractions.BalloonThrow
         [SerializeField] BalloonTargetView[] balloons;
         [SerializeField] BallSpawnerView ballSpawner;
         [SerializeField] BalloonThrowHudView hud;
-        [SerializeField] KeyCode restartKey = KeyCode.R;
 
         BalloonThrowViewModel _viewModel;
+        BalloonThrowInput _input;
+        readonly BalloonTargetFactory _balloonFactory = new BalloonTargetFactory();
+        Transform _balloonRoot;
 
         public AttractionId AttractionId => AttractionId.BalloonThrow;
         public BalloonThrowViewModel ViewModel => _viewModel;
+        public BalloonThrowInput Input => _input;
 
         public void Configure(
             BalloonTargetView[] balloonTargets,
@@ -37,6 +40,12 @@ namespace Fairground.View.Attractions.BalloonThrow
             startingThrows = throws;
         }
 
+        void Awake()
+        {
+            _input = new BalloonThrowInput();
+            _input.Enable();
+        }
+
         void Start()
         {
             if (_viewModel != null)
@@ -47,11 +56,22 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         void Update()
         {
-            if (Input.GetKeyDown(restartKey))
+            if (_input == null)
+                return;
+
+            if (_input.RestartPressed)
                 RestartMatch();
+
+            if (_input.ReturnToFairgroundPressed)
+                ReturnToFairground();
         }
 
-        void OnDestroy() => Unsubscribe();
+        void OnDestroy()
+        {
+            Unsubscribe();
+            _input?.Dispose();
+            _input = null;
+        }
 
         void BootstrapMatch()
         {
@@ -67,13 +87,14 @@ namespace Fairground.View.Attractions.BalloonThrow
         {
             if (balloons == null || balloons.Length == 0)
                 balloons = FindObjectsByType<BalloonTargetView>(FindObjectsSortMode.None);
+
+            RememberBalloonRoot();
         }
 
         BalloonThrowViewModel CreateViewModel()
         {
             int balloonCount = balloons != null ? Mathf.Max(1, balloons.Length) : 1;
-            var rules = new BalloonThrowRules(pointsPerBalloon, startingThrows, balloonCount);
-            return new BalloonThrowViewModel(rules);
+            return new BalloonThrowViewModel(pointsPerBalloon, startingThrows, balloonCount);
         }
 
         void Subscribe()
@@ -109,6 +130,8 @@ namespace Fairground.View.Attractions.BalloonThrow
 
             ball.Thrown -= OnBallThrown;
             ball.Thrown += OnBallThrown;
+            ball.Resolved -= OnBallResolved;
+            ball.Resolved += OnBallResolved;
         }
 
         void Unsubscribe()
@@ -133,21 +156,28 @@ namespace Fairground.View.Attractions.BalloonThrow
         void UnsubscribeBalls()
         {
             foreach (var ball in FindObjectsByType<ThrowableBallView>(FindObjectsSortMode.None))
-                if (ball != null)
-                    ball.Thrown -= OnBallThrown;
+            {
+                if (ball == null)
+                    continue;
+
+                ball.Thrown -= OnBallThrown;
+                ball.Resolved -= OnBallResolved;
+            }
         }
 
-        void OnBallThrown(ThrowableBallView ball) => HandleGameplayAction(_viewModel.NotifyBallThrown);
+        void OnBallThrown(ThrowableBallView ball) => Forward(_viewModel.NotifyBallThrown);
 
-        void OnBalloonPopped(BalloonTargetView balloon) => HandleGameplayAction(_viewModel.NotifyBalloonHit);
+        void OnBallResolved(ThrowableBallView ball) => Forward(_viewModel.NotifyThrowResolved);
 
-        void HandleGameplayAction(System.Func<bool> action)
+        void OnBalloonPopped(BalloonTargetView balloon) => Forward(_viewModel.NotifyBalloonHit);
+
+        void Forward(System.Func<bool> action)
         {
-            if (_viewModel == null || !_viewModel.IsPlaying)
+            if (_viewModel == null)
                 return;
 
-            action();
-            UpdateSpawnerAvailability();
+            if (action())
+                UpdateSpawnerAvailability();
         }
 
         void UpdateSpawnerAvailability()
@@ -155,13 +185,51 @@ namespace Fairground.View.Attractions.BalloonThrow
             if (ballSpawner == null || _viewModel == null)
                 return;
 
-            bool canThrow = _viewModel.IsPlaying && _viewModel.ThrowsRemaining > 0;
-            ballSpawner.SetSpawningEnabled(canThrow);
+            ballSpawner.SetSpawningEnabled(_viewModel.CanSpawnBall);
         }
 
         public void RestartMatch()
         {
-            SceneManager.LoadScene(AttractionScenes.BalloonThrow);
+            if (_viewModel == null)
+                return;
+
+            Unsubscribe();
+            ClearBalls();
+            _viewModel.Restart();
+            RebuildBalloons();
+            Subscribe();
+            UpdateSpawnerAvailability();
+            ballSpawner?.TrySpawnImmediate();
+        }
+
+        void ClearBalls()
+        {
+            ballSpawner?.Reset();
+            foreach (var ball in FindObjectsByType<ThrowableBallView>(FindObjectsSortMode.None))
+                if (ball != null)
+                    Destroy(ball.gameObject);
+        }
+
+        void RebuildBalloons()
+        {
+            if (_balloonRoot != null)
+                Destroy(_balloonRoot.gameObject);
+
+            balloons = _balloonFactory.CreateRow(_viewModel.BalloonCount);
+            RememberBalloonRoot();
+        }
+
+        void RememberBalloonRoot()
+        {
+            if (balloons == null || balloons.Length == 0 || balloons[0] == null)
+                return;
+
+            _balloonRoot = balloons[0].transform.parent;
+        }
+
+        public void ReturnToFairground()
+        {
+            SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }
 }

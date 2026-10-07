@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
@@ -10,6 +11,8 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
     /// </summary>
     public sealed class XrAttractionRigFactory
     {
+        static readonly Color OpaqueSky = new Color(0.35f, 0.55f, 0.75f, 1f);
+
         readonly GameObject _xrOriginPrefab;
 
         public XrAttractionRigFactory(GameObject xrOriginPrefab)
@@ -21,7 +24,10 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
         {
             var existing = GameObject.Find("XR Origin");
             if (existing != null)
+            {
+                ConfigureOpaqueCamera(existing.GetComponentInChildren<Camera>());
                 return existing;
+            }
 
             return SpawnXrOrigin();
         }
@@ -54,7 +60,7 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
 
             var instance = Object.Instantiate(_xrOriginPrefab);
             instance.name = "XR Origin";
-            instance.transform.position = Vector3.zero;
+            instance.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             ConfigureOpaqueCamera(instance.GetComponentInChildren<Camera>());
             return instance;
         }
@@ -64,11 +70,13 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
             if (camera == null)
                 return;
 
-            camera.clearFlags = CameraClearFlags.Skybox;
-            var background = camera.backgroundColor;
-            background.a = 1f;
-            camera.backgroundColor = background;
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = OpaqueSky;
+            camera.enabled = true;
             StripArBehaviours(camera);
+
+            if (camera.GetUniversalAdditionalCameraData() is { } urp)
+                urp.renderType = CameraRenderType.Base;
         }
 
         static void StripArBehaviours(Camera camera)

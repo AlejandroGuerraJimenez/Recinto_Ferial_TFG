@@ -85,8 +85,18 @@ namespace Fairground.View
 
         static DetectedPlane Snapshot(GameObject planeObject, string id, Vector2[] boundary, PlaneSemanticClassification classification)
         {
-            var pose = new Pose(planeObject.transform.position, planeObject.transform.rotation);
-            return new DetectedPlane(id, pose, boundary, classification, PlaneAlignmentKind.HorizontalUp);
+            var position = planeObject.transform.position;
+            var rotation = planeObject.transform.rotation;
+            var pose = new PlanePose(position.x, position.y, position.z, rotation.x, rotation.y, rotation.z, rotation.w);
+            return new DetectedPlane(id, pose, ToPoints(boundary), classification, PlaneAlignmentKind.HorizontalUp);
+        }
+
+        static PlanePoint[] ToPoints(Vector2[] boundary)
+        {
+            var points = new PlanePoint[boundary.Length];
+            for (var i = 0; i < boundary.Length; i++)
+                points[i] = new PlanePoint(boundary[i].x, boundary[i].y);
+            return points;
         }
 
         static Vector2[] Rectangle(float halfWidth, float halfDepth)

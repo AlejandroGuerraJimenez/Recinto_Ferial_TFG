@@ -1,7 +1,6 @@
 using Fairground.Model;
 using Fairground.ViewModel;
 using NUnit.Framework;
-using UnityEngine;
 
 namespace Fairground.Tests.EditMode
 {
@@ -90,16 +89,16 @@ namespace Fairground.Tests.EditMode
 
         static DetectedPlane Surface(string id, PlaneSemanticClassification classification, PlaneAlignmentKind alignment)
         {
-            return new DetectedPlane(id, Pose.identity, Triangle(), classification, alignment);
+            return new DetectedPlane(id, PlanePose.Identity, Triangle(), classification, alignment);
         }
 
-        static Vector2[] Triangle()
+        static PlanePoint[] Triangle()
         {
             return new[]
             {
-                new Vector2(0f, 0f),
-                new Vector2(0f, 1f),
-                new Vector2(1f, 1f),
+                new PlanePoint(0f, 0f),
+                new PlanePoint(0f, 1f),
+                new PlanePoint(1f, 1f),
             };
         }
 

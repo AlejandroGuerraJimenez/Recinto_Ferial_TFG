@@ -15,6 +15,7 @@ namespace Fairground.View.Attractions.BalloonThrow
         [SerializeField] float destroyDelay = 0.2f;
 
         bool _popped;
+        MaterialPropertyBlock _popTint;
 
         public event Action<BalloonTargetView> Popped;
         public bool IsPopped => _popped;
@@ -52,8 +53,14 @@ namespace Fairground.View.Attractions.BalloonThrow
         void ApplyPopFeedback()
         {
             transform.localScale *= popScale;
-            if (balloonRenderer != null)
-                balloonRenderer.material.color = poppedColor;
+            if (balloonRenderer == null)
+                return;
+
+            _popTint ??= new MaterialPropertyBlock();
+            balloonRenderer.GetPropertyBlock(_popTint);
+            _popTint.SetColor("_BaseColor", poppedColor);
+            _popTint.SetColor("_Color", poppedColor);
+            balloonRenderer.SetPropertyBlock(_popTint);
         }
     }
 }

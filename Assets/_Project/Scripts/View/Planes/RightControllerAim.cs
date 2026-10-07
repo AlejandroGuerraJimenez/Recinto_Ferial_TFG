@@ -1,5 +1,5 @@
+using Unity.XR.CoreUtils;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine.XR;
@@ -47,17 +47,22 @@ namespace Fairground.View
 
         static Transform FindRight()
         {
-            var controllers = Object.FindObjectsByType<ActionBasedController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            for (var i = 0; i < controllers.Length; i++)
-                if (IsRight(controllers[i]))
-                    return controllers[i].transform;
+            var origin = Object.FindAnyObjectByType<XROrigin>();
+            if (origin == null)
+                return null;
 
-            return null;
+            return FindNamedChild(origin.transform, "Right Controller")
+                   ?? FindNamedChild(origin.transform, "RightHand");
         }
 
-        static bool IsRight(ActionBasedController controller)
+        static Transform FindNamedChild(Transform root, string name)
         {
-            return controller.name.IndexOf("Right", System.StringComparison.OrdinalIgnoreCase) >= 0;
+            var transforms = root.GetComponentsInChildren<Transform>(true);
+            for (var i = 0; i < transforms.Length; i++)
+                if (string.Equals(transforms[i].name, name, System.StringComparison.OrdinalIgnoreCase))
+                    return transforms[i];
+
+            return null;
         }
 
 #if UNITY_EDITOR

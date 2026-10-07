@@ -1,4 +1,5 @@
 using Fairground.View.Attractions.BalloonThrow.Builders;
+using Fairground.View.Attractions.Rendering;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.BalloonThrow
@@ -9,6 +10,7 @@ namespace Fairground.View.Attractions.BalloonThrow
     public sealed class BalloonThrowSceneInstaller : MonoBehaviour
     {
         [SerializeField] GameObject xrOriginPrefab;
+        [SerializeField] Material primitiveLitTemplate;
         [SerializeField] int balloonCount = 6;
         [SerializeField] int startingThrows = 8;
         [SerializeField] bool buildOnAwake = true;
@@ -27,7 +29,16 @@ namespace Fairground.View.Attractions.BalloonThrow
                 return;
 
             _built = true;
+            PrimitiveMaterialApplier.SetTemplate(ResolvePrimitiveTemplate());
             AssembleBooth();
+        }
+
+        Material ResolvePrimitiveTemplate()
+        {
+            if (primitiveLitTemplate != null)
+                return primitiveLitTemplate;
+
+            return Resources.Load<Material>("AttractionPrimitiveLit");
         }
 
         void AssembleBooth()
@@ -44,7 +55,6 @@ namespace Fairground.View.Attractions.BalloonThrow
         void WireGameplay(BalloonThrowBoothBuilder builder)
         {
             CreateController(builder);
-            CreateDesktopSupport(builder.XrOrigin, builder.Spawner);
             CreateVrCameraSetup(builder.XrOrigin);
         }
 
@@ -53,19 +63,21 @@ namespace Fairground.View.Attractions.BalloonThrow
             var go = new GameObject("BalloonThrowGame");
             var controller = go.AddComponent<BalloonThrowAttractionController>();
             controller.Configure(builder.Balloons, builder.Spawner, builder.Hud, 10, startingThrows);
+            CreateDesktopSupport(builder.XrOrigin, builder.Spawner, controller);
         }
 
-        static void CreateDesktopSupport(GameObject xrOrigin, BallSpawnerView spawner)
+        static void CreateDesktopSupport(GameObject xrOrigin, BallSpawnerView spawner, BalloonThrowAttractionController controller)
         {
             var camera = ResolveCamera(xrOrigin);
             var support = new GameObject("DesktopPlaySupport").AddComponent<DesktopPlaySupport>();
-            support.Configure(camera != null ? camera.transform : null, spawner);
+            support.Configure(camera != null ? camera.transform : null, spawner, controller.Input);
         }
 
         static void CreateVrCameraSetup(GameObject xrOrigin)
         {
             var setup = new GameObject("AttractionVrCameraSetup").AddComponent<AttractionVrCameraSetup>();
-            setup.Configure(ResolveCamera(xrOrigin), true);
+            // Solid opaque clear: reliable in Editor Game View and Quest (no passthrough).
+            setup.Configure(ResolveCamera(xrOrigin), skybox: false);
         }
 
         static Camera ResolveCamera(GameObject xrOrigin)

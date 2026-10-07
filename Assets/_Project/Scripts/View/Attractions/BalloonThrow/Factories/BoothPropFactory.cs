@@ -10,11 +10,16 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
     {
         public void EnsureLighting()
         {
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.55f, 0.6f, 0.7f, 1f);
+            RenderSettings.ambientEquatorColor = new Color(0.35f, 0.35f, 0.35f, 1f);
+            RenderSettings.ambientGroundColor = new Color(0.15f, 0.15f, 0.12f, 1f);
+            RenderSettings.ambientIntensity = 1f;
+
             if (Object.FindFirstObjectByType<Light>() != null)
                 return;
 
             CreateDirectionalLight();
-            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
         }
 
         public void CreateGround()
@@ -41,7 +46,7 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
             var light = lightGo.AddComponent<Light>();
             light.type = LightType.Directional;
             light.intensity = 1.1f;
-            light.shadows = LightShadows.Soft;
+            light.shadows = LightShadows.None;
             lightGo.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
         }
 

@@ -5,6 +5,11 @@ namespace Fairground.Model.Attractions.BalloonThrow
     /// </summary>
     public interface IBalloonThrowEndCondition
     {
-        BalloonThrowPhase Evaluate(BalloonThrowRules rules, int balloonsPopped, int throwsRemaining, int balloonsRemaining);
+        BalloonThrowPhase Evaluate(
+            BalloonThrowRules rules,
+            int balloonsPopped,
+            int throwsRemaining,
+            int balloonsRemaining,
+            int throwsInFlight);
     }
 }

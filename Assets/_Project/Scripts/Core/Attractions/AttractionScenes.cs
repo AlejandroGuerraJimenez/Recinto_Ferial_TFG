@@ -8,6 +8,8 @@ namespace Fairground.Core.Attractions
     /// </summary>
     public static class AttractionScenes
     {
+        public const string FairgroundSceneFolder = "Assets/_Project/Scenes";
+        public const string Fairground = "Fairground";
         public const string AttractionsFolder = "Assets/_Project/Scenes/Attractions";
         public const string BalloonThrow = "BalloonThrow";
         public const string DuckFishing = "DuckFishing";

@@ -13,19 +13,22 @@ namespace Fairground.View
         readonly PlanePointer _pointer;
         readonly EditorStandInHost _standIn;
         readonly Func<PlaneSelectionState> _state;
+        readonly Func<DetectedPlane, bool> _isSelectable;
 
         public PlaneRegistration(
             PlaneVisualCatalog catalog,
             PlaneAimController aim,
             PlanePointer pointer,
             EditorStandInHost standIn,
-            Func<PlaneSelectionState> state)
+            Func<PlaneSelectionState> state,
+            Func<DetectedPlane, bool> isSelectable)
         {
             _catalog = catalog;
             _aim = aim;
             _pointer = pointer;
             _standIn = standIn;
             _state = state;
+            _isSelectable = isSelectable;
         }
 
         public void OnChanged(ARTrackablesChangedEventArgs<ARPlane> args)
@@ -76,9 +79,9 @@ namespace Fairground.View
             _pointer.ClearIf(visual);
         }
 
-        static bool Accepted(ARPlane plane, DetectedPlane snapshot)
+        bool Accepted(ARPlane plane, DetectedPlane snapshot)
         {
-            return plane.subsumedBy == null && PlaneCandidateFilter.TryGetPriority(snapshot, out _);
+            return plane.subsumedBy == null && _isSelectable(snapshot);
         }
 
         static PlaneSurfaceVisual VisualOn(ARPlane plane)

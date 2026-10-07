@@ -1,6 +1,5 @@
 using Fairground.Model;
 using NUnit.Framework;
-using UnityEngine;
 
 namespace Fairground.Tests.EditMode
 {
@@ -46,22 +45,27 @@ namespace Fairground.Tests.EditMode
 
         static DetectedPlane Plane(string id, PlaneSemanticClassification classification, PlaneAlignmentKind alignment)
         {
-            return new DetectedPlane(id, Pose.identity, Square(), classification, alignment);
+            return new DetectedPlane(id, PlanePose.Identity, Square(), classification, alignment);
         }
 
         static DetectedPlane Tiny()
         {
-            return new DetectedPlane("tiny", Pose.identity, new[] { Vector2.zero, Vector2.one }, PlaneSemanticClassification.Table, PlaneAlignmentKind.HorizontalUp);
+            return new DetectedPlane(
+                "tiny",
+                PlanePose.Identity,
+                new[] { new PlanePoint(0f, 0f), new PlanePoint(1f, 1f) },
+                PlaneSemanticClassification.Table,
+                PlaneAlignmentKind.HorizontalUp);
         }
 
-        static Vector2[] Square()
+        static PlanePoint[] Square()
         {
             return new[]
             {
-                new Vector2(-1f, -1f),
-                new Vector2(-1f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(1f, -1f),
+                new PlanePoint(-1f, -1f),
+                new PlanePoint(-1f, 1f),
+                new PlanePoint(1f, 1f),
+                new PlanePoint(1f, -1f),
             };
         }
     }

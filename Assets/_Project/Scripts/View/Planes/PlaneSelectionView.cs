@@ -113,7 +113,13 @@ namespace Fairground.View
         void CreateTools()
         {
             _standIn = new EditorStandInHost(m_EnableEditorStandIn, transform, m_PlanePrefab, DetectionRunning);
-            _registration = new PlaneRegistration(_catalog, _aim, _pointer, _standIn, () => State);
+            _registration = new PlaneRegistration(
+                _catalog,
+                _aim,
+                _pointer,
+                _standIn,
+                () => State,
+                snapshot => _viewModel.IsSelectable(snapshot));
             _aimView = AimRayView.Create(transform, BorderTemplate());
             _input = new PlaneSelectionInput(Confirm, RestartSelection, EditorContext);
         }

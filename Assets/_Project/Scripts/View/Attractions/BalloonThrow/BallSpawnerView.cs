@@ -107,6 +107,19 @@ namespace Fairground.View.Attractions.BalloonThrow
             _respawnAt = Time.time + respawnDelay;
         }
 
+        public void Reset()
+        {
+            if (_currentBall != null)
+            {
+                _currentBall.Thrown -= OnBallThrown;
+                Destroy(_currentBall.gameObject);
+                _currentBall = null;
+            }
+
+            _respawnAt = -1f;
+            _spawningEnabled = true;
+        }
+
         void ClearIdleBall()
         {
             if (_currentBall == null || _currentBall.IsThrown)
