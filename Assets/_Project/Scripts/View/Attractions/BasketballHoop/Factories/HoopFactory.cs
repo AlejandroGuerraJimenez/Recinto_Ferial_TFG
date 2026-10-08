@@ -8,8 +8,9 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
     /// </summary>
     public sealed class HoopFactory
     {
-        const int RimSegments = 12;
         const float RimRadius = 0.26f;
+        const float RimThickness = 0.028f;
+        static readonly Color RimColor = new Color(0.9f, 0.32f, 0.08f, 1f);
 
         public BasketDetectorView Create()
         {
@@ -43,32 +44,83 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
         {
             var rim = new GameObject("Rim");
             rim.transform.position = BasketballHoopLayout.RimPosition;
+            var tube = new GameObject("RimTube");
+            tube.transform.SetParent(rim.transform, false);
 
-            for (int i = 0; i < RimSegments; i++)
-                CreateRimSegment(rim.transform, i);
-
+            Mesh mesh = CreateTorus(RimRadius, RimThickness, 48, 12);
+            tube.AddComponent<MeshFilter>().sharedMesh = mesh;
+            tube.AddComponent<MeshRenderer>();
+            PrimitiveMaterialApplier.Apply(tube, RimColor);
+            tube.AddComponent<MeshCollider>().sharedMesh = mesh;
             return rim.transform;
         }
 
-        static void CreateRimSegment(Transform rim, int index)
+        static Mesh CreateTorus(float majorRadius, float minorRadius, int majorSegments, int minorSegments)
         {
-            float angle = index * Mathf.PI * 2f / RimSegments;
-            var segment = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            segment.name = $"RimSegment_{index + 1}";
-            segment.transform.SetParent(rim, false);
-            segment.transform.localPosition = new Vector3(Mathf.Cos(angle) * RimRadius, 0f, Mathf.Sin(angle) * RimRadius);
-            segment.transform.localRotation = Quaternion.Euler(0f, -angle * Mathf.Rad2Deg, 0f);
-            segment.transform.localScale = new Vector3(0.15f, 0.045f, 0.05f);
-            PrimitiveMaterialApplier.Apply(segment, new Color(0.9f, 0.32f, 0.08f, 1f));
+            int stride = minorSegments + 1;
+            var vertices = new Vector3[(majorSegments + 1) * stride];
+            var uvs = new Vector2[vertices.Length];
+            var triangles = new int[majorSegments * minorSegments * 6];
+
+            WriteRings(vertices, uvs, majorRadius, minorRadius, majorSegments, minorSegments);
+            WriteTriangles(triangles, majorSegments, minorSegments, stride);
+
+            var mesh = new Mesh { name = "RimTorus" };
+            mesh.SetVertices(vertices);
+            mesh.SetUVs(0, uvs);
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        static void WriteRings(Vector3[] vertices, Vector2[] uvs, float majorRadius, float minorRadius, int majorSegments, int minorSegments)
+        {
+            int stride = minorSegments + 1;
+            for (int i = 0; i <= majorSegments; i++)
+            {
+                float around = i / (float)majorSegments * Mathf.PI * 2f;
+                var center = new Vector3(Mathf.Cos(around), 0f, Mathf.Sin(around));
+                for (int j = 0; j <= minorSegments; j++)
+                {
+                    float tube = j / (float)minorSegments * Mathf.PI * 2f;
+                    Vector3 offset = center * Mathf.Cos(tube) + Vector3.up * Mathf.Sin(tube);
+                    int index = i * stride + j;
+                    vertices[index] = center * majorRadius + offset * minorRadius;
+                    uvs[index] = new Vector2(i / (float)majorSegments, j / (float)minorSegments);
+                }
+            }
+        }
+
+        static void WriteTriangles(int[] triangles, int majorSegments, int minorSegments, int stride)
+        {
+            int t = 0;
+            for (int i = 0; i < majorSegments; i++)
+            {
+                for (int j = 0; j < minorSegments; j++)
+                {
+                    int current = i * stride + j;
+                    int next = current + stride;
+                    triangles[t++] = current;
+                    triangles[t++] = next;
+                    triangles[t++] = current + 1;
+                    triangles[t++] = current + 1;
+                    triangles[t++] = next;
+                    triangles[t++] = next + 1;
+                }
+            }
         }
 
         static void CreateSupport(Transform rim)
         {
-            // Bracket sits above the opening so it never blocks a downward entry.
+            // Short bracket on the back of the ring, clear of the opening.
+            float boardFrontZ = BasketballHoopLayout.BackboardPosition.z - 0.02f;
+            float rearRingZ = rim.position.z + RimRadius;
+            float length = Mathf.Max(0.08f, boardFrontZ - rearRingZ + RimThickness);
             var arm = GameObject.CreatePrimitive(PrimitiveType.Cube);
             arm.name = "RimSupport";
-            arm.transform.position = rim.position + new Vector3(0f, 0.32f, 0.14f);
-            arm.transform.localScale = new Vector3(0.06f, 0.05f, 0.24f);
+            arm.transform.position = new Vector3(rim.position.x, rim.position.y, rearRingZ + length * 0.5f - RimThickness);
+            arm.transform.localScale = new Vector3(0.08f, 0.035f, length);
             PrimitiveMaterialApplier.Apply(arm, new Color(0.75f, 0.75f, 0.78f, 1f));
         }
 

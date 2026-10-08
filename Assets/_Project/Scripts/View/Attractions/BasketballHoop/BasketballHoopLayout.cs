@@ -7,7 +7,7 @@ namespace Fairground.View.Attractions.BasketballHoop
     /// </summary>
     public static class BasketballHoopLayout
     {
-        public static readonly Vector3 RimPosition = new Vector3(0f, 1.78f, 3.55f);
+        public static readonly Vector3 RimPosition = new Vector3(0f, 1.78f, 3.44f);
         public static readonly Vector3 BackboardPosition = new Vector3(0f, 2.0f, 3.82f);
         public static readonly Vector3 SpawnerPosition = new Vector3(0.42f, 1.05f, 0.65f);
         public static readonly Vector3 PlayfieldPosition = new Vector3(0f, 0.42f, 2.35f);
