@@ -19,6 +19,12 @@ namespace Fairground.Tests.EditMode.Attractions
             AssertSceneEnabled(AttractionId.PunchingBall);
         }
 
+        [Test]
+        public void BasketballHoopScene_IsEnabledInBuildSettings()
+        {
+            AssertSceneEnabled(AttractionId.BasketballHoop);
+        }
+
         static void AssertSceneEnabled(AttractionId attractionId)
         {
             string path = AttractionScenes.GetScenePath(attractionId);

@@ -11,5 +11,6 @@ namespace Fairground.Core.Attractions
         DuckFishing = 2,
         PunchingBall = 3,
         FerrisWheel = 4,
+        BasketballHoop = 5,
     }
 }

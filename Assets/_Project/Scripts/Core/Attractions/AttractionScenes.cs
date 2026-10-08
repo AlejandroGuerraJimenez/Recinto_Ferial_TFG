@@ -15,6 +15,7 @@ namespace Fairground.Core.Attractions
         public const string DuckFishing = "DuckFishing";
         public const string PunchingBall = "PunchingBall";
         public const string FerrisWheel = "FerrisWheel";
+        public const string BasketballHoop = "BasketballHoop";
 
         static readonly Dictionary<AttractionId, string> NamesById = new Dictionary<AttractionId, string>
         {
@@ -22,6 +23,7 @@ namespace Fairground.Core.Attractions
             { AttractionId.DuckFishing, DuckFishing },
             { AttractionId.PunchingBall, PunchingBall },
             { AttractionId.FerrisWheel, FerrisWheel },
+            { AttractionId.BasketballHoop, BasketballHoop },
         };
 
         static readonly Dictionary<string, AttractionId> IdsByName = new Dictionary<string, AttractionId>
@@ -30,6 +32,7 @@ namespace Fairground.Core.Attractions
             { DuckFishing, AttractionId.DuckFishing },
             { PunchingBall, AttractionId.PunchingBall },
             { FerrisWheel, AttractionId.FerrisWheel },
+            { BasketballHoop, AttractionId.BasketballHoop },
         };
 
         public static string GetSceneName(AttractionId attractionId)
