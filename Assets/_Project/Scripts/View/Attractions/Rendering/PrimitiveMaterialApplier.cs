@@ -26,11 +26,17 @@ namespace Fairground.View.Attractions.Rendering
         static Material CreateMaterial(Color color)
         {
             var source = ResolveTemplate();
-            var material = source != null ? new Material(source) : new Material(ResolveShader());
+            var material = IsUsable(source) ? new Material(source) : new Material(ResolveShader());
             if (material.HasProperty("_BaseColor"))
                 material.SetColor("_BaseColor", color);
             material.color = color;
             return material;
+        }
+
+        static bool IsUsable(Material material)
+        {
+            var shader = material != null ? material.shader : null;
+            return shader != null && shader.name != "Hidden/InternalErrorShader";
         }
 
         static Material ResolveTemplate()
