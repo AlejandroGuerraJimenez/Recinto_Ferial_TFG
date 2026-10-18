@@ -1,16 +1,20 @@
 using Fairground.View.Attractions.DuckFishing.Builders;
+using Fairground.View.Attractions.DuckFishing.Factories;
 using Fairground.View.Attractions.Rendering;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.DuckFishing
 {
     /// <summary>
-    /// Director: builds a playable Duck Fishing booth (opaque VR, no AR).
+    /// Director: wires a playable Duck Fishing booth (opaque VR, no AR).
+    /// Static booth props prefer baked scene/prefab over runtime CreatePrimitive.
     /// </summary>
     public sealed class DuckFishingSceneInstaller : MonoBehaviour
     {
         [SerializeField] GameObject xrOriginPrefab;
         [SerializeField] Material primitiveLitTemplate;
+        [SerializeField] GameObject boothEnvironmentPrefab;
+        [SerializeField] Transform bakedBoothEnvironment;
         [SerializeField] int duckCount = 6;
         [SerializeField] int ducksToWin = 4;
         [SerializeField] int startingAttempts = 8;
@@ -45,12 +49,32 @@ namespace Fairground.View.Attractions.DuckFishing
 
         void AssembleBooth()
         {
-            var builder = new DuckFishingBoothBuilder(xrOriginPrefab)
-                .BuildEnvironment()
-                .BuildXrRig()
-                .BuildGameplay(duckCount);
+            var builder = new DuckFishingBoothBuilder(xrOriginPrefab);
+            BuildOrUseEnvironment(builder);
+            builder.BuildXrRig().BuildGameplay(duckCount);
 
             WireGameplay(builder);
+        }
+
+        void BuildOrUseEnvironment(DuckFishingBoothBuilder builder)
+        {
+            var baked = ResolveBakedEnvironment();
+            if (baked != null)
+            {
+                builder.UseBakedEnvironment(baked);
+                return;
+            }
+
+            builder.BuildEnvironment(boothEnvironmentPrefab);
+        }
+
+        Transform ResolveBakedEnvironment()
+        {
+            if (bakedBoothEnvironment != null)
+                return bakedBoothEnvironment;
+
+            var existing = GameObject.Find(BoothPropFactory.EnvironmentRootName);
+            return existing != null ? existing.transform : null;
         }
 
         void WireGameplay(DuckFishingBoothBuilder builder)

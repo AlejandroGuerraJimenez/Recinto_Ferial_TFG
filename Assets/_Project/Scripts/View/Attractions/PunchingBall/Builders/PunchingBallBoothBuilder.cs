@@ -16,6 +16,7 @@ namespace Fairground.View.Attractions.PunchingBall.Builders
         readonly XrAttractionRigFactory _rigFactory;
 
         GameObject _xrOrigin;
+        GameObject _environment;
         PunchPadView _pad;
         PunchPowerMeterView _meter;
         PunchingBallHudView _hud;
@@ -26,15 +27,34 @@ namespace Fairground.View.Attractions.PunchingBall.Builders
         }
 
         public GameObject XrOrigin => _xrOrigin;
+        public GameObject Environment => _environment;
         public PunchPadView Pad => _pad;
         public PunchPowerMeterView Meter => _meter;
         public PunchingBallHudView Hud => _hud;
 
-        public PunchingBallBoothBuilder BuildEnvironment()
+        /// <summary>
+        /// Lighting only — booth mesh already present in the baked scene.
+        /// </summary>
+        public PunchingBallBoothBuilder UseBakedEnvironment(Transform bakedRoot)
         {
             _boothFactory.EnsureLighting();
-            _boothFactory.CreateGround();
-            _boothFactory.CreateBoothBack();
+            _environment = bakedRoot != null ? bakedRoot.gameObject : null;
+            return this;
+        }
+
+        /// <summary>
+        /// Instantiates a prebuilt booth prefab, or falls back to CreatePrimitive factory.
+        /// </summary>
+        public PunchingBallBoothBuilder BuildEnvironment(GameObject boothEnvironmentPrefab)
+        {
+            _boothFactory.EnsureLighting();
+            _environment = boothEnvironmentPrefab != null
+                ? Object.Instantiate(boothEnvironmentPrefab)
+                : _boothFactory.CreateEnvironment();
+
+            if (_environment != null)
+                _environment.name = BoothPropFactory.EnvironmentRootName;
+
             return this;
         }
 

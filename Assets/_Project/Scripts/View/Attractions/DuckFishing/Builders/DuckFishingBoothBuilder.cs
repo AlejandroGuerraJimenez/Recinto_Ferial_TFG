@@ -15,6 +15,7 @@ namespace Fairground.View.Attractions.DuckFishing.Builders
         readonly XrAttractionRigFactory _rigFactory;
 
         GameObject _xrOrigin;
+        GameObject _environment;
         Transform _pond;
         DuckTargetView[] _ducks;
         FishingRodView _rod;
@@ -26,18 +27,47 @@ namespace Fairground.View.Attractions.DuckFishing.Builders
         }
 
         public GameObject XrOrigin => _xrOrigin;
+        public GameObject Environment => _environment;
         public Transform Pond => _pond;
         public DuckTargetView[] Ducks => _ducks;
         public FishingRodView Rod => _rod;
         public DuckFishingHudView Hud => _hud;
 
-        public DuckFishingBoothBuilder BuildEnvironment()
+        /// <summary>
+        /// Lighting only — booth mesh already present in the baked scene.
+        /// </summary>
+        public DuckFishingBoothBuilder UseBakedEnvironment(Transform bakedRoot)
         {
             _boothFactory.EnsureLighting();
-            _boothFactory.CreateGround();
-            _boothFactory.CreateBoothBack();
-            _pond = _boothFactory.CreatePond();
+            _environment = bakedRoot != null ? bakedRoot.gameObject : null;
+            _pond = ResolvePond(bakedRoot);
             return this;
+        }
+
+        /// <summary>
+        /// Instantiates a prebuilt booth prefab, or falls back to CreatePrimitive factory.
+        /// </summary>
+        public DuckFishingBoothBuilder BuildEnvironment(GameObject boothEnvironmentPrefab)
+        {
+            _boothFactory.EnsureLighting();
+            _environment = boothEnvironmentPrefab != null
+                ? Object.Instantiate(boothEnvironmentPrefab)
+                : _boothFactory.CreateEnvironment();
+
+            if (_environment != null)
+                _environment.name = BoothPropFactory.EnvironmentRootName;
+
+            _pond = ResolvePond(_environment != null ? _environment.transform : null);
+            return this;
+        }
+
+        static Transform ResolvePond(Transform environmentRoot)
+        {
+            if (environmentRoot == null)
+                return null;
+
+            var pond = environmentRoot.Find(BoothPropFactory.PondName);
+            return pond != null ? pond : environmentRoot;
         }
 
         public DuckFishingBoothBuilder BuildXrRig()

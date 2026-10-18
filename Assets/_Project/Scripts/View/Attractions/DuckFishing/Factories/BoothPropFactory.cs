@@ -5,9 +5,13 @@ namespace Fairground.View.Attractions.DuckFishing.Factories
 {
     /// <summary>
     /// Factory: booth environment props (ground, trough, light).
+    /// Prefer baking via Editor SceneBuilder; runtime uses prefab/scene instance.
     /// </summary>
     public sealed class BoothPropFactory
     {
+        public const string EnvironmentRootName = "BoothEnvironment";
+        public const string PondName = "Pond";
+
         public void EnsureLighting()
         {
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
@@ -22,28 +26,44 @@ namespace Fairground.View.Attractions.DuckFishing.Factories
             CreateDirectionalLight();
         }
 
-        public void CreateGround()
+        /// <summary>
+        /// Builds ground + wall + pond under a root. Used by Editor bake and runtime fallback.
+        /// </summary>
+        public GameObject CreateEnvironment()
+        {
+            var root = new GameObject(EnvironmentRootName);
+            CreateGround(root.transform);
+            CreateBoothBack(root.transform);
+            CreatePond(root.transform);
+            return root;
+        }
+
+        static void CreateGround(Transform parent)
         {
             var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
             ground.name = "Ground";
+            ground.transform.SetParent(parent, false);
             ground.transform.localScale = new Vector3(2f, 1f, 2f);
             PrimitiveMaterialApplier.Apply(ground, new Color(0.3f, 0.42f, 0.28f, 1f));
         }
 
-        public void CreateBoothBack()
+        static void CreateBoothBack(Transform parent)
         {
             var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             wall.name = "BoothBack";
-            wall.transform.position = new Vector3(0f, 1.4f, 4.4f);
+            wall.transform.SetParent(parent, false);
+            wall.transform.localPosition = new Vector3(0f, 1.4f, 4.4f);
             wall.transform.localScale = new Vector3(4.5f, 2.8f, 0.15f);
             PrimitiveMaterialApplier.Apply(wall, new Color(0.2f, 0.4f, 0.55f, 1f));
             DestroyCollider(wall);
         }
 
-        public Transform CreatePond()
+        public Transform CreatePond(Transform parent = null)
         {
-            var pond = new GameObject("Pond");
-            pond.transform.position = new Vector3(0f, 0f, 2.6f);
+            var pond = new GameObject(PondName);
+            if (parent != null)
+                pond.transform.SetParent(parent, false);
+            pond.transform.localPosition = new Vector3(0f, 0f, 2.6f);
 
             var basin = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             basin.name = "Basin";
@@ -77,8 +97,17 @@ namespace Fairground.View.Attractions.DuckFishing.Factories
         static void DestroyCollider(GameObject target)
         {
             var collider = target.GetComponent<Collider>();
-            if (collider != null)
-                Object.Destroy(collider);
+            if (collider == null)
+                return;
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                Object.DestroyImmediate(collider);
+                return;
+            }
+#endif
+            Object.Destroy(collider);
         }
     }
 }

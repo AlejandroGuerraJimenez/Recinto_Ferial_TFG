@@ -5,9 +5,12 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
 {
     /// <summary>
     /// Factory: booth environment props (ground, wall, light).
+    /// Prefer baking via Editor SceneBuilder; runtime uses prefab/scene instance.
     /// </summary>
     public sealed class BoothPropFactory
     {
+        public const string EnvironmentRootName = "BoothEnvironment";
+
         public void EnsureLighting()
         {
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
@@ -22,19 +25,32 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
             CreateDirectionalLight();
         }
 
-        public void CreateGround()
+        /// <summary>
+        /// Builds ground + back wall under a root. Used by Editor bake and runtime fallback.
+        /// </summary>
+        public GameObject CreateEnvironment()
+        {
+            var root = new GameObject(EnvironmentRootName);
+            CreateGround(root.transform);
+            CreateBoothBack(root.transform);
+            return root;
+        }
+
+        static void CreateGround(Transform parent)
         {
             var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
             ground.name = "Ground";
+            ground.transform.SetParent(parent, false);
             ground.transform.localScale = new Vector3(2f, 1f, 2f);
             PrimitiveMaterialApplier.Apply(ground, new Color(0.25f, 0.45f, 0.28f, 1f));
         }
 
-        public void CreateBoothBack()
+        static void CreateBoothBack(Transform parent)
         {
             var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             wall.name = "BoothBack";
-            wall.transform.position = new Vector3(0f, 1.4f, 4.2f);
+            wall.transform.SetParent(parent, false);
+            wall.transform.localPosition = new Vector3(0f, 1.4f, 4.2f);
             wall.transform.localScale = new Vector3(4.5f, 2.8f, 0.15f);
             PrimitiveMaterialApplier.Apply(wall, new Color(0.45f, 0.25f, 0.18f, 1f));
             DestroyCollider(wall);
@@ -53,8 +69,17 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
         static void DestroyCollider(GameObject target)
         {
             var collider = target.GetComponent<Collider>();
-            if (collider != null)
-                Object.Destroy(collider);
+            if (collider == null)
+                return;
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                Object.DestroyImmediate(collider);
+                return;
+            }
+#endif
+            Object.Destroy(collider);
         }
     }
 }

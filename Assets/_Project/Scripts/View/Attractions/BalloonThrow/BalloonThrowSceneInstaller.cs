@@ -1,16 +1,20 @@
 using Fairground.View.Attractions.BalloonThrow.Builders;
+using Fairground.View.Attractions.BalloonThrow.Factories;
 using Fairground.View.Attractions.Rendering;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.BalloonThrow
 {
     /// <summary>
-    /// Director: builds a playable Balloon Throw booth (opaque VR, no AR).
+    /// Director: wires a playable Balloon Throw booth (opaque VR, no AR).
+    /// Static booth props prefer baked scene/prefab over runtime CreatePrimitive.
     /// </summary>
     public sealed class BalloonThrowSceneInstaller : MonoBehaviour
     {
         [SerializeField] GameObject xrOriginPrefab;
         [SerializeField] Material primitiveLitTemplate;
+        [SerializeField] GameObject boothEnvironmentPrefab;
+        [SerializeField] Transform bakedBoothEnvironment;
         [SerializeField] int balloonCount = 6;
         [SerializeField] int startingThrows = 8;
         [SerializeField] bool buildOnAwake = true;
@@ -43,13 +47,33 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         void AssembleBooth()
         {
-            var builder = new BalloonThrowBoothBuilder(xrOriginPrefab)
-                .BuildEnvironment()
-                .BuildXrRig()
-                .BuildGameplay(balloonCount);
+            var builder = new BalloonThrowBoothBuilder(xrOriginPrefab);
+            BuildOrUseEnvironment(builder);
+            builder.BuildXrRig().BuildGameplay(balloonCount);
 
             WireGameplay(builder);
             builder.EnsureBallReady();
+        }
+
+        void BuildOrUseEnvironment(BalloonThrowBoothBuilder builder)
+        {
+            var baked = ResolveBakedEnvironment();
+            if (baked != null)
+            {
+                builder.UseBakedEnvironment(baked);
+                return;
+            }
+
+            builder.BuildEnvironment(boothEnvironmentPrefab);
+        }
+
+        Transform ResolveBakedEnvironment()
+        {
+            if (bakedBoothEnvironment != null)
+                return bakedBoothEnvironment;
+
+            var existing = GameObject.Find(BoothPropFactory.EnvironmentRootName);
+            return existing != null ? existing.transform : null;
         }
 
         void WireGameplay(BalloonThrowBoothBuilder builder)

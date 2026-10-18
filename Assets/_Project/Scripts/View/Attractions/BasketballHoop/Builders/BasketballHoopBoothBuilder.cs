@@ -16,6 +16,7 @@ namespace Fairground.View.Attractions.BasketballHoop.Builders
         readonly XrAttractionRigFactory _rigFactory;
 
         GameObject _xrOrigin;
+        GameObject _environment;
         BasketDetectorView _hoop;
         BallSpawnerView _spawner;
         BasketballHoopHudView _hud;
@@ -26,15 +27,34 @@ namespace Fairground.View.Attractions.BasketballHoop.Builders
         }
 
         public GameObject XrOrigin => _xrOrigin;
+        public GameObject Environment => _environment;
         public BasketDetectorView Hoop => _hoop;
         public BallSpawnerView Spawner => _spawner;
         public BasketballHoopHudView Hud => _hud;
 
-        public BasketballHoopBoothBuilder BuildEnvironment()
+        /// <summary>
+        /// Lighting only — booth mesh already present in the baked scene.
+        /// </summary>
+        public BasketballHoopBoothBuilder UseBakedEnvironment(Transform bakedRoot)
         {
             _boothFactory.EnsureLighting();
-            _boothFactory.CreateGround();
-            _boothFactory.CreateArcadeMachine();
+            _environment = bakedRoot != null ? bakedRoot.gameObject : null;
+            return this;
+        }
+
+        /// <summary>
+        /// Instantiates a prebuilt booth prefab, or falls back to CreatePrimitive factory.
+        /// </summary>
+        public BasketballHoopBoothBuilder BuildEnvironment(GameObject boothEnvironmentPrefab)
+        {
+            _boothFactory.EnsureLighting();
+            _environment = boothEnvironmentPrefab != null
+                ? Object.Instantiate(boothEnvironmentPrefab)
+                : _boothFactory.CreateEnvironment();
+
+            if (_environment != null)
+                _environment.name = BoothPropFactory.EnvironmentRootName;
+
             return this;
         }
 

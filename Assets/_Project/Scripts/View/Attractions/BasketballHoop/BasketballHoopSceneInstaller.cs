@@ -1,16 +1,20 @@
 using Fairground.View.Attractions.BasketballHoop.Builders;
+using Fairground.View.Attractions.BasketballHoop.Factories;
 using Fairground.View.Attractions.Rendering;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.BasketballHoop
 {
     /// <summary>
-    /// Director: builds a playable basketball arcade booth (opaque VR, no AR).
+    /// Director: wires a playable basketball arcade booth (opaque VR, no AR).
+    /// Static booth props prefer baked scene/prefab over runtime CreatePrimitive.
     /// </summary>
     public sealed class BasketballHoopSceneInstaller : MonoBehaviour
     {
         [SerializeField] GameObject xrOriginPrefab;
         [SerializeField] Material primitiveLitTemplate;
+        [SerializeField] GameObject boothEnvironmentPrefab;
+        [SerializeField] Transform bakedBoothEnvironment;
         [SerializeField] int pointsPerBasket = 2;
         [SerializeField] int startingBalls = 10;
         [SerializeField] int winScoreThreshold = 5;
@@ -44,13 +48,33 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         void AssembleBooth()
         {
-            var builder = new BasketballHoopBoothBuilder(xrOriginPrefab)
-                .BuildEnvironment()
-                .BuildXrRig()
-                .BuildGameplay();
+            var builder = new BasketballHoopBoothBuilder(xrOriginPrefab);
+            BuildOrUseEnvironment(builder);
+            builder.BuildXrRig().BuildGameplay();
 
             WireGameplay(builder);
             builder.EnsureBallReady();
+        }
+
+        void BuildOrUseEnvironment(BasketballHoopBoothBuilder builder)
+        {
+            var baked = ResolveBakedEnvironment();
+            if (baked != null)
+            {
+                builder.UseBakedEnvironment(baked);
+                return;
+            }
+
+            builder.BuildEnvironment(boothEnvironmentPrefab);
+        }
+
+        Transform ResolveBakedEnvironment()
+        {
+            if (bakedBoothEnvironment != null)
+                return bakedBoothEnvironment;
+
+            var existing = GameObject.Find(BoothPropFactory.EnvironmentRootName);
+            return existing != null ? existing.transform : null;
         }
 
         void WireGameplay(BasketballHoopBoothBuilder builder)

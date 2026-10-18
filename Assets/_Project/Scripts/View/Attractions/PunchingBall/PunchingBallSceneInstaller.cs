@@ -1,16 +1,20 @@
 using Fairground.View.Attractions.PunchingBall.Builders;
+using Fairground.View.Attractions.PunchingBall.Factories;
 using Fairground.View.Attractions.Rendering;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.PunchingBall
 {
     /// <summary>
-    /// Director: builds a playable Punching Ball booth (opaque VR, no AR).
+    /// Director: wires a playable Punching Ball booth (opaque VR, no AR).
+    /// Static booth props prefer baked scene/prefab over runtime CreatePrimitive.
     /// </summary>
     public sealed class PunchingBallSceneInstaller : MonoBehaviour
     {
         [SerializeField] GameObject xrOriginPrefab;
         [SerializeField] Material primitiveLitTemplate;
+        [SerializeField] GameObject boothEnvironmentPrefab;
+        [SerializeField] Transform bakedBoothEnvironment;
         [SerializeField] int startingPunches = 5;
         [SerializeField] int winScoreThreshold = 700;
         [SerializeField] int maxScore = 999;
@@ -45,12 +49,32 @@ namespace Fairground.View.Attractions.PunchingBall
 
         void AssembleBooth()
         {
-            var builder = new PunchingBallBoothBuilder(xrOriginPrefab)
-                .BuildEnvironment()
-                .BuildXrRig()
-                .BuildGameplay();
+            var builder = new PunchingBallBoothBuilder(xrOriginPrefab);
+            BuildOrUseEnvironment(builder);
+            builder.BuildXrRig().BuildGameplay();
 
             WireGameplay(builder);
+        }
+
+        void BuildOrUseEnvironment(PunchingBallBoothBuilder builder)
+        {
+            var baked = ResolveBakedEnvironment();
+            if (baked != null)
+            {
+                builder.UseBakedEnvironment(baked);
+                return;
+            }
+
+            builder.BuildEnvironment(boothEnvironmentPrefab);
+        }
+
+        Transform ResolveBakedEnvironment()
+        {
+            if (bakedBoothEnvironment != null)
+                return bakedBoothEnvironment;
+
+            var existing = GameObject.Find(BoothPropFactory.EnvironmentRootName);
+            return existing != null ? existing.transform : null;
         }
 
         void WireGameplay(PunchingBallBoothBuilder builder)
