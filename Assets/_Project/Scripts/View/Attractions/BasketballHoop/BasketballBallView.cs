@@ -24,6 +24,7 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         public event Action<BasketballBallView> Thrown;
         public event Action<BasketballBallView> Resolved;
+        public event Action<BasketballBallView> Destroyed;
         public bool IsThrown => _isThrown;
         public bool AlreadyScored => _alreadyScored;
 
@@ -40,6 +41,7 @@ namespace Fairground.View.Attractions.BasketballHoop
             if (_grabInteractable != null)
                 _grabInteractable.selectExited.RemoveListener(OnSelectExited);
             NotifyResolved();
+            Destroyed?.Invoke(this);
         }
 
         void Update()

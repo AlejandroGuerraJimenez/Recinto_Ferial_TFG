@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
@@ -13,6 +14,7 @@ namespace Fairground.View.Attractions.BasketballHoop
         [SerializeField] Transform spawnPoint;
         [SerializeField] float respawnDelay = 0.35f;
 
+        readonly HashSet<BasketballBallView> _liveBalls = new HashSet<BasketballBallView>();
         BasketballBallView _currentBall;
         float _respawnAt = -1f;
         bool _spawningEnabled = true;
@@ -81,9 +83,32 @@ namespace Fairground.View.Attractions.BasketballHoop
             Transform point = spawnPoint != null ? spawnPoint : transform;
             var ball = Instantiate(ballPrefab, point.position, point.rotation);
             ball.gameObject.SetActive(true);
+            RegisterBall(ball);
             ball.Thrown += OnBallThrown;
             ResetPhysics(ball);
             return ball;
+        }
+
+        void RegisterBall(BasketballBallView ball)
+        {
+            if (ball == null || !_liveBalls.Add(ball))
+                return;
+
+            ball.Destroyed += OnBallDestroyed;
+        }
+
+        void OnBallDestroyed(BasketballBallView ball)
+        {
+            if (ball != null)
+            {
+                ball.Thrown -= OnBallThrown;
+                ball.Destroyed -= OnBallDestroyed;
+            }
+
+            _liveBalls.Remove(ball);
+
+            if (_currentBall == ball)
+                _currentBall = null;
         }
 
         static void ResetPhysics(BasketballBallView ball)
@@ -109,15 +134,25 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         public void Reset()
         {
-            if (_currentBall != null)
-            {
-                _currentBall.Thrown -= OnBallThrown;
-                Destroy(_currentBall.gameObject);
-                _currentBall = null;
-            }
-
             _respawnAt = -1f;
             _spawningEnabled = true;
+            _currentBall = null;
+
+            if (_liveBalls.Count == 0)
+                return;
+
+            var snapshot = new List<BasketballBallView>(_liveBalls);
+            foreach (var ball in snapshot)
+            {
+                if (ball == null)
+                    continue;
+
+                ball.Thrown -= OnBallThrown;
+                ball.Destroyed -= OnBallDestroyed;
+                Destroy(ball.gameObject);
+            }
+
+            _liveBalls.Clear();
         }
 
         void ClearIdleBall()
@@ -125,8 +160,9 @@ namespace Fairground.View.Attractions.BasketballHoop
             if (_currentBall == null || _currentBall.IsThrown)
                 return;
 
-            Destroy(_currentBall.gameObject);
+            var ball = _currentBall;
             _currentBall = null;
+            Destroy(ball.gameObject);
         }
 
         static void DisableGrab(BasketballBallView ball)

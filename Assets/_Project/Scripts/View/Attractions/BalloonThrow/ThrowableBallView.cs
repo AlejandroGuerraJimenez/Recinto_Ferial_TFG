@@ -23,6 +23,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         public event Action<ThrowableBallView> Thrown;
         public event Action<ThrowableBallView> Resolved;
+        public event Action<ThrowableBallView> Destroyed;
         public bool IsThrown => _isThrown;
 
         void Awake()
@@ -38,6 +39,7 @@ namespace Fairground.View.Attractions.BalloonThrow
             if (_grabInteractable != null)
                 _grabInteractable.selectExited.RemoveListener(OnSelectExited);
             NotifyResolved();
+            Destroyed?.Invoke(this);
         }
 
         void Update()

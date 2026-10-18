@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Fairground.Core.Attractions;
 using Fairground.ViewModel.Attractions.BasketballHoop;
 using UnityEngine;
@@ -19,6 +20,7 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         BasketballHoopViewModel _viewModel;
         BasketballHoopInput _input;
+        readonly HashSet<BasketballBallView> _liveBalls = new HashSet<BasketballBallView>();
 
         public AttractionId AttractionId => AttractionId.BasketballHoop;
         public BasketballHoopViewModel ViewModel => _viewModel;
@@ -124,10 +126,36 @@ namespace Fairground.View.Attractions.BasketballHoop
             if (ball == null)
                 return;
 
+            RegisterBall(ball);
             ball.Thrown -= OnBallThrown;
             ball.Thrown += OnBallThrown;
             ball.Resolved -= OnBallResolved;
             ball.Resolved += OnBallResolved;
+        }
+
+        void RegisterBall(BasketballBallView ball)
+        {
+            if (!_liveBalls.Add(ball))
+                return;
+
+            ball.Destroyed += OnBallDestroyed;
+        }
+
+        void OnBallDestroyed(BasketballBallView ball)
+        {
+            UnregisterBall(ball);
+        }
+
+        void UnregisterBall(BasketballBallView ball)
+        {
+            if (ball != null)
+            {
+                ball.Thrown -= OnBallThrown;
+                ball.Resolved -= OnBallResolved;
+                ball.Destroyed -= OnBallDestroyed;
+            }
+
+            _liveBalls.Remove(ball);
         }
 
         void Unsubscribe()
@@ -143,19 +171,21 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         void UnsubscribeBalls()
         {
-            foreach (var ball in FindObjectsByType<BasketballBallView>(FindObjectsSortMode.None))
-            {
-                if (ball == null)
-                    continue;
+            if (_liveBalls.Count == 0)
+                return;
 
-                ball.Thrown -= OnBallThrown;
-                ball.Resolved -= OnBallResolved;
-            }
+            var snapshot = new List<BasketballBallView>(_liveBalls);
+            foreach (var ball in snapshot)
+                UnregisterBall(ball);
         }
 
         void OnBallThrown(BasketballBallView ball) => Forward(_viewModel.NotifyBallThrown);
 
-        void OnBallResolved(BasketballBallView ball) => Forward(_viewModel.NotifyThrowResolved);
+        void OnBallResolved(BasketballBallView ball)
+        {
+            Forward(_viewModel.NotifyThrowResolved);
+            UnregisterBall(ball);
+        }
 
         void OnBasket(BasketballBallView ball) => Forward(_viewModel.NotifyBasket);
 
@@ -192,9 +222,22 @@ namespace Fairground.View.Attractions.BasketballHoop
         void ClearBalls()
         {
             ballSpawner?.Reset();
-            foreach (var ball in FindObjectsByType<BasketballBallView>(FindObjectsSortMode.None))
-                if (ball != null)
-                    Destroy(ball.gameObject);
+
+            if (_liveBalls.Count == 0)
+                return;
+
+            var snapshot = new List<BasketballBallView>(_liveBalls);
+            _liveBalls.Clear();
+            foreach (var ball in snapshot)
+            {
+                if (ball == null)
+                    continue;
+
+                ball.Thrown -= OnBallThrown;
+                ball.Resolved -= OnBallResolved;
+                ball.Destroyed -= OnBallDestroyed;
+                Destroy(ball.gameObject);
+            }
         }
 
         public void ReturnToFairground()

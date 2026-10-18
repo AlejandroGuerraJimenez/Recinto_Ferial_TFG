@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BalloonThrow.Factories;
 using Fairground.ViewModel.Attractions.BalloonThrow;
@@ -20,6 +21,7 @@ namespace Fairground.View.Attractions.BalloonThrow
         BalloonThrowViewModel _viewModel;
         BalloonThrowInput _input;
         readonly BalloonTargetFactory _balloonFactory = new BalloonTargetFactory();
+        readonly HashSet<ThrowableBallView> _liveBalls = new HashSet<ThrowableBallView>();
         Transform _balloonRoot;
 
         public AttractionId AttractionId => AttractionId.BalloonThrow;
@@ -128,10 +130,36 @@ namespace Fairground.View.Attractions.BalloonThrow
             if (ball == null)
                 return;
 
+            RegisterBall(ball);
             ball.Thrown -= OnBallThrown;
             ball.Thrown += OnBallThrown;
             ball.Resolved -= OnBallResolved;
             ball.Resolved += OnBallResolved;
+        }
+
+        void RegisterBall(ThrowableBallView ball)
+        {
+            if (!_liveBalls.Add(ball))
+                return;
+
+            ball.Destroyed += OnBallDestroyed;
+        }
+
+        void OnBallDestroyed(ThrowableBallView ball)
+        {
+            UnregisterBall(ball);
+        }
+
+        void UnregisterBall(ThrowableBallView ball)
+        {
+            if (ball != null)
+            {
+                ball.Thrown -= OnBallThrown;
+                ball.Resolved -= OnBallResolved;
+                ball.Destroyed -= OnBallDestroyed;
+            }
+
+            _liveBalls.Remove(ball);
         }
 
         void Unsubscribe()
@@ -155,19 +183,21 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         void UnsubscribeBalls()
         {
-            foreach (var ball in FindObjectsByType<ThrowableBallView>(FindObjectsSortMode.None))
-            {
-                if (ball == null)
-                    continue;
+            if (_liveBalls.Count == 0)
+                return;
 
-                ball.Thrown -= OnBallThrown;
-                ball.Resolved -= OnBallResolved;
-            }
+            var snapshot = new List<ThrowableBallView>(_liveBalls);
+            foreach (var ball in snapshot)
+                UnregisterBall(ball);
         }
 
         void OnBallThrown(ThrowableBallView ball) => Forward(_viewModel.NotifyBallThrown);
 
-        void OnBallResolved(ThrowableBallView ball) => Forward(_viewModel.NotifyThrowResolved);
+        void OnBallResolved(ThrowableBallView ball)
+        {
+            Forward(_viewModel.NotifyThrowResolved);
+            UnregisterBall(ball);
+        }
 
         void OnBalloonPopped(BalloonTargetView balloon) => Forward(_viewModel.NotifyBalloonHit);
 
@@ -205,9 +235,22 @@ namespace Fairground.View.Attractions.BalloonThrow
         void ClearBalls()
         {
             ballSpawner?.Reset();
-            foreach (var ball in FindObjectsByType<ThrowableBallView>(FindObjectsSortMode.None))
-                if (ball != null)
-                    Destroy(ball.gameObject);
+
+            if (_liveBalls.Count == 0)
+                return;
+
+            var snapshot = new List<ThrowableBallView>(_liveBalls);
+            _liveBalls.Clear();
+            foreach (var ball in snapshot)
+            {
+                if (ball == null)
+                    continue;
+
+                ball.Thrown -= OnBallThrown;
+                ball.Resolved -= OnBallResolved;
+                ball.Destroyed -= OnBallDestroyed;
+                Destroy(ball.gameObject);
+            }
         }
 
         void RebuildBalloons()
