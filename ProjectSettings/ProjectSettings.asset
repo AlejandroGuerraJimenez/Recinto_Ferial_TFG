@@ -151,10 +151,7 @@ PlayerSettings:
   tvOSBundleVersion: 1.0
   bundleVersion: 1.0
   preloadedAssets:
-  - {fileID: 11400000, guid: f528076899606a94e8ce5ac5f5647e43, type: 2}
   - {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  - {fileID: 1238752749305978192, guid: 89d0325cb477812408c5233007a92ef8, type: 2}
-  - {fileID: -1988065571228605008, guid: 73a258487ee857d48a771bb18d77170c, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   xboxOneDisableKinectGpuReservation: 1
