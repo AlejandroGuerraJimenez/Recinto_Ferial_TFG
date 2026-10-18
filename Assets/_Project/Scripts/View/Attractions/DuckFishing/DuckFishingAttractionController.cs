@@ -1,5 +1,6 @@
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.DuckFishing.Factories;
+using Fairground.ViewModel;
 using Fairground.ViewModel.Attractions.DuckFishing;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -191,6 +192,7 @@ namespace Fairground.View.Attractions.DuckFishing
 
         public void ReturnToFairground()
         {
+            FairgroundSession.Clear();
             SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }

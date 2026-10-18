@@ -1,3 +1,4 @@
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.BasketballHoop.Builders;
 using Fairground.View.Attractions.BasketballHoop.Factories;
 using Fairground.View.Attractions.Rendering;
@@ -51,6 +52,7 @@ namespace Fairground.View.Attractions.BasketballHoop
             var builder = new BasketballHoopBoothBuilder(xrOriginPrefab);
             BuildOrUseEnvironment(builder);
             builder.BuildXrRig().BuildGameplay();
+            AttractionPlacement.TryApplyFromSession(builder.BoothSpaceRoots());
 
             WireGameplay(builder);
             builder.EnsureBallReady();

@@ -85,5 +85,17 @@ namespace Fairground.View.Attractions.DuckFishing.Builders
             _hud = _hudFactory.Create();
             return this;
         }
+
+        /// <summary>
+        /// Booth content only (pond/ducks live under environment). Rod stays on XR.
+        /// </summary>
+        public Transform[] BoothSpaceRoots()
+        {
+            return new[]
+            {
+                _environment != null ? _environment.transform : null,
+                _hud != null ? _hud.transform : null,
+            };
+        }
     }
 }

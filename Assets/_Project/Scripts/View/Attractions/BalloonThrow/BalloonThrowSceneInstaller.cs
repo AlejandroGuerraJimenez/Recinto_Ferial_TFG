@@ -1,3 +1,4 @@
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.BalloonThrow.Builders;
 using Fairground.View.Attractions.BalloonThrow.Factories;
 using Fairground.View.Attractions.Rendering;
@@ -50,6 +51,7 @@ namespace Fairground.View.Attractions.BalloonThrow
             var builder = new BalloonThrowBoothBuilder(xrOriginPrefab);
             BuildOrUseEnvironment(builder);
             builder.BuildXrRig().BuildGameplay(balloonCount);
+            AttractionPlacement.TryApplyFromSession(builder.BoothSpaceRoots());
 
             WireGameplay(builder);
             builder.EnsureBallReady();

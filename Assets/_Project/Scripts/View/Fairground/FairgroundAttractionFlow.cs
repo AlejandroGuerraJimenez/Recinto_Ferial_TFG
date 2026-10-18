@@ -30,7 +30,7 @@ namespace Fairground.View
 
         void HandlePlaneSelected(DetectedPlane plane)
         {
-            FairgroundSession.Remember(plane);
+            FairgroundSession.Remember(plane, attractionId);
             SceneManager.LoadScene(AttractionScenes.GetSceneName(attractionId));
         }
     }

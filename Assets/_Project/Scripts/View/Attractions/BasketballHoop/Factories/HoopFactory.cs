@@ -14,36 +14,40 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
 
         public BasketDetectorView Create()
         {
-            CreateBackboard();
-            Transform rim = CreateRim();
-            CreateSupport(rim);
+            var root = new GameObject("HoopAssembly");
+            CreateBackboard(root.transform);
+            Transform rim = CreateRim(root.transform);
+            CreateSupport(root.transform);
             return CreateDetector(rim);
         }
 
-        static void CreateBackboard()
+        static void CreateBackboard(Transform parent)
         {
             var board = GameObject.CreatePrimitive(PrimitiveType.Cube);
             board.name = "Backboard";
-            board.transform.position = BasketballHoopLayout.BackboardPosition;
+            board.transform.SetParent(parent, false);
+            board.transform.localPosition = BasketballHoopLayout.BackboardPosition;
             board.transform.localScale = new Vector3(1.2f, 1.15f, 0.06f);
             PrimitiveMaterialApplier.Apply(board, new Color(0.93f, 0.94f, 0.96f, 1f));
-            CreateTargetSquare();
+            CreateTargetSquare(parent);
         }
 
-        static void CreateTargetSquare()
+        static void CreateTargetSquare(Transform parent)
         {
             var square = GameObject.CreatePrimitive(PrimitiveType.Cube);
             square.name = "TargetSquare";
-            square.transform.position = BasketballHoopLayout.BackboardPosition + new Vector3(0f, 0.08f, -0.05f);
+            square.transform.SetParent(parent, false);
+            square.transform.localPosition = BasketballHoopLayout.BackboardPosition + new Vector3(0f, 0.08f, -0.05f);
             square.transform.localScale = new Vector3(0.36f, 0.32f, 0.02f);
             DestroyCollider(square);
             PrimitiveMaterialApplier.Apply(square, new Color(0.85f, 0.15f, 0.12f, 1f));
         }
 
-        static Transform CreateRim()
+        static Transform CreateRim(Transform parent)
         {
             var rim = new GameObject("Rim");
-            rim.transform.position = BasketballHoopLayout.RimPosition;
+            rim.transform.SetParent(parent, false);
+            rim.transform.localPosition = BasketballHoopLayout.RimPosition;
             var tube = new GameObject("RimTube");
             tube.transform.SetParent(rim.transform, false);
 
@@ -111,15 +115,19 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
             }
         }
 
-        static void CreateSupport(Transform rim)
+        static void CreateSupport(Transform parent)
         {
             // Short bracket on the back of the ring, clear of the opening.
             float boardFrontZ = BasketballHoopLayout.BackboardPosition.z - 0.02f;
-            float rearRingZ = rim.position.z + RimRadius;
+            float rearRingZ = BasketballHoopLayout.RimPosition.z + RimRadius;
             float length = Mathf.Max(0.08f, boardFrontZ - rearRingZ + RimThickness);
             var arm = GameObject.CreatePrimitive(PrimitiveType.Cube);
             arm.name = "RimSupport";
-            arm.transform.position = new Vector3(rim.position.x, rim.position.y, rearRingZ + length * 0.5f - RimThickness);
+            arm.transform.SetParent(parent, false);
+            arm.transform.localPosition = new Vector3(
+                BasketballHoopLayout.RimPosition.x,
+                BasketballHoopLayout.RimPosition.y,
+                rearRingZ + length * 0.5f - RimThickness);
             arm.transform.localScale = new Vector3(0.08f, 0.035f, length);
             PrimitiveMaterialApplier.Apply(arm, new Color(0.75f, 0.75f, 0.78f, 1f));
         }

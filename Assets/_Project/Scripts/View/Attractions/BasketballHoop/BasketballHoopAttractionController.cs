@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Fairground.Core.Attractions;
+using Fairground.ViewModel;
 using Fairground.ViewModel.Attractions.BasketballHoop;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -242,6 +243,7 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         public void ReturnToFairground()
         {
+            FairgroundSession.Clear();
             SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }

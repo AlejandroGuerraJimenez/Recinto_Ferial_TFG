@@ -79,5 +79,23 @@ namespace Fairground.View.Attractions.BalloonThrow.Builders
             if (_spawner != null && _spawner.CurrentBall == null)
                 _spawner.TrySpawnImmediate();
         }
+
+        /// <summary>
+        /// Top-level booth-space roots to place with <see cref="AttractionPlacement"/>.
+        /// </summary>
+        public Transform[] BoothSpaceRoots()
+        {
+            Transform balloonsRoot = null;
+            if (_balloons != null && _balloons.Length > 0 && _balloons[0] != null)
+                balloonsRoot = _balloons[0].transform.parent;
+
+            return new[]
+            {
+                _environment != null ? _environment.transform : null,
+                balloonsRoot,
+                _spawner != null ? _spawner.transform : null,
+                _hud != null ? _hud.transform : null,
+            };
+        }
     }
 }

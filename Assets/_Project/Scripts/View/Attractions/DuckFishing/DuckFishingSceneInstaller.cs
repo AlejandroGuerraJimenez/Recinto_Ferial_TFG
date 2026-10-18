@@ -1,3 +1,4 @@
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.DuckFishing.Builders;
 using Fairground.View.Attractions.DuckFishing.Factories;
 using Fairground.View.Attractions.Rendering;
@@ -52,6 +53,7 @@ namespace Fairground.View.Attractions.DuckFishing
             var builder = new DuckFishingBoothBuilder(xrOriginPrefab);
             BuildOrUseEnvironment(builder);
             builder.BuildXrRig().BuildGameplay(duckCount);
+            AttractionPlacement.TryApplyFromSession(builder.BoothSpaceRoots());
 
             WireGameplay(builder);
         }

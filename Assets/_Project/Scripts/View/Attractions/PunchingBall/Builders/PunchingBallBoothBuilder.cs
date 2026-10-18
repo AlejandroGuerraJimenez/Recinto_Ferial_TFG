@@ -74,5 +74,19 @@ namespace Fairground.View.Attractions.PunchingBall.Builders
             _hud = _hudFactory.Create();
             return this;
         }
+
+        /// <summary>
+        /// Top-level booth-space roots to place with AttractionPlacement.
+        /// </summary>
+        public Transform[] BoothSpaceRoots()
+        {
+            return new[]
+            {
+                _environment != null ? _environment.transform : null,
+                _pad != null ? _pad.transform.root : null,
+                _meter != null ? _meter.transform.root : null,
+                _hud != null ? _hud.transform : null,
+            };
+        }
     }
 }

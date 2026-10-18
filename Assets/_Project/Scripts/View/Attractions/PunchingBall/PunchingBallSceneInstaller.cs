@@ -1,3 +1,4 @@
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.PunchingBall.Builders;
 using Fairground.View.Attractions.PunchingBall.Factories;
 using Fairground.View.Attractions.Rendering;
@@ -52,6 +53,7 @@ namespace Fairground.View.Attractions.PunchingBall
             var builder = new PunchingBallBoothBuilder(xrOriginPrefab);
             BuildOrUseEnvironment(builder);
             builder.BuildXrRig().BuildGameplay();
+            AttractionPlacement.TryApplyFromSession(builder.BoothSpaceRoots());
 
             WireGameplay(builder);
         }

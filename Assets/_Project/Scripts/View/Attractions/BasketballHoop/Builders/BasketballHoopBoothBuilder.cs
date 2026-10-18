@@ -79,5 +79,27 @@ namespace Fairground.View.Attractions.BasketballHoop.Builders
             if (_spawner != null && _spawner.CurrentBall == null)
                 _spawner.TrySpawnImmediate();
         }
+
+        /// <summary>
+        /// Top-level booth-space roots to place with AttractionPlacement.
+        /// </summary>
+        public Transform[] BoothSpaceRoots()
+        {
+            Transform hoopRoot = null;
+            if (_hoop != null)
+            {
+                hoopRoot = _hoop.transform;
+                while (hoopRoot.parent != null)
+                    hoopRoot = hoopRoot.parent;
+            }
+
+            return new[]
+            {
+                _environment != null ? _environment.transform : null,
+                hoopRoot,
+                _spawner != null ? _spawner.transform : null,
+                _hud != null ? _hud.transform : null,
+            };
+        }
     }
 }

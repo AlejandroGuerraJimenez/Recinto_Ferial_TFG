@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BalloonThrow.Factories;
+using Fairground.ViewModel;
 using Fairground.ViewModel.Attractions.BalloonThrow;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -260,6 +261,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
             balloons = _balloonFactory.CreateRow(_viewModel.BalloonCount);
             RememberBalloonRoot();
+            global::Fairground.View.Attractions.AttractionPlacement.TryApplyFromSession(_balloonRoot);
         }
 
         void RememberBalloonRoot()
@@ -272,6 +274,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         public void ReturnToFairground()
         {
+            FairgroundSession.Clear();
             SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }
