@@ -25,6 +25,12 @@ namespace Fairground.Tests.EditMode.Attractions
             AssertSceneEnabled(AttractionId.BasketballHoop);
         }
 
+        [Test]
+        public void FerrisWheelScene_IsEnabledInBuildSettings()
+        {
+            AssertSceneEnabled(AttractionId.FerrisWheel);
+        }
+
         static void AssertSceneEnabled(AttractionId attractionId)
         {
             string path = AttractionScenes.GetScenePath(attractionId);
