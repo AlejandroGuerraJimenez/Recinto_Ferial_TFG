@@ -9,10 +9,12 @@
         "Unity.XR.ARSubsystems",
         "Unity.XR.CoreUtils",
         "Unity.XR.Management",
+        "Unity.XR.MetaOpenXR",
         "Unity.XR.Interaction.Toolkit",
         "Unity.InputSystem",
         "Unity.RenderPipelines.Universal.Runtime",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

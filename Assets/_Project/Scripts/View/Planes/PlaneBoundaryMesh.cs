@@ -15,7 +15,9 @@ namespace Fairground.View
             return mesh;
         }
 
-        public static Vector3 Outline(Vector2 point) => new Vector3(point.x, 0.005f, point.y);
+        public const float Lift = 0.02f;
+
+        public static Vector3 Outline(Vector2 point) => new Vector3(point.x, Lift, point.y);
 
         static bool CanBuild(IReadOnlyList<Vector2> boundary) => boundary != null && boundary.Count >= 3;
 
@@ -31,7 +33,7 @@ namespace Fairground.View
         {
             var vertices = new Vector3[boundary.Count];
             for (var i = 0; i < boundary.Count; i++)
-                vertices[i] = new Vector3(boundary[i].x, 0f, boundary[i].y);
+                vertices[i] = new Vector3(boundary[i].x, Lift, boundary[i].y);
             return vertices;
         }
 

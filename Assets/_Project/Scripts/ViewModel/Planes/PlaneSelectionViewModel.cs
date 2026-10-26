@@ -27,7 +27,7 @@ namespace Fairground.ViewModel
 
         public bool SelectPlane(DetectedPlane plane) => _context.State.Select(_context, plane);
 
-        public bool IsSelectable(DetectedPlane plane) => PlaneCandidateFilter.TryGetPriority(plane, out _);
+        public bool IsSelectable(DetectedPlane plane) => PlaneCandidateFilter.TryRank(plane, out _);
 
         public void RestartSelection() => _context.State.Restart(_context);
 

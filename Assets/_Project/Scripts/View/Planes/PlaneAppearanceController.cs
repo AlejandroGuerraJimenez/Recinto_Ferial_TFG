@@ -1,6 +1,5 @@
 using Fairground.ViewModel;
 using UnityEngine.XR.ARFoundation;
-using UnityEngine.XR.ARSubsystems;
 
 namespace Fairground.View
 {
@@ -17,9 +16,23 @@ namespace Fairground.View
             _aim = aim;
         }
 
+        public PlaneSurfaceVisual Proposal { get; private set; }
+
         public void Apply(PlaneSelectionState state)
         {
+            Proposal = Choose();
             _catalog.ForEach(visual => visual.ApplyStyle(Style(state, visual)));
+        }
+
+        PlaneSurfaceVisual Choose()
+        {
+            PlaneSurfaceVisual best = null;
+            _catalog.ForEach(visual =>
+            {
+                if (visual != null && visual.IsCandidate && (best == null || visual.Rank.CompareTo(best.Rank) > 0))
+                    best = visual;
+            });
+            return best;
         }
 
         PlaneVisualStyle Style(PlaneSelectionState state, PlaneSurfaceVisual visual)
@@ -28,17 +41,14 @@ namespace Fairground.View
                 return LockedStyle(visual);
             if (!CanShow(visual))
                 return PlaneVisualStyle.Hidden;
-            return _aim.Hovered == visual ? PlaneVisualStyle.Highlighted : IdleOrDim();
+            if (_aim.Hovered == visual)
+                return PlaneVisualStyle.Highlighted;
+            return visual == Proposal ? PlaneVisualStyle.Proposed : PlaneVisualStyle.Dimmed;
         }
 
         PlaneVisualStyle LockedStyle(PlaneSurfaceVisual visual)
         {
             return visual == _pointer.Selected ? PlaneVisualStyle.Selected : PlaneVisualStyle.Hidden;
-        }
-
-        PlaneVisualStyle IdleOrDim()
-        {
-            return _aim.Hovered != null ? PlaneVisualStyle.Dimmed : PlaneVisualStyle.Idle;
         }
 
         static bool CanShow(PlaneSurfaceVisual visual)
@@ -54,10 +64,7 @@ namespace Fairground.View
 
         static bool IsTracked(ARPlane plane)
         {
-            if (plane.subsumedBy != null)
-                return false;
-
-            return plane.trackingState >= TrackingState.Limited && ARSession.state > ARSessionState.Ready;
+            return plane.subsumedBy == null;
         }
     }
 }

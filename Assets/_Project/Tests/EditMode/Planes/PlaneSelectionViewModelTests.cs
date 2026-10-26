@@ -16,10 +16,10 @@ namespace Fairground.Tests.EditMode
         }
 
         [Test]
-        public void SelectPlane_RejectsSecondConfirm_AndNonCandidates()
+        public void SelectPlane_RejectsSecondConfirm_AndAcceptsAWall()
         {
             AssertSecondConfirmIsIgnored();
-            AssertFloorIsRejected();
+            AssertWallIsSelectable();
         }
 
         [Test]
@@ -57,12 +57,12 @@ namespace Fairground.Tests.EditMode
             Assert.AreEqual(1, received);
         }
 
-        static void AssertFloorIsRejected()
+        static void AssertWallIsSelectable()
         {
             var fresh = new PlaneSelectionViewModel();
-            Assert.IsFalse(fresh.SelectPlane(Floor()));
-            Assert.AreEqual(PlaneSelectionState.AwaitingSelection, fresh.State);
-            Assert.IsFalse(fresh.SelectedPlane.HasValue);
+            Assert.IsTrue(fresh.SelectPlane(Wall()));
+            Assert.AreEqual(PlaneSelectionState.PlaneSelected, fresh.State);
+            Assert.AreEqual("wall", fresh.SelectedPlane?.Id);
         }
 
         static PlaneSelectionViewModel Counting(Tally states)
@@ -79,13 +79,16 @@ namespace Fairground.Tests.EditMode
             Assert.AreEqual(2, states);
             Assert.IsTrue(viewModel.SelectPlane(UnlabeledHorizontal()));
             Assert.AreEqual("open", viewModel.SelectedPlane?.Id);
+            Assert.IsTrue(new PlaneSelectionViewModel().SelectPlane(HorizontalFloor()));
         }
 
         static DetectedPlane Table() => Surface("table", PlaneSemanticClassification.Table, PlaneAlignmentKind.HorizontalUp);
 
         static DetectedPlane UnlabeledHorizontal() => Surface("open", PlaneSemanticClassification.Unknown, PlaneAlignmentKind.HorizontalUp);
 
-        static DetectedPlane Floor() => Surface("floor", PlaneSemanticClassification.Other, PlaneAlignmentKind.HorizontalUp);
+        static DetectedPlane Wall() => Surface("wall", PlaneSemanticClassification.Wall, PlaneAlignmentKind.HorizontalUp);
+
+        static DetectedPlane HorizontalFloor() => Surface("room-floor", PlaneSemanticClassification.Floor, PlaneAlignmentKind.HorizontalUp);
 
         static DetectedPlane Surface(string id, PlaneSemanticClassification classification, PlaneAlignmentKind alignment)
         {

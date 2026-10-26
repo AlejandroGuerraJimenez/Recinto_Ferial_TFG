@@ -10,6 +10,8 @@ namespace Fairground.View
         readonly List<PlaneSurfaceVisual> _visuals = new List<PlaneSurfaceVisual>();
         readonly Dictionary<string, PlaneSurfaceVisual> _byId = new Dictionary<string, PlaneSurfaceVisual>();
 
+        public int Count => _visuals.Count;
+
         public void Track(PlaneSurfaceVisual visual)
         {
             var id = visual.Snapshot.Id;

@@ -12,12 +12,14 @@ namespace Fairground.View
         Dimmed = 2,
         Highlighted = 3,
         Selected = 4,
+        Proposed = 5,
     }
 
     /// <summary>
     /// Semi-transparent fill plus a boundary line for one detected surface.
     /// </summary>
     [DisallowMultipleComponent]
+    [DefaultExecutionOrder(100)]
     public sealed class PlaneSurfaceVisual : MonoBehaviour
     {
         [SerializeField] Material m_FillMaterial;
@@ -39,6 +41,8 @@ namespace Fairground.View
 
         public bool IsCandidate { get; private set; }
 
+        public PlaneRank Rank { get; private set; }
+
         public Material FillTemplate => m_FillMaterial;
 
         public Material BorderTemplate => m_BorderMaterial;
@@ -46,6 +50,19 @@ namespace Fairground.View
         public ARPlane Trackable => _arPlane;
 
         void Awake() => EnsureInitialized();
+
+        void OnEnable()
+        {
+            EnsureInitialized();
+            if (_arPlane != null)
+                _arPlane.boundaryChanged += Lift;
+        }
+
+        void OnDisable()
+        {
+            if (_arPlane != null)
+                _arPlane.boundaryChanged -= Lift;
+        }
 
         void OnDestroy()
         {
@@ -61,12 +78,21 @@ namespace Fairground.View
             RebuildMaterialInstances();
         }
 
-        public void Bind(DetectedPlane snapshot, bool isCandidate)
+        public void ApplySnapshot(DetectedPlane snapshot, bool isCandidate, PlaneRank rank)
         {
+            var changed = !HasSnapshot || IsCandidate != isCandidate || !Same(Snapshot, snapshot);
             Snapshot = snapshot;
             HasSnapshot = true;
             IsCandidate = isCandidate;
-            _appliedStyle = (PlaneVisualStyle)(-1);
+            Rank = rank;
+            if (changed)
+                _appliedStyle = (PlaneVisualStyle)(-1);
+        }
+
+        public void Bind(DetectedPlane snapshot, bool isCandidate)
+        {
+            var rank = isCandidate && PlaneCandidateFilter.TryRank(snapshot, out var scored) ? scored : default;
+            ApplySnapshot(snapshot, isCandidate, rank);
         }
 
         public void BuildStandaloneMesh(IReadOnlyList<Vector2> boundary)
@@ -79,14 +105,115 @@ namespace Fairground.View
 
         public void ApplyStyle(PlaneVisualStyle style)
         {
+            var visible = style != PlaneVisualStyle.Hidden;
+            if (visible)
+                EnsureQuad();
+            SetRenderers(visible);
             if (_appliedStyle == style)
                 return;
 
             _appliedStyle = style;
-            var visible = style != PlaneVisualStyle.Hidden;
-            SetRenderers(visible);
             if (visible)
                 Paint(style);
+        }
+
+        void EnsureQuad()
+        {
+            if (HasDeviceMesh() || !HasSnapshot || Snapshot.Boundary == null || Snapshot.Boundary.Count != 4)
+                return;
+
+            var boundary = new Vector2[4];
+            for (var i = 0; i < 4; i++)
+                boundary[i] = new Vector2(Snapshot.Boundary[i].X, Snapshot.Boundary[i].Y);
+            BuildStandaloneMesh(boundary);
+        }
+
+        bool HasDeviceMesh()
+        {
+            var filter = GetComponent<MeshFilter>();
+            return filter != null && filter.sharedMesh != null && filter.sharedMesh.vertexCount >= 3;
+        }
+
+        void Lift(ARPlaneBoundaryChangedEventArgs _)
+        {
+            LiftMesh();
+            LiftLine();
+        }
+
+        void LiftMesh()
+        {
+            var filter = GetComponent<MeshFilter>();
+            var mesh = filter != null ? filter.sharedMesh : null;
+            if (mesh == null || !mesh.isReadable || mesh.vertexCount < 3)
+                return;
+
+            var vertices = mesh.vertices;
+            var changed = false;
+            for (var i = 0; i < vertices.Length; i++)
+            {
+                if (vertices[i].y >= PlaneBoundaryMesh.Lift - 0.001f)
+                    continue;
+
+                vertices[i].y = PlaneBoundaryMesh.Lift;
+                changed = true;
+            }
+
+            if (!changed)
+                return;
+
+            mesh.vertices = vertices;
+            mesh.RecalculateBounds();
+        }
+
+        void LiftLine()
+        {
+            if (_lineRenderer == null)
+                return;
+
+            for (var i = 0; i < _lineRenderer.positionCount; i++)
+            {
+                var point = _lineRenderer.GetPosition(i);
+                point.y = PlaneBoundaryMesh.Lift;
+                _lineRenderer.SetPosition(i, point);
+            }
+        }
+
+        static bool Same(DetectedPlane current, DetectedPlane next)
+        {
+            return current.Id == next.Id
+                && current.Classification == next.Classification
+                && current.Alignment == next.Alignment
+                && SamePose(current.Pose, next.Pose)
+                && SameBoundary(current.Boundary, next.Boundary);
+        }
+
+        static bool SamePose(PlanePose current, PlanePose next)
+        {
+            var dx = current.PositionX - next.PositionX;
+            var dy = current.PositionY - next.PositionY;
+            var dz = current.PositionZ - next.PositionZ;
+            if (dx * dx + dy * dy + dz * dz > 0.000001f)
+                return false;
+
+            var dot = current.RotationX * next.RotationX
+                + current.RotationY * next.RotationY
+                + current.RotationZ * next.RotationZ
+                + current.RotationW * next.RotationW;
+            return dot > 0.9999f || dot < -0.9999f;
+        }
+
+        static bool SameBoundary(IReadOnlyList<PlanePoint> current, IReadOnlyList<PlanePoint> next)
+        {
+            if (current == null || next == null || current.Count != next.Count)
+                return false;
+
+            for (var i = 0; i < current.Count; i++)
+            {
+                if (current[i].X != next[i].X || current[i].Y != next[i].Y)
+                    return false;
+            }
+
+            return true;
         }
 
         void EnsureInitialized()

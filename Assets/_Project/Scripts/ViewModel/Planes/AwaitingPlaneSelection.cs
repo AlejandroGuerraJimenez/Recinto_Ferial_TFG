@@ -14,7 +14,7 @@ namespace Fairground.ViewModel
 
         public bool Select(PlaneSelectionContext context, DetectedPlane plane)
         {
-            if (!PlaneCandidateFilter.TryGetPriority(plane, out _))
+            if (!PlaneCandidateFilter.TryRank(plane, out _))
                 return false;
 
             Accept(context, plane);

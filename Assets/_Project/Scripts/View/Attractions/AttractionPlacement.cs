@@ -52,19 +52,48 @@ namespace Fairground.View.Attractions
         public static void ResolvePose(DetectedPlane plane, out Vector3 position, out Quaternion rotation)
         {
             var pose = plane.Pose;
-            position = new Vector3(pose.PositionX, pose.PositionY, pose.PositionZ);
+            var planePosition = new Vector3(pose.PositionX, pose.PositionY, pose.PositionZ);
             var raw = new Quaternion(pose.RotationX, pose.RotationY, pose.RotationZ, pose.RotationW);
             if (raw == default)
                 raw = Quaternion.identity;
 
-            var forward = raw * Vector3.forward;
+            var planeRotation = FlatYaw(raw);
+            if (TryKeepOffsetFromHead(planePosition, planeRotation, out position, out rotation))
+                return;
+
+            position = planePosition;
+            rotation = planeRotation;
+        }
+
+        static Quaternion FlatYaw(Quaternion rotation)
+        {
+            var forward = rotation * Vector3.forward;
             forward.y = 0f;
             if (forward.sqrMagnitude < 0.0001f)
                 forward = Vector3.forward;
             else
                 forward.Normalize();
 
-            rotation = Quaternion.LookRotation(forward, Vector3.up);
+            return Quaternion.LookRotation(forward, Vector3.up);
+        }
+
+        static bool TryKeepOffsetFromHead(Vector3 planePosition, Quaternion planeRotation, out Vector3 position, out Quaternion rotation)
+        {
+            position = default;
+            rotation = default;
+            if (!AttractionViewpoint.HasValue)
+                return false;
+
+            var camera = Camera.main;
+            if (camera == null)
+                return false;
+
+            var storedYaw = Quaternion.Euler(0f, AttractionViewpoint.Yaw, 0f);
+            var nowYaw = Quaternion.Euler(0f, camera.transform.eulerAngles.y, 0f);
+            var delta = nowYaw * Quaternion.Inverse(storedYaw);
+            position = camera.transform.position + delta * (planePosition - AttractionViewpoint.Position);
+            rotation = delta * planeRotation;
+            return true;
         }
     }
 }

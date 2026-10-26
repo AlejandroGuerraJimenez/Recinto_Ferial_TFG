@@ -31,5 +31,19 @@ namespace Fairground.Model
         public float RotationZ { get; }
 
         public float RotationW { get; }
+
+        /// <summary>
+        /// Dot of the plane normal with world up. A level floor is 1.
+        /// </summary>
+        public const float MinimumUpDot = 0.5f;
+
+        /// <summary>
+        /// A surface counts as upward until it tilts about 60 degrees. Ranking uses this; acceptance does not.
+        /// </summary>
+        public bool FacesUp()
+        {
+            var up = 1f - 2f * (RotationX * RotationX + RotationZ * RotationZ);
+            return up >= MinimumUpDot;
+        }
     }
 }

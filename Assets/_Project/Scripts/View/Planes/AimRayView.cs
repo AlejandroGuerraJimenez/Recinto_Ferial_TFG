@@ -72,7 +72,7 @@ namespace Fairground.View
 
         static void SetLook(LineRenderer line)
         {
-            line.widthMultiplier = 0.004f;
+            line.widthMultiplier = 0.012f;
             line.numCapVertices = 4;
             line.shadowCastingMode = ShadowCastingMode.Off;
             line.receiveShadows = false;

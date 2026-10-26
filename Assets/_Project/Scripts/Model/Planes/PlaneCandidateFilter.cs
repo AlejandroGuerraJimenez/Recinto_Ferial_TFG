@@ -1,24 +1,23 @@
 namespace Fairground.Model
 {
     /// <summary>
-    /// Chain of acceptance rules. The highest matching priority wins.
+    /// Accepts every captured surface that has a boundary. Floor still outranks a table, and a table outranks the rest.
     /// </summary>
     public static class PlaneCandidateFilter
     {
-        public const int TablePriority = TableAcceptanceRule.Priority;
-        public const int UnlabeledHorizontalPriority = UnlabeledHorizontalAcceptanceRule.Priority;
+        public const int FloorClassRank = 2;
+        public const int TableClassRank = 1;
+        public const int OpenClassRank = 0;
         public const int MinimumBoundaryVertices = 3;
 
-        static readonly IPlaneAcceptanceRule[] Rules =
+        public static bool TryRank(in DetectedPlane plane, out PlaneRank rank)
         {
-            new TableAcceptanceRule(),
-            new UnlabeledHorizontalAcceptanceRule(),
-        };
+            rank = default;
+            if (!IsComplete(plane))
+                return false;
 
-        public static bool TryGetPriority(in DetectedPlane plane, out int priority)
-        {
-            priority = 0;
-            return IsComplete(plane) && BestPriority(plane, ref priority);
+            rank = new PlaneRank(ClassRank(plane.Classification), PlaneArea.Of(plane.Boundary));
+            return true;
         }
 
         static bool IsComplete(in DetectedPlane plane)
@@ -31,21 +30,12 @@ namespace Fairground.Model
             return plane.Boundary != null && plane.Boundary.Count >= MinimumBoundaryVertices;
         }
 
-        static bool BestPriority(in DetectedPlane plane, ref int priority)
+        static int ClassRank(PlaneSemanticClassification classification)
         {
-            var accepted = false;
-            for (var i = 0; i < Rules.Length; i++)
-                accepted |= Accept(Rules[i], plane, ref priority);
-            return accepted;
-        }
+            if (classification == PlaneSemanticClassification.Floor)
+                return FloorClassRank;
 
-        static bool Accept(IPlaneAcceptanceRule rule, in DetectedPlane plane, ref int best)
-        {
-            if (!rule.TryAccept(plane, out var priority) || priority <= best)
-                return false;
-
-            best = priority;
-            return true;
+            return classification == PlaneSemanticClassification.Table ? TableClassRank : OpenClassRank;
         }
     }
 }

@@ -6,41 +6,66 @@ namespace Fairground.Tests.EditMode
     public class PlaneCandidateFilterTests
     {
         [Test]
-        public void Table_IsAccepted_WithHigherPriorityThanUnlabeledHorizontal()
+        public void Floor_OutranksTable_AndTableOutranksOpenSurface()
         {
-            var table = Plane("table", PlaneSemanticClassification.Table, PlaneAlignmentKind.Other);
-            var unlabeled = Plane("open", PlaneSemanticClassification.Unknown, PlaneAlignmentKind.HorizontalUp);
-            Assert.IsTrue(PlaneCandidateFilter.TryGetPriority(table, out var tablePriority));
-            Assert.IsTrue(PlaneCandidateFilter.TryGetPriority(unlabeled, out var unlabeledPriority));
-            Assert.Greater(tablePriority, unlabeledPriority);
+            var floor = Plane("floor", PlaneSemanticClassification.Floor, PlaneAlignmentKind.HorizontalUp);
+            var table = Plane("table", PlaneSemanticClassification.Table, PlaneAlignmentKind.HorizontalUp);
+            var open = Plane("open", PlaneSemanticClassification.Unknown, PlaneAlignmentKind.HorizontalUp);
+            Assert.IsTrue(PlaneCandidateFilter.TryRank(floor, out var floorRank));
+            Assert.IsTrue(PlaneCandidateFilter.TryRank(table, out var tableRank));
+            Assert.IsTrue(PlaneCandidateFilter.TryRank(open, out var openRank));
+            Assert.Greater(floorRank.CompareTo(tableRank), 0);
+            Assert.Greater(tableRank.CompareTo(openRank), 0);
         }
 
         [Test]
-        public void UnlabeledHorizontalUp_IsAccepted()
+        public void LargerFloor_OutranksSmallerFloor()
         {
-            var plane = Plane("surface", PlaneSemanticClassification.Unknown, PlaneAlignmentKind.HorizontalUp);
-            Assert.IsTrue(PlaneCandidateFilter.TryGetPriority(plane, out var priority));
-            Assert.AreEqual(PlaneCandidateFilter.UnlabeledHorizontalPriority, priority);
+            var small = Plane("small", PlaneSemanticClassification.Floor, PlaneAlignmentKind.HorizontalUp);
+            var large = new DetectedPlane("large", PlanePose.Identity, Wide(), PlaneSemanticClassification.Floor, PlaneAlignmentKind.HorizontalUp);
+            Assert.IsTrue(PlaneCandidateFilter.TryRank(small, out var smallRank));
+            Assert.IsTrue(PlaneCandidateFilter.TryRank(large, out var largeRank));
+            Assert.Greater(largeRank.CompareTo(smallRank), 0);
         }
 
         [Test]
-        public void UnlabeledNonHorizontal_IsRejected()
+        public void SmallFloor_OutranksLargeTable()
         {
-            var plane = Plane("wall", PlaneSemanticClassification.Unknown, PlaneAlignmentKind.Other);
-            Assert.IsFalse(PlaneCandidateFilter.TryGetPriority(plane, out _));
+            var floor = Plane("floor", PlaneSemanticClassification.Floor, PlaneAlignmentKind.HorizontalUp);
+            var table = new DetectedPlane("table", PlanePose.Identity, Wide(), PlaneSemanticClassification.Table, PlaneAlignmentKind.HorizontalUp);
+            Assert.IsTrue(PlaneCandidateFilter.TryRank(floor, out var floorRank));
+            Assert.IsTrue(PlaneCandidateFilter.TryRank(table, out var tableRank));
+            Assert.Greater(floorRank.CompareTo(tableRank), 0);
         }
 
         [Test]
-        public void LabeledNonTable_IsRejected()
+        public void StructuralLabels_AreAccepted_AndRankBelowFloor()
         {
-            var plane = Plane("floor", PlaneSemanticClassification.Other, PlaneAlignmentKind.HorizontalUp);
-            Assert.IsFalse(PlaneCandidateFilter.TryGetPriority(plane, out _));
+            var floor = Plane("floor", PlaneSemanticClassification.Floor, PlaneAlignmentKind.HorizontalUp);
+            Assert.IsTrue(PlaneCandidateFilter.TryRank(floor, out var floorRank));
+            AssertAcceptedBelow(floorRank, Plane("wall", PlaneSemanticClassification.Wall, PlaneAlignmentKind.Other));
+            AssertAcceptedBelow(floorRank, Plane("ceiling", PlaneSemanticClassification.Ceiling, PlaneAlignmentKind.Other));
+            AssertAcceptedBelow(floorRank, Plane("door", PlaneSemanticClassification.Door, PlaneAlignmentKind.Other));
+            AssertAcceptedBelow(floorRank, Plane("window", PlaneSemanticClassification.Window, PlaneAlignmentKind.Other));
+        }
+
+        [Test]
+        public void NonHorizontal_IsAccepted()
+        {
+            Assert.IsTrue(PlaneCandidateFilter.TryRank(Plane("floor", PlaneSemanticClassification.Floor, PlaneAlignmentKind.Other), out _));
+            Assert.IsTrue(PlaneCandidateFilter.TryRank(Plane("open", PlaneSemanticClassification.Unknown, PlaneAlignmentKind.Other), out _));
         }
 
         [Test]
         public void ShortBoundary_IsRejected()
         {
-            Assert.IsFalse(PlaneCandidateFilter.TryGetPriority(Tiny(), out _));
+            Assert.IsFalse(PlaneCandidateFilter.TryRank(Tiny(), out _));
+        }
+
+        static void AssertAcceptedBelow(PlaneRank floorRank, DetectedPlane plane)
+        {
+            Assert.IsTrue(PlaneCandidateFilter.TryRank(plane, out var rank));
+            Assert.Greater(floorRank.CompareTo(rank), 0);
         }
 
         static DetectedPlane Plane(string id, PlaneSemanticClassification classification, PlaneAlignmentKind alignment)
@@ -66,6 +91,17 @@ namespace Fairground.Tests.EditMode
                 new PlanePoint(-1f, 1f),
                 new PlanePoint(1f, 1f),
                 new PlanePoint(1f, -1f),
+            };
+        }
+
+        static PlanePoint[] Wide()
+        {
+            return new[]
+            {
+                new PlanePoint(-4f, -4f),
+                new PlanePoint(-4f, 4f),
+                new PlanePoint(4f, 4f),
+                new PlanePoint(4f, -4f),
             };
         }
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Fairground.Model;
 using Fairground.ViewModel;
 using UnityEngine.XR.ARFoundation;
@@ -14,6 +15,7 @@ namespace Fairground.View
         readonly EditorStandInHost _standIn;
         readonly Func<PlaneSelectionState> _state;
         readonly Func<DetectedPlane, bool> _isSelectable;
+        readonly Dictionary<string, ARPlane> _watched = new Dictionary<string, ARPlane>();
 
         public PlaneRegistration(
             PlaneVisualCatalog catalog,
@@ -29,6 +31,15 @@ namespace Fairground.View
             _standIn = standIn;
             _state = state;
             _isSelectable = isSelectable;
+        }
+
+        public void CatchUp(ARPlaneManager manager)
+        {
+            if (manager == null)
+                return;
+
+            foreach (var plane in manager.trackables)
+                Register(plane);
         }
 
         public void OnChanged(ARTrackablesChangedEventArgs<ARPlane> args)
@@ -47,13 +58,16 @@ namespace Fairground.View
                 return;
 
             var visual = Bind(plane);
-            if (ReplacesStandIn(visual))
+            Watch(plane);
+            if (visual.IsCandidate && _state() == PlaneSelectionState.AwaitingSelection)
                 _standIn.Dismiss(_catalog, Clear);
         }
 
         void Unregister(TrackableId id)
         {
-            if (!_catalog.TryTake(id.ToString(), out var visual))
+            var key = id.ToString();
+            Unwatch(key);
+            if (!_catalog.TryTake(key, out var visual))
                 return;
 
             Clear(visual);
@@ -61,27 +75,58 @@ namespace Fairground.View
 
         PlaneSurfaceVisual Bind(ARPlane plane)
         {
-            var snapshot = DetectedPlaneMapper.FromPlane(plane);
             var visual = VisualOn(plane);
-            visual.Bind(snapshot, Accepted(plane, snapshot));
+            if (StillCurrent(visual, plane))
+            {
+                _catalog.Track(visual);
+                return visual;
+            }
+
+            var snapshot = DetectedPlaneMapper.FromPlane(plane);
+            var accepted = plane.subsumedBy == null && _isSelectable(snapshot);
+            var rank = accepted && PlaneCandidateFilter.TryRank(snapshot, out var scored) ? scored : default;
+            visual.ApplySnapshot(snapshot, accepted, rank);
             _catalog.Track(visual);
             return visual;
         }
 
-        bool ReplacesStandIn(PlaneSurfaceVisual visual)
+        static bool StillCurrent(PlaneSurfaceVisual visual, ARPlane plane)
         {
-            return visual.IsCandidate && _state() == PlaneSelectionState.AwaitingSelection;
+            if (!visual.HasSnapshot || !DetectedPlaneMapper.Matches(plane, visual.Snapshot))
+                return false;
+
+            return plane.subsumedBy == null || !visual.IsCandidate;
+        }
+
+        void Watch(ARPlane plane)
+        {
+            var key = plane.trackableId.ToString();
+            if (_watched.ContainsKey(key))
+                return;
+
+            _watched.Add(key, plane);
+            plane.boundaryChanged += OnBoundary;
+        }
+
+        void Unwatch(string key)
+        {
+            if (!_watched.TryGetValue(key, out var plane))
+                return;
+
+            plane.boundaryChanged -= OnBoundary;
+            _watched.Remove(key);
+        }
+
+        void OnBoundary(ARPlaneBoundaryChangedEventArgs args)
+        {
+            if (args.plane != null)
+                Bind(args.plane);
         }
 
         void Clear(PlaneSurfaceVisual visual)
         {
             _aim.ClearIf(visual);
             _pointer.ClearIf(visual);
-        }
-
-        bool Accepted(ARPlane plane, DetectedPlane snapshot)
-        {
-            return plane.subsumedBy == null && _isSelectable(snapshot);
         }
 
         static PlaneSurfaceVisual VisualOn(ARPlane plane)

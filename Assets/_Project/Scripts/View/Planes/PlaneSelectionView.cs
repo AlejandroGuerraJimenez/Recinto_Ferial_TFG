@@ -9,7 +9,9 @@ namespace Fairground.View
     /// <summary>
     /// Detects horizontal surfaces and lets the user confirm one.
     /// Quest 3 reads those surfaces from the Space Setup scene model (XR_FB_scene), not a live mobile scan.
-    /// Right trigger confirms. Right B button (secondaryButton) clears the choice and scans again.
+    /// There is no start button. Detection attaches itself once the OpenXR plane subsystem exists.
+    /// Right trigger confirms. Right B button (secondaryButton) clears the choice and attaches detection again.
+    /// Left Y closes the Quest build.
     /// In the editor, without a headset: aim with the view, left click or Space confirms, R restarts.
     /// </summary>
     [DisallowMultipleComponent]
@@ -33,8 +35,14 @@ namespace Fairground.View
         PlaneAppearanceController _appearance;
         EditorStandInHost _standIn;
         PlaneRegistration _registration;
+        PlaneDetectionStatusView _status;
         bool _permissionGranted;
         bool _permissionSettled;
+        float _nextAttach;
+        float _nextReport;
+        float _scanSince = -1f;
+        int _attachAttempts;
+        bool _askedForRoom;
 
         /// <summary>
         /// Fired once when the user confirms a surface. The snapshot is the input for a later rectangle step.
@@ -78,22 +86,42 @@ namespace Fairground.View
             _detection?.StopListening();
             _input?.Dispose();
             _aimView?.Release();
+            if (_status != null)
+                Destroy(_status.gameObject);
         }
 
         void LateUpdate()
         {
+            PumpDetection();
             _catalog.Prune();
             _standIn.Tick(_catalog);
             _aim.Update(State);
-            _input.Read();
             _appearance.Apply(State);
+            _input.Read();
             _aimView.Draw(ShowAim(), _aim.Origin, _aim.End, _aim.Hovered != null);
+            var status = StatusText();
+            _status?.Present(status);
+            LogStatus(status);
         }
 
         /// <summary>
         /// Clears the confirmed surface and starts detection again.
         /// </summary>
-        public void RestartSelection() => _viewModel?.RestartSelection();
+        public void RestartSelection()
+        {
+            if (!_permissionGranted)
+            {
+                _permissionSettled = false;
+                EnsurePermission();
+            }
+
+            _nextAttach = 0f;
+            _attachAttempts = 0;
+            _scanSince = -1f;
+            _askedForRoom = false;
+            _detection.TryAttach(m_PlanePrefab, _registration.OnChanged);
+            _viewModel?.RestartSelection();
+        }
 
         void CreateViewModel()
         {
@@ -121,6 +149,7 @@ namespace Fairground.View
                 () => State,
                 snapshot => _viewModel.IsSelectable(snapshot));
             _aimView = AimRayView.Create(transform, BorderTemplate());
+            _status = PlaneDetectionStatusView.Create();
             _input = new PlaneSelectionInput(Confirm, RestartSelection, EditorContext);
         }
 
@@ -128,15 +157,40 @@ namespace Fairground.View
         {
             if (!_permissionSettled)
                 ScenePermissionRequester.Request(OnGranted, OnDenied);
-            else if (CanScan())
-                Resume();
         }
 
         void OnGranted()
         {
             MarkGranted(true);
-            if (isActiveAndEnabled)
-                StartDetection();
+            _nextAttach = 0f;
+        }
+
+        void PumpDetection()
+        {
+            if (!IsAwaiting() || PermissionDenied())
+                return;
+
+            if (ARSession.state < ARSessionState.SessionTracking)
+                return;
+
+            if (_detection.IsSubsystemRunning)
+            {
+                if (_catalog.Count < TrackedPlaneCount())
+                    _registration.CatchUp(_detection.Manager);
+                OfferRoomCapture();
+                return;
+            }
+
+#if UNITY_EDITOR
+            if (_attachAttempts > 0)
+                return;
+#endif
+            if (Time.unscaledTime < _nextAttach)
+                return;
+
+            _nextAttach = Time.unscaledTime + 1.5f;
+            _attachAttempts++;
+            _detection.TryAttach(m_PlanePrefab, _registration.OnChanged);
         }
 
         void OnDenied()
@@ -145,10 +199,13 @@ namespace Fairground.View
             Debug.LogWarning("Scene permission denied (" + ScenePermissionRequester.UseScenePermission + "). Plane detection stays off.");
         }
 
-        void StartDetection()
+        void LogStatus(string status)
         {
-            _detection.Begin(m_PlanePrefab);
-            _detection.Listen(_registration.OnChanged);
+            if (CandidateCount() > 0 || Time.unscaledTime < _nextReport)
+                return;
+
+            _nextReport = Time.unscaledTime + 2f;
+            Debug.Log("[Planos] " + status.Replace("\n", " | "));
         }
 
         void HandlePlaneSelected(DetectedPlane plane) => OnPlaneSelected?.Invoke(plane);
@@ -186,19 +243,24 @@ namespace Fairground.View
                 ReleaseHold();
         }
 
-        bool CanConfirm()
-        {
-            var hovered = _aim.Hovered;
-            return IsAwaiting() && hovered != null && hovered.IsCandidate;
-        }
+        bool CanConfirm() => IsAwaiting() && CurrentTarget() != null;
 
         DetectedPlane HoldSelection()
         {
-            var hovered = _aim.Hovered;
-            var plane = hovered.GetComponent<ARPlane>();
-            _pointer.Selected = hovered;
+            var target = CurrentTarget();
+            var plane = target.GetComponent<ARPlane>();
+            _pointer.Selected = target;
             _trackable.Hold(plane);
-            return plane != null ? DetectedPlaneMapper.FromPlane(plane) : hovered.Snapshot;
+            return plane != null ? DetectedPlaneMapper.FromPlane(plane) : target.Snapshot;
+        }
+
+        PlaneSurfaceVisual CurrentTarget()
+        {
+            var hovered = _aim.Hovered;
+            if (hovered != null && hovered.IsCandidate)
+                return hovered;
+
+            return _appearance.Proposal;
         }
 
         void ReleaseHold()
@@ -218,11 +280,71 @@ namespace Fairground.View
 
         bool IsAwaiting() => State == PlaneSelectionState.AwaitingSelection;
 
-        bool CanScan() => _permissionGranted && IsAwaiting();
+        bool PermissionDenied() => _permissionSettled && !_permissionGranted;
+
+        void OfferRoomCapture()
+        {
+            if (_askedForRoom || TrackedPlaneCount() > 0)
+                return;
+
+            if (_scanSince < 0f)
+                _scanSince = Time.unscaledTime;
+            if (Time.unscaledTime - _scanSince < 8f)
+                return;
+
+            _askedForRoom = true;
+            var opened = _detection.TryOpenRoomCapture();
+            Debug.Log(opened
+                ? "[Planos] Ningún plano. Abriendo la captura de sala del Quest."
+                : "[Planos] Ningún plano y la captura de sala no está disponible.");
+        }
 
         bool DetectionRunning() => _detection.IsSubsystemRunning;
 
         bool ShowAim() => _aim.HasAim && State == PlaneSelectionState.AwaitingSelection;
+
+        string StatusText()
+        {
+            const string quit = "\nY del mando izquierdo cierra la app.";
+            if (PermissionDenied())
+                return "Sin permiso de escena.\nPulsa B para volver a pedir el aviso.\nSi no sale: Ajustes, Aplicaciones, permisos, datos espaciales." + quit;
+
+            if (!_permissionSettled && !_detection.IsSubsystemRunning)
+                return "Permiso de escena.\nSi sale el aviso, acéptalo. La búsqueda empieza igual." + quit;
+
+            var planes = CandidateCount();
+            if (planes == 0)
+                return _detection.Report(TrackedPlaneCount(), 0) + quit;
+
+            return planes + " planos. El marcado es la propuesta.\nGatillo: el apuntado, o esa si no apuntas." + quit;
+        }
+
+        int TrackedPlaneCount()
+        {
+            var manager = _detection != null ? _detection.Manager : null;
+            if (manager == null)
+                return 0;
+
+            var count = 0;
+            foreach (var plane in manager.trackables)
+            {
+                if (plane != null)
+                    count++;
+            }
+
+            return count;
+        }
+
+        int CandidateCount()
+        {
+            var count = 0;
+            _catalog.ForEach(visual =>
+            {
+                if (visual != null && visual.IsCandidate)
+                    count++;
+            });
+            return count;
+        }
 
         EditorInputContext EditorContext()
         {

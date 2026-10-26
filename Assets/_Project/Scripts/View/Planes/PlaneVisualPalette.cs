@@ -5,11 +5,13 @@ namespace Fairground.View
 {
     public static class PlaneVisualPalette
     {
-        public static readonly Color IdleFill = new Color(0.2f, 0.78f, 0.95f, 0.24f);
+        public static readonly Color IdleFill = new Color(0.15f, 0.85f, 1f, 0.55f);
         public static readonly Color IdleBorder = new Color(0.75f, 0.95f, 1f, 0.9f);
 
         public static Color Fill(PlaneVisualStyle style, bool table)
         {
+            if (style == PlaneVisualStyle.Proposed)
+                return new Color(0.15f, 0.95f, 1f, 0.7f);
             if (IsEmphasis(style))
                 return new Color(0.45f, 1f, 0.72f, 0.5f);
             if (style == PlaneVisualStyle.Dimmed)
@@ -19,6 +21,8 @@ namespace Fairground.View
 
         public static Color Border(PlaneVisualStyle style, bool table)
         {
+            if (style == PlaneVisualStyle.Proposed)
+                return new Color(0.85f, 1f, 1f, 1f);
             if (IsEmphasis(style))
                 return new Color(0.75f, 1f, 0.85f, 1f);
             if (style == PlaneVisualStyle.Dimmed)
@@ -28,11 +32,13 @@ namespace Fairground.View
 
         public static float Width(PlaneVisualStyle style, bool table)
         {
+            if (style == PlaneVisualStyle.Proposed)
+                return 0.028f;
             if (IsEmphasis(style))
-                return 0.018f;
+                return 0.035f;
             if (style == PlaneVisualStyle.Dimmed)
                 return 0.006f;
-            return table ? 0.012f : 0.008f;
+            return 0.02f;
         }
 
         static bool IsEmphasis(PlaneVisualStyle style)
