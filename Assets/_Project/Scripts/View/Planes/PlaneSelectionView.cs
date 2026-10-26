@@ -45,9 +45,19 @@ namespace Fairground.View
         bool _askedForRoom;
 
         /// <summary>
-        /// Fired once when the user confirms a surface. The snapshot is the input for a later rectangle step.
+        /// Fired once when the user confirms a surface. Other surfaces are hidden. Parcels stay on this one.
         /// </summary>
         public event Action<DetectedPlane> OnPlaneSelected;
+
+        /// <summary>
+        /// Fired when the trigger is pressed again after a surface is already locked.
+        /// </summary>
+        public event Action OnLockedConfirm;
+
+        /// <summary>
+        /// Fired when the user clears the locked surface and detection starts again.
+        /// </summary>
+        public event Action OnRestarted;
 
         public DetectedPlane? SelectedPlane => _viewModel?.SelectedPlane;
 
@@ -56,7 +66,31 @@ namespace Fairground.View
         /// </summary>
         public ARPlane SelectedTrackable => _trackable != null ? _trackable.Plane : null;
 
+        /// <summary>
+        /// Highest-ranked surface while the user is still choosing. Parcels are drawn on this one.
+        /// </summary>
+        public PlaneSurfaceVisual Proposal => _appearance != null ? _appearance.Proposal : null;
+
+        /// <summary>
+        /// Surface kept after confirmation. The other detected surfaces are hidden.
+        /// </summary>
+        public PlaneSurfaceVisual LockedSurface => _pointer != null ? _pointer.Selected : null;
+
         public PlaneSelectionState State => _viewModel != null ? _viewModel.State : PlaneSelectionState.AwaitingSelection;
+
+        public bool TryGetAim(out Ray ray)
+        {
+            ray = default;
+            if (_aim == null || !_aim.HasAim)
+                return false;
+
+            var direction = _aim.End - _aim.Origin;
+            if (direction.sqrMagnitude < 0.000001f)
+                return false;
+
+            ray = new Ray(_aim.Origin, direction.normalized);
+            return true;
+        }
 
         void Awake()
         {
@@ -121,6 +155,7 @@ namespace Fairground.View
             _askedForRoom = false;
             _detection.TryAttach(m_PlanePrefab, _registration.OnChanged);
             _viewModel?.RestartSelection();
+            OnRestarted?.Invoke();
         }
 
         void CreateViewModel()
@@ -229,10 +264,17 @@ namespace Fairground.View
 
         void Confirm()
         {
-            if (!CanConfirm())
-                return;
+            if (IsAwaiting())
+            {
+                if (CurrentTarget() == null)
+                    return;
 
-            Submit(HoldSelection());
+                Submit(HoldSelection());
+                return;
+            }
+
+            if (State == PlaneSelectionState.PlaneSelected)
+                OnLockedConfirm?.Invoke();
         }
 
         void Submit(DetectedPlane snapshot)
@@ -242,8 +284,6 @@ namespace Fairground.View
             else
                 ReleaseHold();
         }
-
-        bool CanConfirm() => IsAwaiting() && CurrentTarget() != null;
 
         DetectedPlane HoldSelection()
         {
@@ -301,7 +341,7 @@ namespace Fairground.View
 
         bool DetectionRunning() => _detection.IsSubsystemRunning;
 
-        bool ShowAim() => _aim.HasAim && State == PlaneSelectionState.AwaitingSelection;
+        bool ShowAim() => _aim.HasAim && (IsAwaiting() || State == PlaneSelectionState.PlaneSelected);
 
         string StatusText()
         {
@@ -315,6 +355,9 @@ namespace Fairground.View
             var planes = CandidateCount();
             if (planes == 0)
                 return _detection.Report(TrackedPlaneCount(), 0) + quit;
+
+            if (State == PlaneSelectionState.PlaneSelected)
+                return "Plano fijado. El resto queda fuera.\nApunta una parcela y pulsa el gatillo.\nB suelta el plano." + quit;
 
             return planes + " planos. El marcado es la propuesta.\nGatillo: el apuntado, o esa si no apuntas." + quit;
         }

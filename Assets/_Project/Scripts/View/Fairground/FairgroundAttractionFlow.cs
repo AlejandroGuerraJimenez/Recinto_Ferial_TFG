@@ -8,9 +8,10 @@ using UnityEngine.SceneManagement;
 namespace Fairground.View
 {
     /// <summary>
-    /// Loads an attraction scene after the user confirms a horizontal surface.
+    /// Keeps parcels on the confirmed flat surface, then loads the attraction the user aims at.
     /// </summary>
     [DisallowMultipleComponent]
+    [DefaultExecutionOrder(50)]
     [AddComponentMenu("Fairground/Fairground Attraction Flow")]
     public sealed class FairgroundAttractionFlow : MonoBehaviour
     {
@@ -18,18 +19,28 @@ namespace Fairground.View
         [SerializeField] AttractionId attractionId = AttractionId.BalloonThrow;
 
         readonly FairgroundParcelPads _parcels = new FairgroundParcelPads();
+        DetectedPlane? _locked;
 
         void OnEnable()
         {
             AttractionViewpoint.Clear();
-            if (planeSelection != null)
-                planeSelection.OnPlaneSelected += HandlePlaneSelected;
+            if (planeSelection == null)
+                return;
+
+            planeSelection.OnPlaneSelected += HandlePlaneSelected;
+            planeSelection.OnLockedConfirm += HandleEnter;
+            planeSelection.OnRestarted += HandleRestarted;
         }
 
         void OnDisable()
         {
             if (planeSelection != null)
+            {
                 planeSelection.OnPlaneSelected -= HandlePlaneSelected;
+                planeSelection.OnLockedConfirm -= HandleEnter;
+                planeSelection.OnRestarted -= HandleRestarted;
+            }
+
             _parcels.Hide();
         }
 
@@ -38,15 +49,36 @@ namespace Fairground.View
             if (planeSelection == null)
                 return;
 
-            _parcels.Show(planeSelection.Proposal);
+            Ray? aim = null;
+            if (planeSelection.TryGetAim(out var ray))
+                aim = ray;
+
+            _parcels.Show(planeSelection.Proposal, aim);
         }
 
         void HandlePlaneSelected(DetectedPlane plane)
         {
+            _locked = plane;
+            _parcels.PinTo(planeSelection.LockedSurface != null ? planeSelection.LockedSurface : planeSelection.Proposal);
+            RememberViewpoint();
+            FairgroundSession.Remember(plane);
+        }
+
+        void HandleEnter()
+        {
+            if (!_locked.HasValue)
+                return;
+
             var chosen = AimedParcel();
             RememberViewpoint();
-            FairgroundSession.Remember(plane, chosen);
+            FairgroundSession.Remember(_locked.Value, chosen);
             SceneManager.LoadScene(AttractionScenes.GetSceneName(chosen));
+        }
+
+        void HandleRestarted()
+        {
+            _locked = null;
+            _parcels.Release();
         }
 
         AttractionId AimedParcel()

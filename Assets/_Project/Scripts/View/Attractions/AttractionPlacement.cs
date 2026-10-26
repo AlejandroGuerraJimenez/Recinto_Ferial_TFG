@@ -5,9 +5,9 @@ using UnityEngine;
 namespace Fairground.View.Attractions
 {
     /// <summary>
-    /// Places booth-space content using the plane remembered in <see cref="FairgroundSession"/>.
-    /// Booth props are authored at identity; this maps them into the selected surface pose.
-    /// XR rig stays outside — only attraction content is transformed.
+    /// Puts booth content on the floor under the new scene's XR rig.
+    /// The rig spawns at the origin and falls while gravity finds no collider,
+    /// so the old tracking coordinates are not reused.
     /// </summary>
     public static class AttractionPlacement
     {
@@ -47,22 +47,19 @@ namespace Fairground.View.Attractions
         }
 
         /// <summary>
-        /// Position from plane pose; yaw from horizontal projection of forward (stable booth on tables).
+        /// Keeps the authored floor at the origin, turned to face the player.
         /// </summary>
         public static void ResolvePose(DetectedPlane plane, out Vector3 position, out Quaternion rotation)
         {
+            position = Vector3.zero;
+            rotation = FacingYaw(FlatYaw(ReadRotation(plane)));
+        }
+
+        static Quaternion ReadRotation(DetectedPlane plane)
+        {
             var pose = plane.Pose;
-            var planePosition = new Vector3(pose.PositionX, pose.PositionY, pose.PositionZ);
             var raw = new Quaternion(pose.RotationX, pose.RotationY, pose.RotationZ, pose.RotationW);
-            if (raw == default)
-                raw = Quaternion.identity;
-
-            var planeRotation = FlatYaw(raw);
-            if (TryKeepOffsetFromHead(planePosition, planeRotation, out position, out rotation))
-                return;
-
-            position = planePosition;
-            rotation = planeRotation;
+            return raw == default ? Quaternion.identity : raw;
         }
 
         static Quaternion FlatYaw(Quaternion rotation)
@@ -77,23 +74,18 @@ namespace Fairground.View.Attractions
             return Quaternion.LookRotation(forward, Vector3.up);
         }
 
-        static bool TryKeepOffsetFromHead(Vector3 planePosition, Quaternion planeRotation, out Vector3 position, out Quaternion rotation)
+        static Quaternion FacingYaw(Quaternion fallback)
         {
-            position = default;
-            rotation = default;
-            if (!AttractionViewpoint.HasValue)
-                return false;
-
             var camera = Camera.main;
             if (camera == null)
-                return false;
+                return fallback;
 
-            var storedYaw = Quaternion.Euler(0f, AttractionViewpoint.Yaw, 0f);
-            var nowYaw = Quaternion.Euler(0f, camera.transform.eulerAngles.y, 0f);
-            var delta = nowYaw * Quaternion.Inverse(storedYaw);
-            position = camera.transform.position + delta * (planePosition - AttractionViewpoint.Position);
-            rotation = delta * planeRotation;
-            return true;
+            var forward = camera.transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.0001f)
+                return fallback;
+
+            return Quaternion.LookRotation(forward.normalized, Vector3.up);
         }
     }
 }

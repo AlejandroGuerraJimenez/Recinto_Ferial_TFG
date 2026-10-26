@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using Fairground.Core.Attractions;
+using Fairground.Model;
 using TMPro;
 using UnityEngine;
-using UnityEngine.XR.ARFoundation;
+using UnityEngine.Rendering;
 
 namespace Fairground.View
 {
@@ -10,7 +12,7 @@ namespace Fairground.View
     /// </summary>
     public sealed class FairgroundParcelPads
     {
-        const float Lift = 0.05f;
+        const float Lift = 0.06f;
 
         static readonly Color[] Colors =
         {
@@ -21,11 +23,16 @@ namespace Fairground.View
             new Color(0.95f, 0.45f, 0.15f, 1f),
         };
 
+        readonly List<ParcelPad> _pads = new List<ParcelPad>();
         Transform _root;
         string _planeId;
+        bool _pinned;
 
-        public void Show(PlaneSurfaceVisual surface)
+        public void Show(PlaneSurfaceVisual surface, Ray? aim)
         {
+            if (_pinned)
+                return;
+
             if (surface == null)
             {
                 Hide();
@@ -33,16 +40,27 @@ namespace Fairground.View
             }
 
             var id = surface.Snapshot.Id;
-            if (_root != null && _planeId == id && _root.parent == surface.transform)
-                return;
+            if (_root == null || _planeId != id || _root.parent != surface.transform)
+                CreatePads(surface);
 
+            Layout(surface, aim);
+        }
+
+        /// <summary>
+        /// Stops moving the parcels and keeps them on <paramref name="surface"/>.
+        /// </summary>
+        public void PinTo(PlaneSurfaceVisual surface)
+        {
+            if (surface != null && (_root == null || _planeId != surface.Snapshot.Id || _root.parent != surface.transform))
+                Show(surface, null);
+
+            _pinned = _root != null;
+        }
+
+        public void Release()
+        {
+            _pinned = false;
             Hide();
-            _planeId = id;
-            _root = new GameObject("Parcels").transform;
-            _root.SetParent(surface.transform, false);
-            _root.localPosition = new Vector3(0f, Lift, 0f);
-            _root.localRotation = Quaternion.identity;
-            Build(surface);
         }
 
         public bool TryPick(Ray ray, out AttractionId attractionId)
@@ -66,95 +84,180 @@ namespace Fairground.View
 
             _root = null;
             _planeId = null;
+            _pads.Clear();
+            _pinned = false;
         }
 
-        void Build(PlaneSurfaceVisual surface)
+        void CreatePads(PlaneSurfaceVisual surface)
         {
-            var count = AttractionCatalog.Playable.Length;
-            var width = SurfaceWidth(surface);
-            var span = Mathf.Max(0.35f, width * 0.8f);
-            var step = count <= 1 ? 0f : span / (count - 1);
-            var size = Mathf.Min(0.42f, Mathf.Max(0.18f, step * 0.82f));
-            var start = -step * (count - 1) * 0.5f;
+            Hide();
+            _planeId = surface.Snapshot.Id;
+            _root = new GameObject("Parcels").transform;
+            _root.SetParent(surface.transform, false);
+            _root.localRotation = Quaternion.identity;
 
+            var count = AttractionCatalog.Playable.Length;
             for (var i = 0; i < count; i++)
             {
                 var attraction = AttractionCatalog.Playable[i];
-                var pad = ParcelPad.Create(_root, attraction, Colors[i % Colors.Length], size);
-                pad.transform.localPosition = new Vector3(start + step * i, 0f, 0f);
+                _pads.Add(ParcelPad.Create(_root, attraction, Colors[i % Colors.Length], surface.FillTemplate));
+            }
+
+            Debug.Log("[Parcelas] " + count + " sobre " + _planeId);
+        }
+
+        void Layout(PlaneSurfaceVisual surface, Ray? aim)
+        {
+            var alongX = true;
+            var length = 2f;
+            var anchor = Vector3.zero;
+            if (TryBounds(surface.HasSnapshot ? surface.Snapshot.Boundary : null, out var min, out var max))
+            {
+                var bounds = max - min;
+                alongX = bounds.x >= bounds.y;
+                length = Mathf.Max(alongX ? bounds.x : bounds.y, 0.35f);
+                anchor = Anchor(surface, min, max, aim);
+            }
+
+            _root.localPosition = anchor + new Vector3(0f, Lift, 0f);
+            _root.localRotation = Quaternion.identity;
+
+            var span = length * 0.8f;
+            var count = _pads.Count;
+            var step = count <= 1 ? 0f : span / (count - 1);
+            var size = count <= 1 ? Mathf.Min(0.42f, span) : Mathf.Min(0.42f, step * 0.82f);
+            if (count > 1 && step > 0f)
+                size = Mathf.Min(size, step * 0.9f);
+            size = Mathf.Max(size, 0.12f);
+
+            var axis = alongX ? Vector3.right : Vector3.forward;
+            var start = -step * (count - 1) * 0.5f;
+            for (var i = 0; i < count; i++)
+            {
+                _pads[i].SetSize(size);
+                _pads[i].transform.localPosition = axis * (start + step * i);
             }
         }
 
-        static float SurfaceWidth(PlaneSurfaceVisual surface)
+        static Vector3 Anchor(PlaneSurfaceVisual surface, Vector2 min, Vector2 max, Ray? aim)
         {
-            var plane = surface.GetComponent<ARPlane>();
-            if (plane == null)
-                return 2f;
+            var center = new Vector3((min.x + max.x) * 0.5f, 0f, (min.y + max.y) * 0.5f);
+            if (aim == null)
+                return center;
 
-            return Mathf.Max(plane.extents.x, plane.extents.y) * 2f;
+            var ray = aim.Value;
+            var plane = new Plane(surface.transform.up, surface.transform.position);
+            if (!plane.Raycast(ray, out var distance))
+                return center;
+
+            var local = surface.transform.InverseTransformPoint(ray.GetPoint(distance));
+            local.x = ClampInside(local.x, min.x, max.x);
+            local.z = ClampInside(local.z, min.y, max.y);
+            local.y = 0f;
+            return local;
+        }
+
+        static float ClampInside(float value, float min, float max)
+        {
+            var inset = Mathf.Min(0.2f, Mathf.Max(0f, max - min) * 0.5f);
+            return Mathf.Clamp(value, min + inset, max - inset);
+        }
+
+        static bool TryBounds(IReadOnlyList<PlanePoint> boundary, out Vector2 min, out Vector2 max)
+        {
+            min = max = default;
+            if (boundary == null || boundary.Count == 0)
+                return false;
+
+            min = max = new Vector2(boundary[0].X, boundary[0].Y);
+            for (var i = 1; i < boundary.Count; i++)
+            {
+                var point = new Vector2(boundary[i].X, boundary[i].Y);
+                min = Vector2.Min(min, point);
+                max = Vector2.Max(max, point);
+            }
+
+            return max.x - min.x > 0.05f && max.y - min.y > 0.05f;
         }
     }
 
     sealed class ParcelPad : MonoBehaviour
     {
-            Material _material;
+        Material _material;
+        Transform _plate;
 
-            public AttractionId AttractionId { get; private set; }
+        public AttractionId AttractionId { get; private set; }
 
-            public static ParcelPad Create(Transform parent, AttractionId attractionId, Color color, float size)
-            {
-                var root = new GameObject(AttractionCatalog.DisplayName(attractionId));
-                root.transform.SetParent(parent, false);
+        public static ParcelPad Create(Transform parent, AttractionId attractionId, Color color, Material template)
+        {
+            var root = new GameObject(AttractionCatalog.DisplayName(attractionId));
+            root.transform.SetParent(parent, false);
 
-                var pad = root.AddComponent<ParcelPad>();
-                pad.AttractionId = attractionId;
-                pad.BuildPlate(color, size);
-                pad.BuildLabel();
-                root.AddComponent<BoxCollider>().size = new Vector3(size, 0.08f, size);
-                return pad;
-            }
+            var pad = root.AddComponent<ParcelPad>();
+            pad.AttractionId = attractionId;
+            pad.BuildPlate(color, template);
+            pad.BuildLabel();
+            return pad;
+        }
 
-            void OnDestroy()
-            {
-                if (_material != null)
-                    Destroy(_material);
-            }
+        public void SetSize(float size)
+        {
+            if (_plate == null)
+                return;
 
-            void BuildPlate(Color color, float size)
-            {
-                var plate = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                plate.name = "Plate";
-                plate.transform.SetParent(transform, false);
-                plate.transform.localScale = new Vector3(size, size, 1f);
-                plate.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
-                Destroy(plate.GetComponent<Collider>());
+            _plate.localScale = new Vector3(size, 0.04f, size);
+        }
 
-                var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
-                if (shader == null)
-                    return;
+        void OnDestroy()
+        {
+            if (_material != null)
+                Destroy(_material);
+        }
 
-                _material = new Material(shader);
-                if (_material.HasProperty("_BaseColor"))
-                    _material.SetColor("_BaseColor", color);
-                _material.color = color;
-                plate.GetComponent<MeshRenderer>().sharedMaterial = _material;
-            }
+        void BuildPlate(Color color, Material template)
+        {
+            var plate = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            plate.name = "Plate";
+            plate.transform.SetParent(transform, false);
+            plate.transform.localPosition = new Vector3(0f, 0.02f, 0f);
+            _plate = plate.transform;
 
-            void BuildLabel()
-            {
-                var label = new GameObject("Label");
-                label.transform.SetParent(transform, false);
-                label.transform.localPosition = new Vector3(0f, 0.02f, 0f);
-                label.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
-                label.transform.localScale = Vector3.one * 0.15f;
+            var renderer = plate.GetComponent<MeshRenderer>();
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            _material = Solid(template, color);
+            if (_material != null)
+                renderer.sharedMaterial = _material;
+        }
 
-                var text = label.AddComponent<TextMeshPro>();
-                text.font = TMP_Settings.defaultFontAsset;
-                text.text = AttractionCatalog.DisplayName(AttractionId);
-                text.fontSize = 4f;
-                text.alignment = TextAlignmentOptions.Center;
-                text.color = Color.white;
-                text.rectTransform.sizeDelta = new Vector2(6f, 2f);
-            }
+        void BuildLabel()
+        {
+            var label = new GameObject("Label");
+            label.transform.SetParent(transform, false);
+            label.transform.localPosition = new Vector3(0f, 0.06f, 0f);
+            label.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
+            label.transform.localScale = Vector3.one * 0.12f;
+
+            var text = label.AddComponent<TextMeshPro>();
+            text.font = TMP_Settings.defaultFontAsset;
+            text.text = AttractionCatalog.DisplayName(AttractionId);
+            text.fontSize = 4.5f;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = Color.white;
+            text.rectTransform.sizeDelta = new Vector2(8f, 2f);
+        }
+
+        static Material Solid(Material template, Color color)
+        {
+            if (template == null)
+                return null;
+
+            var material = new Material(template);
+            color.a = 1f;
+            if (material.HasProperty("_BaseColor"))
+                material.SetColor("_BaseColor", color);
+            material.color = color;
+            return material;
+        }
     }
 }

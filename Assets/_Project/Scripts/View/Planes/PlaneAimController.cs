@@ -33,11 +33,12 @@ namespace Fairground.View
         public void Update(PlaneSelectionState state)
         {
             Reset();
-            if (state != PlaneSelectionState.AwaitingSelection)
+            if (!_source.TryGetRay(out var ray))
                 return;
 
-            if (_source.TryGetRay(out var ray))
-                Cast(ray);
+            Cast(ray);
+            if (state != PlaneSelectionState.AwaitingSelection)
+                Hovered = null;
         }
 
         void Reset()
