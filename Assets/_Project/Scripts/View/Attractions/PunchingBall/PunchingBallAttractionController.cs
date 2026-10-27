@@ -91,10 +91,10 @@ namespace Fairground.View.Attractions.PunchingBall
         void ResolvePad()
         {
             if (punchPad == null)
-                punchPad = FindFirstObjectByType<PunchPadView>();
+                punchPad = FindAnyObjectByType<PunchPadView>();
 
             if (powerMeter == null)
-                powerMeter = FindFirstObjectByType<PunchPowerMeterView>();
+                powerMeter = FindAnyObjectByType<PunchPowerMeterView>();
         }
 
         PunchingBallViewModel CreateViewModel()

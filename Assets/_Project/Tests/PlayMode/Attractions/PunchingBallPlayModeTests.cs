@@ -28,9 +28,9 @@ namespace Fairground.Tests.PlayMode.Attractions
             Assert.AreEqual(PunchingBallPhase.Playing, vm.Phase);
             Assert.Greater(vm.PunchesRemaining, 0);
             Assert.AreEqual(0, vm.BestScore);
-            Assert.IsNotNull(Object.FindFirstObjectByType<PunchPadView>());
-            Assert.IsNotNull(Object.FindFirstObjectByType<PunchPowerMeterView>());
-            Assert.IsNotNull(Object.FindFirstObjectByType<PunchingBallHudView>());
+            Assert.IsNotNull(Object.FindAnyObjectByType<PunchPadView>());
+            Assert.IsNotNull(Object.FindAnyObjectByType<PunchPowerMeterView>());
+            Assert.IsNotNull(Object.FindAnyObjectByType<PunchingBallHudView>());
         }
 
         [UnityTest]

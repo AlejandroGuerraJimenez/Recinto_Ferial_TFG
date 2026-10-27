@@ -10,6 +10,7 @@
         "Unity.XR.CoreUtils",
         "Unity.XR.Management",
         "Unity.XR.MetaOpenXR",
+        "Oculus.VR",
         "Unity.XR.Interaction.Toolkit",
         "Unity.InputSystem",
         "Unity.RenderPipelines.Universal.Runtime",

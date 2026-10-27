@@ -96,10 +96,10 @@ namespace Fairground.View.Attractions.DuckFishing
         void ResolveRefs()
         {
             if (ducks == null || ducks.Length == 0)
-                ducks = FindObjectsByType<DuckTargetView>(FindObjectsSortMode.None);
+                ducks = FindObjectsByType<DuckTargetView>();
 
             if (rod == null)
-                rod = FindFirstObjectByType<FishingRodView>();
+                rod = FindAnyObjectByType<FishingRodView>();
 
             if (pond == null)
             {

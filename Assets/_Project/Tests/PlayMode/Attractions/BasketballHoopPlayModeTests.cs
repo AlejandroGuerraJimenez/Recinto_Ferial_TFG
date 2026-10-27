@@ -29,9 +29,9 @@ namespace Fairground.Tests.PlayMode.Attractions
             Assert.Greater(vm.BallsRemaining, 0);
             Assert.AreEqual(0, vm.Score);
             Assert.IsTrue(vm.CanThrow);
-            Assert.IsNotNull(Object.FindFirstObjectByType<BallSpawnerView>());
-            Assert.IsNotNull(Object.FindFirstObjectByType<BasketballHoopHudView>());
-            Assert.IsNotNull(Object.FindFirstObjectByType<BasketDetectorView>());
+            Assert.IsNotNull(Object.FindAnyObjectByType<BallSpawnerView>());
+            Assert.IsNotNull(Object.FindAnyObjectByType<BasketballHoopHudView>());
+            Assert.IsNotNull(Object.FindAnyObjectByType<BasketDetectorView>());
         }
 
         [UnityTest]

@@ -89,7 +89,7 @@ namespace Fairground.View.Attractions.BalloonThrow
         void ResolveBalloons()
         {
             if (balloons == null || balloons.Length == 0)
-                balloons = FindObjectsByType<BalloonTargetView>(FindObjectsSortMode.None);
+                balloons = FindObjectsByType<BalloonTargetView>();
 
             RememberBalloonRoot();
         }

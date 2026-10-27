@@ -89,10 +89,10 @@ namespace Fairground.View.Attractions.BasketballHoop
         void ResolveHoop()
         {
             if (hoop == null)
-                hoop = FindFirstObjectByType<BasketDetectorView>();
+                hoop = FindAnyObjectByType<BasketDetectorView>();
 
             if (ballSpawner == null)
-                ballSpawner = FindFirstObjectByType<BallSpawnerView>();
+                ballSpawner = FindAnyObjectByType<BallSpawnerView>();
         }
 
         BasketballHoopViewModel CreateViewModel()

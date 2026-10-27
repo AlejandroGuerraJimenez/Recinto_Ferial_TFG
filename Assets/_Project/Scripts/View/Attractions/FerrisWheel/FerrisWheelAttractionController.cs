@@ -65,7 +65,7 @@ namespace Fairground.View.Attractions.FerrisWheel
         void Bootstrap()
         {
             if (rig == null)
-                rig = FindFirstObjectByType<FerrisWheelRigView>();
+                rig = FindAnyObjectByType<FerrisWheelRigView>();
 
             _viewModel = new FerrisWheelViewModel(degreesPerSecond, cabinCount);
             _viewModel.StartRide();

@@ -35,7 +35,7 @@ namespace Fairground.View.Attractions.DuckFishing.Factories
 
         public void EnsureInteractionManager()
         {
-            if (Object.FindFirstObjectByType<XRInteractionManager>() != null)
+            if (Object.FindAnyObjectByType<XRInteractionManager>() != null)
                 return;
 
             new GameObject("XR Interaction Manager").AddComponent<XRInteractionManager>();
@@ -43,7 +43,7 @@ namespace Fairground.View.Attractions.DuckFishing.Factories
 
         public void EnsureEventSystem()
         {
-            if (Object.FindFirstObjectByType<EventSystem>() != null)
+            if (Object.FindAnyObjectByType<EventSystem>() != null)
                 return;
 
             var go = new GameObject("EventSystem");

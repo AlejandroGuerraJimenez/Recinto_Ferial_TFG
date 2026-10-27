@@ -28,9 +28,9 @@ namespace Fairground.Tests.PlayMode.Attractions
             Assert.AreEqual(BalloonThrowPhase.Playing, vm.Phase);
             Assert.Greater(vm.ThrowsRemaining, 0);
             Assert.Greater(vm.BalloonsRemaining, 0);
-            Assert.IsNotNull(Object.FindFirstObjectByType<BallSpawnerView>());
-            Assert.IsNotNull(Object.FindFirstObjectByType<BalloonThrowHudView>());
-            Assert.Greater(Object.FindObjectsByType<BalloonTargetView>(FindObjectsSortMode.None).Length, 0);
+            Assert.IsNotNull(Object.FindAnyObjectByType<BallSpawnerView>());
+            Assert.IsNotNull(Object.FindAnyObjectByType<BalloonThrowHudView>());
+            Assert.Greater(Object.FindObjectsByType<BalloonTargetView>().Length, 0);
         }
 
         [UnityTest]

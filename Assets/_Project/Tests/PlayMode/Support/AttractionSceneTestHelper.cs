@@ -40,7 +40,7 @@ namespace Fairground.Tests.PlayMode.Support
 
         public static T Require<T>() where T : UnityEngine.Object
         {
-            var found = UnityEngine.Object.FindFirstObjectByType<T>();
+            var found = UnityEngine.Object.FindAnyObjectByType<T>();
             Assert.IsNotNull(found, $"Expected {typeof(T).Name} in the loaded scene.");
             return found;
         }
@@ -51,7 +51,7 @@ namespace Fairground.Tests.PlayMode.Support
             yield return WaitUntil(
                 () =>
                 {
-                    found = UnityEngine.Object.FindFirstObjectByType<T>();
+                    found = UnityEngine.Object.FindAnyObjectByType<T>();
                     return found != null;
                 },
                 timeoutSeconds,

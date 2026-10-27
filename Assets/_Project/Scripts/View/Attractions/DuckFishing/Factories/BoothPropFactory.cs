@@ -20,7 +20,7 @@ namespace Fairground.View.Attractions.DuckFishing.Factories
             RenderSettings.ambientGroundColor = new Color(0.12f, 0.14f, 0.12f, 1f);
             RenderSettings.ambientIntensity = 1f;
 
-            if (Object.FindFirstObjectByType<Light>() != null)
+            if (Object.FindAnyObjectByType<Light>() != null)
                 return;
 
             CreateDirectionalLight();
