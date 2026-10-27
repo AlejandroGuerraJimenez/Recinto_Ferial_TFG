@@ -1,6 +1,6 @@
 using Fairground.ViewModel.Attractions.PunchingBall;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Fairground.View.Attractions.PunchingBall
 {
@@ -9,14 +9,14 @@ namespace Fairground.View.Attractions.PunchingBall
     /// </summary>
     public sealed class PunchingBallHudView : MonoBehaviour
     {
-        [SerializeField] Text scoreText;
-        [SerializeField] Text punchesText;
-        [SerializeField] Text lastPunchText;
-        [SerializeField] Text statusText;
+        [SerializeField] TextMeshProUGUI scoreText;
+        [SerializeField] TextMeshProUGUI punchesText;
+        [SerializeField] TextMeshProUGUI lastPunchText;
+        [SerializeField] TextMeshProUGUI statusText;
 
         PunchingBallViewModel _viewModel;
 
-        public void AssignTexts(Text score, Text punches, Text lastPunch, Text status)
+        public void AssignTexts(TextMeshProUGUI score, TextMeshProUGUI punches, TextMeshProUGUI lastPunch, TextMeshProUGUI status)
         {
             scoreText = score;
             punchesText = punches;
@@ -57,7 +57,7 @@ namespace Fairground.View.Attractions.PunchingBall
             SetText(statusText, _viewModel.StatusText);
         }
 
-        static void SetText(Text label, string value)
+        static void SetText(TextMeshProUGUI label, string value)
         {
             if (label != null)
                 label.text = value;

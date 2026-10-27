@@ -1,6 +1,6 @@
 using Fairground.ViewModel.Attractions.BalloonThrow;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Fairground.View.Attractions.BalloonThrow
 {
@@ -9,14 +9,14 @@ namespace Fairground.View.Attractions.BalloonThrow
     /// </summary>
     public sealed class BalloonThrowHudView : MonoBehaviour
     {
-        [SerializeField] Text scoreText;
-        [SerializeField] Text throwsText;
-        [SerializeField] Text balloonsText;
-        [SerializeField] Text statusText;
+        [SerializeField] TextMeshProUGUI scoreText;
+        [SerializeField] TextMeshProUGUI throwsText;
+        [SerializeField] TextMeshProUGUI balloonsText;
+        [SerializeField] TextMeshProUGUI statusText;
 
         BalloonThrowViewModel _viewModel;
 
-        public void AssignTexts(Text score, Text throwsRemaining, Text balloons, Text status)
+        public void AssignTexts(TextMeshProUGUI score, TextMeshProUGUI throwsRemaining, TextMeshProUGUI balloons, TextMeshProUGUI status)
         {
             scoreText = score;
             throwsText = throwsRemaining;
@@ -57,7 +57,7 @@ namespace Fairground.View.Attractions.BalloonThrow
             SetText(statusText, _viewModel.StatusText);
         }
 
-        static void SetText(Text label, string value)
+        static void SetText(TextMeshProUGUI label, string value)
         {
             if (label != null)
                 label.text = value;

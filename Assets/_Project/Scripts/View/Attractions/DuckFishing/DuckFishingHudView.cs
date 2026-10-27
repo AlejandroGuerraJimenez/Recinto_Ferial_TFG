@@ -1,6 +1,6 @@
 using Fairground.ViewModel.Attractions.DuckFishing;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Fairground.View.Attractions.DuckFishing
 {
@@ -9,14 +9,14 @@ namespace Fairground.View.Attractions.DuckFishing
     /// </summary>
     public sealed class DuckFishingHudView : MonoBehaviour
     {
-        [SerializeField] Text scoreText;
-        [SerializeField] Text attemptsText;
-        [SerializeField] Text ducksText;
-        [SerializeField] Text statusText;
+        [SerializeField] TextMeshProUGUI scoreText;
+        [SerializeField] TextMeshProUGUI attemptsText;
+        [SerializeField] TextMeshProUGUI ducksText;
+        [SerializeField] TextMeshProUGUI statusText;
 
         DuckFishingViewModel _viewModel;
 
-        public void AssignTexts(Text score, Text attempts, Text ducks, Text status)
+        public void AssignTexts(TextMeshProUGUI score, TextMeshProUGUI attempts, TextMeshProUGUI ducks, TextMeshProUGUI status)
         {
             scoreText = score;
             attemptsText = attempts;
@@ -57,7 +57,7 @@ namespace Fairground.View.Attractions.DuckFishing
             SetText(statusText, _viewModel.StatusText);
         }
 
-        static void SetText(Text label, string value)
+        static void SetText(TextMeshProUGUI label, string value)
         {
             if (label != null)
                 label.text = value;

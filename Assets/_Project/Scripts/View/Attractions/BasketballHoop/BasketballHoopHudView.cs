@@ -1,6 +1,6 @@
 using Fairground.ViewModel.Attractions.BasketballHoop;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Fairground.View.Attractions.BasketballHoop
 {
@@ -9,13 +9,13 @@ namespace Fairground.View.Attractions.BasketballHoop
     /// </summary>
     public sealed class BasketballHoopHudView : MonoBehaviour
     {
-        [SerializeField] Text scoreText;
-        [SerializeField] Text ballsText;
-        [SerializeField] Text statusText;
+        [SerializeField] TextMeshProUGUI scoreText;
+        [SerializeField] TextMeshProUGUI ballsText;
+        [SerializeField] TextMeshProUGUI statusText;
 
         BasketballHoopViewModel _viewModel;
 
-        public void AssignTexts(Text score, Text ballsRemaining, Text status)
+        public void AssignTexts(TextMeshProUGUI score, TextMeshProUGUI ballsRemaining, TextMeshProUGUI status)
         {
             scoreText = score;
             ballsText = ballsRemaining;
@@ -54,7 +54,7 @@ namespace Fairground.View.Attractions.BasketballHoop
             SetText(statusText, _viewModel.StatusText);
         }
 
-        static void SetText(Text label, string value)
+        static void SetText(TextMeshProUGUI label, string value)
         {
             if (label != null)
                 label.text = value;

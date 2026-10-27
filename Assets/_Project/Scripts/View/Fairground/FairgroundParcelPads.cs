@@ -235,7 +235,7 @@ namespace Fairground.View
             var label = new GameObject("Label");
             label.transform.SetParent(transform, false);
             label.transform.localPosition = new Vector3(0f, 0.06f, 0f);
-            label.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
+            label.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
             label.transform.localScale = Vector3.one * 0.12f;
 
             var text = label.AddComponent<TextMeshPro>();

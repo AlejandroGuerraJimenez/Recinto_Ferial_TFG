@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,9 +19,9 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
 
         static void AssignDefaultTexts(BasketballHoopHudView hud, Transform parent)
         {
-            Text score = CreateLabel(parent, "ScoreText", new Vector2(0f, 80f), "Score: 0");
-            Text balls = CreateLabel(parent, "BallsText", new Vector2(0f, 0f), "Balls: 10");
-            Text status = CreateLabel(parent, "StatusText", new Vector2(0f, -80f), "Shoot the hoop!");
+            TextMeshProUGUI score = CreateLabel(parent, "ScoreText", new Vector2(0f, 80f), "Score: 0");
+            TextMeshProUGUI balls = CreateLabel(parent, "BallsText", new Vector2(0f, 0f), "Balls: 10");
+            TextMeshProUGUI status = CreateLabel(parent, "StatusText", new Vector2(0f, -80f), "Shoot the hoop!");
             hud.AssignTexts(score, balls, status);
         }
 
@@ -45,27 +46,28 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
             var rect = canvasGo.GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(800f, 320f);
             canvasGo.transform.position = BasketballHoopLayout.HudPosition;
-            canvasGo.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+            canvasGo.transform.rotation = Quaternion.identity;
             canvasGo.transform.localScale = Vector3.one * 0.0025f;
         }
 
-        static Text CreateLabel(Transform parent, string name, Vector2 pos, string value)
+        static TextMeshProUGUI CreateLabel(Transform parent, string name, Vector2 pos, string value)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
-            var text = go.AddComponent<Text>();
+            var text = go.AddComponent<TextMeshProUGUI>();
             StyleLabel(text, value);
             PlaceLabel(go.GetComponent<RectTransform>(), pos);
             return text;
         }
 
-        static void StyleLabel(Text text, string value)
+        static void StyleLabel(TextMeshProUGUI text, string value)
         {
             text.font = ResolveFont();
             text.fontSize = 48;
-            text.alignment = TextAnchor.MiddleCenter;
+            text.alignment = TextAlignmentOptions.Center;
             text.color = Color.white;
             text.text = value;
+            text.raycastTarget = false;
         }
 
         static void PlaceLabel(RectTransform rect, Vector2 pos)
@@ -74,10 +76,12 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
             rect.anchoredPosition = pos;
         }
 
-        static Font ResolveFont()
+        static TMP_FontAsset ResolveFont()
         {
-            return Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
-                   ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            if (TMP_Settings.defaultFontAsset != null)
+                return TMP_Settings.defaultFontAsset;
+
+            return Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
         }
     }
 }

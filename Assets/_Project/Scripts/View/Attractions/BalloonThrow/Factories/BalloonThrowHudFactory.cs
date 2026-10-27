@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,10 +19,10 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
 
         static void AssignDefaultTexts(BalloonThrowHudView hud, Transform parent)
         {
-            Text score = CreateLabel(parent, "ScoreText", new Vector2(0f, 120f), "Score: 0");
-            Text throwsText = CreateLabel(parent, "ThrowsText", new Vector2(0f, 40f), "Throws: 8");
-            Text balloons = CreateLabel(parent, "BalloonsText", new Vector2(0f, -40f), "Balloons: 6");
-            Text status = CreateLabel(parent, "StatusText", new Vector2(0f, -120f), "Pop the balloons!");
+            TextMeshProUGUI score = CreateLabel(parent, "ScoreText", new Vector2(0f, 120f), "Score: 0");
+            TextMeshProUGUI throwsText = CreateLabel(parent, "ThrowsText", new Vector2(0f, 40f), "Throws: 8");
+            TextMeshProUGUI balloons = CreateLabel(parent, "BalloonsText", new Vector2(0f, -40f), "Balloons: 6");
+            TextMeshProUGUI status = CreateLabel(parent, "StatusText", new Vector2(0f, -120f), "Pop the balloons!");
             hud.AssignTexts(score, throwsText, balloons, status);
         }
 
@@ -46,27 +47,28 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
             var rect = canvasGo.GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(800f, 400f);
             canvasGo.transform.position = new Vector3(0f, 2.1f, 3.2f);
-            canvasGo.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+            canvasGo.transform.rotation = Quaternion.identity;
             canvasGo.transform.localScale = Vector3.one * 0.0025f;
         }
 
-        static Text CreateLabel(Transform parent, string name, Vector2 pos, string value)
+        static TextMeshProUGUI CreateLabel(Transform parent, string name, Vector2 pos, string value)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
-            var text = go.AddComponent<Text>();
+            var text = go.AddComponent<TextMeshProUGUI>();
             StyleLabel(text, value);
             PlaceLabel(go.GetComponent<RectTransform>(), pos);
             return text;
         }
 
-        static void StyleLabel(Text text, string value)
+        static void StyleLabel(TextMeshProUGUI text, string value)
         {
             text.font = ResolveFont();
             text.fontSize = 48;
-            text.alignment = TextAnchor.MiddleCenter;
+            text.alignment = TextAlignmentOptions.Center;
             text.color = Color.white;
             text.text = value;
+            text.raycastTarget = false;
         }
 
         static void PlaceLabel(RectTransform rect, Vector2 pos)
@@ -75,10 +77,12 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
             rect.anchoredPosition = pos;
         }
 
-        static Font ResolveFont()
+        static TMP_FontAsset ResolveFont()
         {
-            return Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
-                   ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            if (TMP_Settings.defaultFontAsset != null)
+                return TMP_Settings.defaultFontAsset;
+
+            return Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
         }
     }
 }
