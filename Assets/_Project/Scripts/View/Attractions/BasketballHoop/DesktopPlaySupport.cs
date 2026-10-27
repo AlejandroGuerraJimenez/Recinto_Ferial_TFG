@@ -104,6 +104,7 @@ namespace Fairground.View.Attractions.BasketballHoop
                 return;
 
             ApplyLook();
+            AttractionDesktopPlay.MoveWithKeyboard(cameraTransform, AttractionDesktopPlay.MoveSpeed);
             HandleThrowInput();
             HandleCursorUnlock();
         }
@@ -191,7 +192,7 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         static bool IsHeadsetDisplayActive()
         {
-            return UnityEngine.XR.XRSettings.isDeviceActive;
+            return AttractionDesktopPlay.IsLiveHeadset();
         }
     }
 }

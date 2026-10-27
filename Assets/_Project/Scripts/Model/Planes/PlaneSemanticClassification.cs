@@ -3,7 +3,7 @@ namespace Fairground.Model
     /// <summary>
     /// Semantic label used to choose a surface for the fairground.
     /// Unknown means the device reported no label.
-    /// Wall, ceiling, door and window stay selectable. Floor and table still rank above them.
+    /// Only an upward horizontal surface is selectable. Floor and table still rank above an unlabeled floor.
     /// </summary>
     public enum PlaneSemanticClassification
     {

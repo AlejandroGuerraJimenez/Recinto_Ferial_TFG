@@ -38,7 +38,7 @@ namespace Fairground.Model
         public const float MinimumUpDot = 0.5f;
 
         /// <summary>
-        /// A surface counts as upward until it tilts about 60 degrees. Ranking uses this; acceptance does not.
+        /// A surface counts as upward until it tilts about 60 degrees. Steeper planes, including walls, are rejected.
         /// </summary>
         public bool FacesUp()
         {

@@ -44,15 +44,15 @@ namespace Fairground.View.Attractions.FerrisWheel
 
         void Assemble()
         {
-            var wheelFactory = new FerrisWheelFactory();
-            wheelFactory.EnsureLighting();
-            FerrisWheelRigView rig = wheelFactory.Create(cabinCount);
-            AttractionPlacement.TryApplyFromSession(rig.transform);
-
             var rigFactory = new XrAttractionRigFactory(xrOriginPrefab);
             rigFactory.EnsureInteractionManager();
             rigFactory.EnsureEventSystem();
             GameObject xrOrigin = rigFactory.EnsureXrOrigin();
+
+            var wheelFactory = new FerrisWheelFactory();
+            wheelFactory.EnsureLighting();
+            FerrisWheelRigView rig = wheelFactory.Create(cabinCount);
+            AttractionPlacement.TryApplyFromSession(rig.transform);
 
             var controller = CreateController(rig);
             CreateVrCameraSetup(xrOrigin);

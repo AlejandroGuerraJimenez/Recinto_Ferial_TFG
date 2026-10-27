@@ -26,6 +26,7 @@ namespace Fairground.View.Attractions.PunchingBall.Factories
             if (existing != null)
             {
                 ConfigureOpaqueCamera(existing.GetComponentInChildren<Camera>());
+                AttractionXrRigSetup.Apply(existing);
                 return existing;
             }
 
@@ -62,6 +63,7 @@ namespace Fairground.View.Attractions.PunchingBall.Factories
             instance.name = "XR Origin";
             instance.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             ConfigureOpaqueCamera(instance.GetComponentInChildren<Camera>());
+            AttractionXrRigSetup.Apply(instance);
             return instance;
         }
 

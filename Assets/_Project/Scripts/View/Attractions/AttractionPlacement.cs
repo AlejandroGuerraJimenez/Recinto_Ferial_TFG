@@ -5,9 +5,8 @@ using UnityEngine;
 namespace Fairground.View.Attractions
 {
     /// <summary>
-    /// Puts booth content on the floor under the new scene's XR rig.
-    /// The rig spawns at the origin and falls while gravity finds no collider,
-    /// so the old tracking coordinates are not reused.
+    /// Puts booth content on the floor at the origin, in front of the new scene's XR rig.
+    /// The rig stays there and tracks the headset, so the previous scene's coordinates are not reused.
     /// </summary>
     public static class AttractionPlacement
     {

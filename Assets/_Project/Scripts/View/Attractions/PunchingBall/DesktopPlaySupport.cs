@@ -106,6 +106,7 @@ namespace Fairground.View.Attractions.PunchingBall
                 return;
 
             ApplyLook();
+            AttractionDesktopPlay.MoveWithKeyboard(cameraTransform, AttractionDesktopPlay.MoveSpeed);
             HandlePunchCharge();
             HandleCursorUnlock();
         }
@@ -183,7 +184,7 @@ namespace Fairground.View.Attractions.PunchingBall
 
         static bool IsHeadsetDisplayActive()
         {
-            return UnityEngine.XR.XRSettings.isDeviceActive;
+            return AttractionDesktopPlay.IsLiveHeadset();
         }
     }
 }

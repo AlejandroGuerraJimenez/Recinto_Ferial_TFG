@@ -103,6 +103,7 @@ namespace Fairground.View.Attractions.BalloonThrow
                 return;
 
             ApplyLook();
+            AttractionDesktopPlay.MoveWithKeyboard(cameraTransform, AttractionDesktopPlay.MoveSpeed);
             HandleThrowInput();
             HandleCursorUnlock();
         }
@@ -180,7 +181,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         static bool IsHeadsetDisplayActive()
         {
-            return UnityEngine.XR.XRSettings.isDeviceActive;
+            return AttractionDesktopPlay.IsLiveHeadset();
         }
     }
 }

@@ -102,6 +102,7 @@ namespace Fairground.View.Attractions.DuckFishing
                 return;
 
             ApplyLook();
+            AttractionDesktopPlay.MoveWithKeyboard(cameraTransform, AttractionDesktopPlay.MoveSpeed);
             HandleCursorUnlock();
         }
 
@@ -170,7 +171,7 @@ namespace Fairground.View.Attractions.DuckFishing
 
         static bool IsHeadsetDisplayActive()
         {
-            return UnityEngine.XR.XRSettings.isDeviceActive;
+            return AttractionDesktopPlay.IsLiveHeadset();
         }
     }
 }

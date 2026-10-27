@@ -79,7 +79,7 @@ namespace Fairground.View.Attractions.FerrisWheel
 
         static bool IsHeadsetDisplayActive()
         {
-            return UnityEngine.XR.XRSettings.isDeviceActive;
+            return AttractionDesktopPlay.IsLiveHeadset();
         }
 #endif
 
@@ -95,6 +95,7 @@ namespace Fairground.View.Attractions.FerrisWheel
                 return;
 
             ApplyLook();
+            AttractionDesktopPlay.MoveWithKeyboard(cameraTransform, AttractionDesktopPlay.MoveSpeed);
             if (KeyboardEscapePressed())
                 LockCursor(false);
         }

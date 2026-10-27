@@ -39,33 +39,37 @@ namespace Fairground.Tests.EditMode
         }
 
         [Test]
-        public void StructuralLabels_AreAccepted_AndRankBelowFloor()
+        public void VerticalLabels_AreRejected()
         {
-            var floor = Plane("floor", PlaneSemanticClassification.Floor, PlaneAlignmentKind.HorizontalUp);
-            Assert.IsTrue(PlaneCandidateFilter.TryRank(floor, out var floorRank));
-            AssertAcceptedBelow(floorRank, Plane("wall", PlaneSemanticClassification.Wall, PlaneAlignmentKind.Other));
-            AssertAcceptedBelow(floorRank, Plane("ceiling", PlaneSemanticClassification.Ceiling, PlaneAlignmentKind.Other));
-            AssertAcceptedBelow(floorRank, Plane("door", PlaneSemanticClassification.Door, PlaneAlignmentKind.Other));
-            AssertAcceptedBelow(floorRank, Plane("window", PlaneSemanticClassification.Window, PlaneAlignmentKind.Other));
+            Assert.IsFalse(PlaneCandidateFilter.TryRank(Plane("wall", PlaneSemanticClassification.Wall, PlaneAlignmentKind.Other), out _));
+            Assert.IsFalse(PlaneCandidateFilter.TryRank(Plane("ceiling", PlaneSemanticClassification.Ceiling, PlaneAlignmentKind.Other), out _));
+            Assert.IsFalse(PlaneCandidateFilter.TryRank(Plane("door", PlaneSemanticClassification.Door, PlaneAlignmentKind.Other), out _));
+            Assert.IsFalse(PlaneCandidateFilter.TryRank(Plane("window", PlaneSemanticClassification.Window, PlaneAlignmentKind.Other), out _));
         }
 
         [Test]
-        public void NonHorizontal_IsAccepted()
+        public void NonHorizontal_IsRejected()
         {
-            Assert.IsTrue(PlaneCandidateFilter.TryRank(Plane("floor", PlaneSemanticClassification.Floor, PlaneAlignmentKind.Other), out _));
-            Assert.IsTrue(PlaneCandidateFilter.TryRank(Plane("open", PlaneSemanticClassification.Unknown, PlaneAlignmentKind.Other), out _));
+            Assert.IsFalse(PlaneCandidateFilter.TryRank(Plane("floor", PlaneSemanticClassification.Floor, PlaneAlignmentKind.Other), out _));
+            Assert.IsFalse(PlaneCandidateFilter.TryRank(Plane("open", PlaneSemanticClassification.Unknown, PlaneAlignmentKind.Other), out _));
+        }
+
+        [Test]
+        public void DownwardPose_IsRejected_EvenWhenFlaggedHorizontal()
+        {
+            var ceiling = new DetectedPlane(
+                "ceiling",
+                TiltedAroundX(180f),
+                Square(),
+                PlaneSemanticClassification.Ceiling,
+                PlaneAlignmentKind.HorizontalUp);
+            Assert.IsFalse(PlaneCandidateFilter.TryRank(ceiling, out _));
         }
 
         [Test]
         public void ShortBoundary_IsRejected()
         {
             Assert.IsFalse(PlaneCandidateFilter.TryRank(Tiny(), out _));
-        }
-
-        static void AssertAcceptedBelow(PlaneRank floorRank, DetectedPlane plane)
-        {
-            Assert.IsTrue(PlaneCandidateFilter.TryRank(plane, out var rank));
-            Assert.Greater(floorRank.CompareTo(rank), 0);
         }
 
         static DetectedPlane Plane(string id, PlaneSemanticClassification classification, PlaneAlignmentKind alignment)
@@ -92,6 +96,14 @@ namespace Fairground.Tests.EditMode
                 new PlanePoint(1f, 1f),
                 new PlanePoint(1f, -1f),
             };
+        }
+
+        static PlanePose TiltedAroundX(float degrees)
+        {
+            var halfRadians = degrees * System.Math.PI / 180d * 0.5d;
+            var sine = (float)System.Math.Sin(halfRadians);
+            var cosine = (float)System.Math.Cos(halfRadians);
+            return new PlanePose(0f, 0f, 0f, sine, 0f, 0f, cosine);
         }
 
         static PlanePoint[] Wide()

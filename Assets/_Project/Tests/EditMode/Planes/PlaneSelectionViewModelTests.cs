@@ -16,10 +16,10 @@ namespace Fairground.Tests.EditMode
         }
 
         [Test]
-        public void SelectPlane_RejectsSecondConfirm_AndAcceptsAWall()
+        public void SelectPlane_RejectsSecondConfirm_AndRejectsAVerticalWall()
         {
             AssertSecondConfirmIsIgnored();
-            AssertWallIsSelectable();
+            AssertVerticalWallIsRejected();
         }
 
         [Test]
@@ -57,12 +57,12 @@ namespace Fairground.Tests.EditMode
             Assert.AreEqual(1, received);
         }
 
-        static void AssertWallIsSelectable()
+        static void AssertVerticalWallIsRejected()
         {
             var fresh = new PlaneSelectionViewModel();
-            Assert.IsTrue(fresh.SelectPlane(Wall()));
-            Assert.AreEqual(PlaneSelectionState.PlaneSelected, fresh.State);
-            Assert.AreEqual("wall", fresh.SelectedPlane?.Id);
+            Assert.IsFalse(fresh.SelectPlane(VerticalWall()));
+            Assert.AreEqual(PlaneSelectionState.AwaitingSelection, fresh.State);
+            Assert.IsFalse(fresh.SelectedPlane.HasValue);
         }
 
         static PlaneSelectionViewModel Counting(Tally states)
@@ -86,7 +86,7 @@ namespace Fairground.Tests.EditMode
 
         static DetectedPlane UnlabeledHorizontal() => Surface("open", PlaneSemanticClassification.Unknown, PlaneAlignmentKind.HorizontalUp);
 
-        static DetectedPlane Wall() => Surface("wall", PlaneSemanticClassification.Wall, PlaneAlignmentKind.HorizontalUp);
+        static DetectedPlane VerticalWall() => Surface("wall", PlaneSemanticClassification.Wall, PlaneAlignmentKind.Other);
 
         static DetectedPlane HorizontalFloor() => Surface("room-floor", PlaneSemanticClassification.Floor, PlaneAlignmentKind.HorizontalUp);
 
