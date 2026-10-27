@@ -1,4 +1,3 @@
-using Fairground.Model.Attractions.FerrisWheel;
 using Fairground.View.Attractions.FerrisWheel.Factories;
 using Fairground.View.Attractions.Rendering;
 using UnityEngine;
@@ -6,14 +5,15 @@ using UnityEngine;
 namespace Fairground.View.Attractions.FerrisWheel
 {
     /// <summary>
-    /// Director: builds the basic wheel and an opaque VR rig. The mesh is created at play time.
+    /// Director: builds the London Eye capsule over Cesium and an opaque VR rig.
+    /// The globe and the ride are created at play time.
     /// </summary>
     public sealed class FerrisWheelSceneInstaller : MonoBehaviour
     {
         [SerializeField] GameObject xrOriginPrefab;
         [SerializeField] Material primitiveLitTemplate;
-        [SerializeField] float degreesPerSecond = FerrisWheelRules.DefaultDegreesPerSecond;
-        [SerializeField] int cabinCount = FerrisWheelRules.DefaultCabinCount;
+        [SerializeField] float degreesPerSecond = LondonEyeLayout.DegreesPerSecond;
+        [SerializeField] int cabinCount = LondonEyeLayout.CabinCount;
         [SerializeField] bool buildOnAwake = true;
 
         bool _built;
@@ -49,10 +49,8 @@ namespace Fairground.View.Attractions.FerrisWheel
             rigFactory.EnsureEventSystem();
             GameObject xrOrigin = rigFactory.EnsureXrOrigin();
 
-            var wheelFactory = new FerrisWheelFactory();
-            wheelFactory.EnsureLighting();
-            FerrisWheelRigView rig = wheelFactory.Create(cabinCount);
-            AttractionPlacement.TryApplyFromSession(rig.transform);
+            var ride = new LondonEyeRideFactory();
+            FerrisWheelRigView rig = ride.Create(xrOrigin);
 
             var controller = CreateController(rig);
             CreateVrCameraSetup(xrOrigin);

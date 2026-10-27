@@ -116,3 +116,7 @@ InitTestScene*.unity*
 # IL2CPP / player build leftovers (do not ship or commit)
 *_BackUpThisFolder_ButDontShipItWithYourGame/
 *_BurstDebugInformation_DoNotShip/
+
+# Cesium ion access token (not committed)
+Assets/_Project/Settings/cesium-ion-token.txt
+Assets/_Project/Settings/cesium-ion-token.txt.meta

@@ -1,6 +1,5 @@
 using System.IO;
 using Fairground.Core.Attractions;
-using Fairground.Model.Attractions.FerrisWheel;
 using Fairground.View.Attractions.FerrisWheel;
 using Fairground.View.Attractions.Rendering;
 using UnityEditor;
@@ -11,7 +10,7 @@ using UnityEngine.SceneManagement;
 namespace Fairground.Editor.Attractions.FerrisWheel
 {
     /// <summary>
-    /// Editor builder: empty FerrisWheel scene whose installer spins up the wheel at play time.
+    /// Editor builder: empty FerrisWheel scene whose installer starts the London Eye ride at play time.
     /// </summary>
     public static class FerrisWheelSceneBuilder
     {
@@ -26,7 +25,7 @@ namespace Fairground.Editor.Attractions.FerrisWheel
             Build();
             EditorUtility.DisplayDialog(
                 "Ferris Wheel",
-                "Basic ferris wheel scene is ready. Press Play to see it spin. B returns to the fairground.",
+                "London Eye ride is ready. Press Play to spin the capsule. B returns to the fairground.",
                 "OK");
         }
 
@@ -75,8 +74,8 @@ namespace Fairground.Editor.Attractions.FerrisWheel
             var so = new SerializedObject(installer);
             so.FindProperty("xrOriginPrefab").objectReferenceValue = xrOriginPrefab;
             so.FindProperty("primitiveLitTemplate").objectReferenceValue = primitiveTemplate;
-            so.FindProperty("degreesPerSecond").floatValue = FerrisWheelRules.DefaultDegreesPerSecond;
-            so.FindProperty("cabinCount").intValue = FerrisWheelRules.DefaultCabinCount;
+            so.FindProperty("degreesPerSecond").floatValue = LondonEyeLayout.DegreesPerSecond;
+            so.FindProperty("cabinCount").intValue = LondonEyeLayout.CabinCount;
             so.FindProperty("buildOnAwake").boolValue = true;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
