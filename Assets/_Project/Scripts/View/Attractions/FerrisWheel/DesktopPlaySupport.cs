@@ -1,4 +1,5 @@
 using System.Collections;
+using CesiumForUnity;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEngine.XR.Management;
@@ -120,6 +121,10 @@ namespace Fairground.View.Attractions.FerrisWheel
 
         void PlaceCamera()
         {
+            // The London Eye ride already stands this camera on the platform.
+            if (cameraTransform.GetComponentInParent<CesiumGeoreference>() != null)
+                return;
+
             Vector3 eye = FerrisWheelLayout.DesktopEye;
             Vector3 hub = FerrisWheelLayout.WheelCenter;
             cameraTransform.SetPositionAndRotation(eye, Quaternion.LookRotation(hub - eye, Vector3.up));

@@ -16,6 +16,8 @@
         "Unity.RenderPipelines.Universal.Runtime",
         "UnityEngine.UI",
         "Unity.TextMeshPro",
+        "Unity.Mathematics",
+        "Unity.Splines",
         "CesiumForUnity"
     ],
     "includePlatforms": [],

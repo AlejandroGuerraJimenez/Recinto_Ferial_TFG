@@ -19,7 +19,12 @@ namespace Fairground.View.Attractions.FerrisWheel
             if (!string.IsNullOrEmpty(token))
                 return true;
 
+            // The project file is on disk in the editor. A Quest build cannot read it from the APK.
             token = ReadProjectFile();
+            if (!string.IsNullOrEmpty(token))
+                return true;
+
+            token = ReadResources();
             return !string.IsNullOrEmpty(token);
         }
 
@@ -45,6 +50,19 @@ namespace Fairground.View.Attractions.FerrisWheel
                 Debug.LogError("[FerrisWheel] Could not read " + ProjectAssetPath + ": " + exception.Message);
                 return null;
             }
+        }
+
+        /// <summary>
+        /// TextAsset baked for the player. The Quest APK cannot see the gitignored file on disk.
+        /// </summary>
+        static string ReadResources()
+        {
+            TextAsset asset = Resources.Load<TextAsset>("cesium-ion-token");
+            if (asset == null)
+                return null;
+
+            string value = asset.text != null ? asset.text.Trim() : null;
+            return string.IsNullOrEmpty(value) ? null : value;
         }
     }
 }

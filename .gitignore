@@ -120,3 +120,5 @@ InitTestScene*.unity*
 # Cesium ion access token (not committed)
 Assets/_Project/Settings/cesium-ion-token.txt
 Assets/_Project/Settings/cesium-ion-token.txt.meta
+Assets/_Project/Settings/Resources/cesium-ion-token.txt
+Assets/_Project/Settings/Resources/cesium-ion-token.txt.meta

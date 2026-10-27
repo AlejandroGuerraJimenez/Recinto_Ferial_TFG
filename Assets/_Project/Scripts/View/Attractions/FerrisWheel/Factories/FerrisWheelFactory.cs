@@ -99,8 +99,8 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             const float footX = 1.75f;
             const float footZ = 1.15f;
 
-            CreateAFrame(parent, center, axleHalf, footX, footZ, 1f);
-            CreateAFrame(parent, center, axleHalf, footX, footZ, -1f);
+            CreateAFrame(parent, center, axleHalf, footX, footZ, 1f, 0.08f);
+            CreateAFrame(parent, center, axleHalf, footX, footZ, -1f, 0.08f);
 
             var axle = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             axle.name = "Axle";
@@ -111,19 +111,50 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             PrimitiveMaterialApplier.Apply(axle, HubColor);
         }
 
+        /// <summary>
+        /// Rebuilds the A-frame so its feet sit at <paramref name="footY"/> in the wheel root's local space.
+        /// </summary>
+        public void PlaceFeet(Transform root, float footY)
+        {
+            RemoveNamed(root, "Leg");
+            RemoveNamed(root, "Sill");
+            Vector3 center = FerrisWheelLayout.WheelCenter;
+            const float axleHalf = 0.62f;
+            const float footX = 1.75f;
+            const float footZ = 1.15f;
+            CreateAFrame(root, center, axleHalf, footX, footZ, 1f, footY);
+            CreateAFrame(root, center, axleHalf, footX, footZ, -1f, footY);
+        }
+
+        static void RemoveNamed(Transform parent, string childName)
+        {
+            for (int i = parent.childCount - 1; i >= 0; i--)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name != childName)
+                    continue;
+
+                if (Application.isPlaying)
+                    Object.Destroy(child.gameObject);
+                else
+                    Object.DestroyImmediate(child.gameObject);
+            }
+        }
+
         static void CreateAFrame(
             Transform parent,
             Vector3 center,
             float axleHalf,
             float footX,
             float footZ,
-            float side)
+            float side,
+            float footY)
         {
             float zHub = center.z + side * axleHalf;
             float zFoot = center.z + side * footZ;
             var hub = new Vector3(0f, center.y, zHub);
-            var left = new Vector3(-footX, 0.08f, zFoot);
-            var right = new Vector3(footX, 0.08f, zFoot);
+            var left = new Vector3(-footX, footY, zFoot);
+            var right = new Vector3(footX, footY, zFoot);
             CreateBeam(parent, "Leg", left, hub, 0.1f, SupportColor);
             CreateBeam(parent, "Leg", right, hub, 0.1f, SupportColor);
             CreateBeam(parent, "Sill", left, right, 0.1f, SupportColor);
