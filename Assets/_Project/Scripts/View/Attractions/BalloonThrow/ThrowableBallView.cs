@@ -1,4 +1,5 @@
 using System;
+using Fairground.View.Attractions;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -17,6 +18,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         Rigidbody _rigidbody;
         XRGrabInteractable _grabInteractable;
+        HeldThrowRelease _release;
         bool _throwReported;
         bool _isThrown;
         float _despawnAt = -1f;
@@ -30,7 +32,8 @@ namespace Fairground.View.Attractions.BalloonThrow
         {
             _rigidbody = GetComponent<Rigidbody>();
             _grabInteractable = GetComponent<XRGrabInteractable>();
-            _grabInteractable.throwOnDetach = true;
+            _release = GetComponent<HeldThrowRelease>();
+            HeldThrowGrab.Apply(_grabInteractable);
             _grabInteractable.selectExited.AddListener(OnSelectExited);
         }
 
@@ -73,6 +76,7 @@ namespace Fairground.View.Attractions.BalloonThrow
             if (args.isCanceled || _throwReported)
                 return;
 
+            _release?.TryApply(args);
             if (_rigidbody.linearVelocity.magnitude < minThrowSpeed)
                 return;
 

@@ -1,4 +1,5 @@
 using System;
+using Fairground.View.Attractions;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -16,6 +17,7 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         Rigidbody _rigidbody;
         XRGrabInteractable _grabInteractable;
+        HeldThrowRelease _release;
         bool _throwReported;
         bool _isThrown;
         bool _alreadyScored;
@@ -32,7 +34,8 @@ namespace Fairground.View.Attractions.BasketballHoop
         {
             _rigidbody = GetComponent<Rigidbody>();
             _grabInteractable = GetComponent<XRGrabInteractable>();
-            _grabInteractable.throwOnDetach = true;
+            _release = GetComponent<HeldThrowRelease>();
+            HeldThrowGrab.Apply(_grabInteractable);
             _grabInteractable.selectExited.AddListener(OnSelectExited);
         }
 
@@ -95,6 +98,7 @@ namespace Fairground.View.Attractions.BasketballHoop
             if (args.isCanceled || _throwReported)
                 return;
 
+            _release?.TryApply(args);
             MarkThrown();
         }
 

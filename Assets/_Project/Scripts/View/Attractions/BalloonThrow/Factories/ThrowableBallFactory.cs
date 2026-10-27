@@ -1,3 +1,4 @@
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.Rendering;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -16,6 +17,9 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
             var root = CreateSphere();
             ConfigureBody(root.AddComponent<Rigidbody>());
             ConfigureGrab(root.AddComponent<XRGrabInteractable>());
+            // Booth targets sit about 3.3 m ahead. A wrist flick is only a few m/s,
+            // so the release scale brings a normal throw up to that distance.
+            root.AddComponent<HeldThrowRelease>().Configure(3.4f, 14f, 0f);
             return root.AddComponent<ThrowableBallView>();
         }
 
@@ -36,11 +40,6 @@ namespace Fairground.View.Attractions.BalloonThrow.Factories
             body.collisionDetectionMode = CollisionDetectionMode.Continuous;
         }
 
-        static void ConfigureGrab(XRGrabInteractable grab)
-        {
-            grab.throwOnDetach = true;
-            grab.useDynamicAttach = true;
-            grab.movementType = XRBaseInteractable.MovementType.VelocityTracking;
-        }
+        static void ConfigureGrab(XRGrabInteractable grab) => HeldThrowGrab.Apply(grab);
     }
 }

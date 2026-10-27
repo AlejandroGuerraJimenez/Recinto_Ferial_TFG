@@ -1,3 +1,4 @@
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.Rendering;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -17,6 +18,9 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
             ConfigureCollider(root.GetComponent<SphereCollider>());
             ConfigureBody(root.AddComponent<Rigidbody>());
             ConfigureGrab(root.AddComponent<XRGrabInteractable>());
+            // Rim is ~3 m ahead and above the hand. Scale keeps a hard shot faster
+            // than a soft one; the arc fills in a flat swing so it can reach the rim.
+            root.AddComponent<HeldThrowRelease>().Configure(3f, 12f, 0.38f);
             return root.AddComponent<BasketballBallView>();
         }
 
@@ -50,11 +54,6 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         }
 
-        static void ConfigureGrab(XRGrabInteractable grab)
-        {
-            grab.throwOnDetach = true;
-            grab.useDynamicAttach = true;
-            grab.movementType = XRBaseInteractable.MovementType.VelocityTracking;
-        }
+        static void ConfigureGrab(XRGrabInteractable grab) => HeldThrowGrab.Apply(grab);
     }
 }
