@@ -147,7 +147,7 @@ namespace Fairground.View.Attractions.PunchingBall
 
         public void ReturnToFairground()
         {
-            FairgroundSession.Clear();
+            FairgroundSession.LeaveAttraction();
             SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }

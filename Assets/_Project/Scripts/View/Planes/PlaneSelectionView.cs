@@ -10,7 +10,8 @@ namespace Fairground.View
     /// Detects horizontal surfaces and lets the user confirm one.
     /// Quest 3 reads those surfaces from the Space Setup scene model (XR_FB_scene), not a live mobile scan.
     /// There is no start button. Detection attaches itself once the OpenXR plane subsystem exists.
-    /// Right trigger confirms. Right B button (secondaryButton) clears the choice and attaches detection again.
+    /// Right trigger confirms. Right B on this menu clears the choice and attaches detection again.
+    /// Right B inside an attraction returns here, with the floor still locked.
     /// Left Y closes the Quest build.
     /// In the editor, without a headset: aim with the view, left click or Space confirms, R restarts.
     /// </summary>
@@ -43,6 +44,7 @@ namespace Fairground.View
         float _scanSince = -1f;
         int _attachAttempts;
         bool _askedForRoom;
+        float _ignoreRestartUntil;
 
         /// <summary>
         /// Fired once when the user confirms a surface. Other surfaces are hidden. Parcels stay on this one.
@@ -139,10 +141,39 @@ namespace Fairground.View
         }
 
         /// <summary>
+        /// Shows the parcel menu on a floor chosen before the current scene loaded.
+        /// </summary>
+        public bool TryRestore(DetectedPlane plane)
+        {
+            if (_viewModel == null || State != PlaneSelectionState.AwaitingSelection)
+                return false;
+
+            if (!PlaneCandidateFilter.TryRank(plane, out _))
+                return false;
+
+            var visual = SavedPlaneSurface.Spawn(plane, transform, FillTemplate(), BorderTemplate());
+            _catalog.Track(visual);
+            _pointer.Selected = visual;
+            if (_viewModel.SelectPlane(plane))
+            {
+                _ignoreRestartUntil = Time.unscaledTime + 0.4f;
+                return true;
+            }
+
+            _pointer.Selected = null;
+            _catalog.TryTake(plane.Id, out _);
+            Destroy(visual.gameObject);
+            return false;
+        }
+
+        /// <summary>
         /// Clears the confirmed surface and starts detection again.
         /// </summary>
         public void RestartSelection()
         {
+            if (Time.unscaledTime < _ignoreRestartUntil)
+                return;
+
             if (!_permissionGranted)
             {
                 _permissionSettled = false;
@@ -403,10 +434,14 @@ namespace Fairground.View
 #endif
         }
 
-        Material BorderTemplate()
+        Material FillTemplate() => Template(visual => visual.FillTemplate);
+
+        Material BorderTemplate() => Template(visual => visual.BorderTemplate);
+
+        Material Template(System.Func<PlaneSurfaceVisual, Material> pick)
         {
             var visual = m_PlanePrefab != null ? m_PlanePrefab.GetComponent<PlaneSurfaceVisual>() : null;
-            return visual != null ? visual.BorderTemplate : null;
+            return visual != null ? pick(visual) : null;
         }
 
         void MarkGranted(bool granted)

@@ -13,7 +13,7 @@ namespace Fairground.View.Attractions.FerrisWheel
         {
             _returnToFairground = Button("ReturnToFairground");
             _returnToFairground.AddBinding("<Keyboard>/b");
-            _returnToFairground.AddBinding("<XRController>{RightHand}/menuButton");
+            _returnToFairground.AddBinding("<XRController>{RightHand}/secondaryButton");
 
             _look = new InputAction("DesktopLook", InputActionType.Value, "<Mouse>/delta");
         }

@@ -20,6 +20,12 @@ namespace Fairground.ViewModel
             PendingAttraction = attractionId;
         }
 
+        /// <summary>
+        /// Drops the attraction that was entered and keeps the chosen floor,
+        /// so the fairground can show the parcel menu again.
+        /// </summary>
+        public static void LeaveAttraction() => PendingAttraction = AttractionId.None;
+
         public static void Clear()
         {
             SelectedPlane = null;

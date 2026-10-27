@@ -243,7 +243,7 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         public void ReturnToFairground()
         {
-            FairgroundSession.Clear();
+            FairgroundSession.LeaveAttraction();
             SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }

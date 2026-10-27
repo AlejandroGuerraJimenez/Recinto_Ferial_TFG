@@ -18,7 +18,7 @@ namespace Fairground.View.Attractions.PunchingBall
 
             _returnToFairground = Button("ReturnToFairground");
             _returnToFairground.AddBinding("<Keyboard>/b");
-            _returnToFairground.AddBinding("<XRController>{RightHand}/menuButton");
+            _returnToFairground.AddBinding("<XRController>{RightHand}/secondaryButton");
 
             _punch = Button("DesktopPunch");
             _punch.AddBinding("<Keyboard>/space");

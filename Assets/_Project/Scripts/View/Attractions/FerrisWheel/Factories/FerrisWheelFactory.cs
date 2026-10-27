@@ -1,4 +1,5 @@
 using Fairground.View.Attractions.Rendering;
+using TMPro;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.FerrisWheel.Factories
@@ -141,16 +142,25 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             var title = new GameObject("Title");
             title.transform.SetParent(parent, false);
             title.transform.localPosition = new Vector3(0f, 1.15f, center.z - 1.91f);
-            title.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
-            var text = title.AddComponent<TextMesh>();
+            var text = title.AddComponent<TextMeshPro>();
+            text.font = SignFont();
             text.text = "NORIA";
-            text.fontSize = 48;
-            text.characterSize = 0.14f;
-            text.anchor = TextAnchor.MiddleCenter;
-            text.alignment = TextAlignment.Center;
             text.color = SignTextColor;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
-                        ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.alignment = TextAlignmentOptions.Center;
+            text.textWrappingMode = TextWrappingModes.NoWrap;
+            text.overflowMode = TextOverflowModes.Overflow;
+            text.rectTransform.sizeDelta = new Vector2(1.55f, 0.34f);
+            text.enableAutoSizing = true;
+            text.fontSizeMin = 0.4f;
+            text.fontSizeMax = 6f;
+        }
+
+        static TMP_FontAsset SignFont()
+        {
+            if (TMP_Settings.defaultFontAsset != null)
+                return TMP_Settings.defaultFontAsset;
+
+            return Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
         }
 
         static Transform CreateWheel(Transform parent)

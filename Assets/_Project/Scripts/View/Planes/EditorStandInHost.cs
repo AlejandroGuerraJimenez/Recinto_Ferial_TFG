@@ -78,7 +78,7 @@ namespace Fairground.View
 
         bool ShouldSkip(PlaneVisualCatalog catalog)
         {
-            if (Application.isBatchMode || catalog.HasRealPlane())
+            if (Application.isBatchMode || catalog.HasRealPlane() || catalog.Count > 0)
                 return true;
 
             return _detectionRunning();

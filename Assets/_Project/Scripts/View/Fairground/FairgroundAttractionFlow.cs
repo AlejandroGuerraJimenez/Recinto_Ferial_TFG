@@ -30,6 +30,7 @@ namespace Fairground.View
             planeSelection.OnPlaneSelected += HandlePlaneSelected;
             planeSelection.OnLockedConfirm += HandleEnter;
             planeSelection.OnRestarted += HandleRestarted;
+            RestoreParcelMenu();
         }
 
         void OnDisable()
@@ -73,6 +74,14 @@ namespace Fairground.View
             RememberViewpoint();
             FairgroundSession.Remember(_locked.Value, chosen);
             SceneManager.LoadScene(AttractionScenes.GetSceneName(chosen));
+        }
+
+        void RestoreParcelMenu()
+        {
+            if (!FairgroundSession.SelectedPlane.HasValue)
+                return;
+
+            planeSelection.TryRestore(FairgroundSession.SelectedPlane.Value);
         }
 
         void HandleRestarted()

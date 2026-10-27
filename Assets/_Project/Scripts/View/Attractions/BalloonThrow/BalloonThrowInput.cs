@@ -18,7 +18,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
             _returnToFairground = Button("ReturnToFairground");
             _returnToFairground.AddBinding("<Keyboard>/b");
-            _returnToFairground.AddBinding("<XRController>{RightHand}/menuButton");
+            _returnToFairground.AddBinding("<XRController>{RightHand}/secondaryButton");
 
             _throw = Button("DesktopThrow");
             _throw.AddBinding("<Keyboard>/space");

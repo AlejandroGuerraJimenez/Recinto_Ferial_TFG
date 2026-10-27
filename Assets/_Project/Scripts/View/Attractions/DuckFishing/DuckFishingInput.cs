@@ -18,7 +18,7 @@ namespace Fairground.View.Attractions.DuckFishing
 
             _returnToFairground = Button("ReturnToFairground");
             _returnToFairground.AddBinding("<Keyboard>/b");
-            _returnToFairground.AddBinding("<XRController>{RightHand}/menuButton");
+            _returnToFairground.AddBinding("<XRController>{RightHand}/secondaryButton");
 
             _dip = Button("DesktopDip");
             _dip.AddBinding("<Keyboard>/space");

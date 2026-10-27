@@ -74,7 +74,7 @@ namespace Fairground.View.Attractions.FerrisWheel
 
         public void ReturnToFairground()
         {
-            FairgroundSession.Clear();
+            FairgroundSession.LeaveAttraction();
             SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }
