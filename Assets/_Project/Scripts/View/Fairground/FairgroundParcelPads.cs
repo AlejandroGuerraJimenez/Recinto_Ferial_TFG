@@ -242,7 +242,7 @@ namespace Fairground.View
             label.transform.localScale = Vector3.one * 0.12f;
 
             var text = label.AddComponent<TextMeshPro>();
-            text.font = TMP_Settings.defaultFontAsset;
+            text.font = TmpFontResolver.Font();
             text.text = displayName;
             text.fontSize = 4.5f;
             text.alignment = TextAlignmentOptions.Center;

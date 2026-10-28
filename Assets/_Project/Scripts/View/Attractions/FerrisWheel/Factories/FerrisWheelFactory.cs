@@ -174,7 +174,7 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             title.transform.SetParent(parent, false);
             title.transform.localPosition = new Vector3(0f, 1.15f, center.z - 1.91f);
             var text = title.AddComponent<TextMeshPro>();
-            text.font = SignFont();
+            text.font = TmpFontResolver.Font();
             text.text = "NORIA";
             text.color = SignTextColor;
             text.alignment = TextAlignmentOptions.Center;
@@ -184,14 +184,6 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             text.enableAutoSizing = true;
             text.fontSizeMin = 0.4f;
             text.fontSizeMax = 6f;
-        }
-
-        static TMP_FontAsset SignFont()
-        {
-            if (TMP_Settings.defaultFontAsset != null)
-                return TMP_Settings.defaultFontAsset;
-
-            return Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
         }
 
         static Transform CreateWheel(Transform parent)

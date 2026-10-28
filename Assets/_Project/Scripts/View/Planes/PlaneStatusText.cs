@@ -1,6 +1,5 @@
 using System;
 using UnityEngine.XR.ARFoundation;
-using UnityEngine.XR.ARSubsystems;
 
 namespace Fairground.View
 {
@@ -42,6 +41,8 @@ namespace Fairground.View
             bool subsystemRunning,
             int candidateCount,
             bool locked,
+            int trackedCount,
+            int planeStamp,
             ARPlaneManager manager,
             Func<int, string> scanningReport)
         {
@@ -53,15 +54,13 @@ namespace Fairground.View
 
             if (candidateCount == 0)
             {
-                var tracked = Count(manager);
                 var session = (int)ARSession.state;
                 var subsystem = SubsystemStamp(manager);
-                var sample = FirstPlaneStamp(manager);
-                if (Same(StatusKind.Scanning, tracked, session, subsystem, sample))
+                if (Same(StatusKind.Scanning, trackedCount, session, subsystem, planeStamp))
                     return _text;
 
-                var report = scanningReport != null ? scanningReport(tracked) : string.Empty;
-                return Store(StatusKind.Scanning, tracked, session, subsystem, sample, report + QuitLine);
+                var report = scanningReport != null ? scanningReport(trackedCount) : string.Empty;
+                return Store(StatusKind.Scanning, trackedCount, session, subsystem, planeStamp, report + QuitLine);
             }
 
             if (locked)
@@ -111,49 +110,6 @@ namespace Fairground.View
                 return 1;
 
             return subsystem.running ? 3 : 2;
-        }
-
-        static int FirstPlaneStamp(ARPlaneManager manager)
-        {
-            if (manager == null)
-                return 0;
-
-            foreach (var plane in manager.trackables)
-            {
-                if (plane == null)
-                    continue;
-
-                var boundary = plane.boundary;
-                var points = boundary.IsCreated ? boundary.Length : 0;
-                var absorbed = plane.subsumedBy != null ? 1 : 0;
-                var id = plane.trackableId;
-                unchecked
-                {
-                    var stamp = points;
-                    stamp = stamp * 31 + absorbed;
-                    stamp = stamp * 31 + (int)plane.alignment;
-                    stamp = stamp * 31 + (int)plane.classifications;
-                    stamp = stamp * 31 + id.GetHashCode();
-                    return stamp;
-                }
-            }
-
-            return 0;
-        }
-
-        static int Count(ARPlaneManager manager)
-        {
-            if (manager == null)
-                return 0;
-
-            var count = 0;
-            foreach (var plane in manager.trackables)
-            {
-                if (plane != null)
-                    count++;
-            }
-
-            return count;
         }
     }
 }

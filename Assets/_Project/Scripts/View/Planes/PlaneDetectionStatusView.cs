@@ -45,7 +45,7 @@ namespace Fairground.View
             var label = new GameObject("Label");
             label.transform.SetParent(transform, false);
             _text = label.AddComponent<TextMeshProUGUI>();
-            _text.font = Font();
+            _text.font = TmpFontResolver.Font();
             _text.fontSize = 36;
             _text.alignment = TextAlignmentOptions.Center;
             _text.color = Color.white;
@@ -78,14 +78,6 @@ namespace Fairground.View
 
             transform.position = _camera.position + forward * Distance + Vector3.down * 0.28f;
             transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
-        }
-
-        static TMP_FontAsset Font()
-        {
-            if (TMP_Settings.defaultFontAsset != null)
-                return TMP_Settings.defaultFontAsset;
-
-            return Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
         }
 
         static Transform ResolveCamera()

@@ -53,7 +53,7 @@ namespace Fairground.View.Attractions
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             var text = go.AddComponent<TextMeshProUGUI>();
-            text.font = ResolveFont();
+            text.font = TmpFontResolver.Font();
             text.fontSize = FontSize;
             text.alignment = TextAlignmentOptions.Center;
             text.color = Color.white;
@@ -64,14 +64,6 @@ namespace Fairground.View.Attractions
             rect.sizeDelta = new Vector2(LabelWidth, LabelHeight);
             rect.anchoredPosition = position;
             return text;
-        }
-
-        static TMP_FontAsset ResolveFont()
-        {
-            if (TMP_Settings.defaultFontAsset != null)
-                return TMP_Settings.defaultFontAsset;
-
-            return Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
         }
     }
 }

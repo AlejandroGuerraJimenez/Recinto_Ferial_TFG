@@ -26,6 +26,7 @@ namespace Fairground.View
         [SerializeField] Material m_BorderMaterial;
 
         MeshRenderer _meshRenderer;
+        MeshFilter _meshFilter;
         LineRenderer _lineRenderer;
         MeshCollider _meshCollider;
         Material _fillInstance;
@@ -129,8 +130,7 @@ namespace Fairground.View
 
         bool HasDeviceMesh()
         {
-            var filter = GetComponent<MeshFilter>();
-            return filter != null && filter.sharedMesh != null && filter.sharedMesh.vertexCount >= 3;
+            return _meshFilter != null && _meshFilter.sharedMesh != null && _meshFilter.sharedMesh.vertexCount >= 3;
         }
 
         void Lift(ARPlaneBoundaryChangedEventArgs _)
@@ -141,8 +141,7 @@ namespace Fairground.View
 
         void LiftMesh()
         {
-            var filter = GetComponent<MeshFilter>();
-            var mesh = filter != null ? filter.sharedMesh : null;
+            var mesh = _meshFilter != null ? _meshFilter.sharedMesh : null;
             if (mesh == null || !mesh.isReadable || mesh.vertexCount < 3)
                 return;
 
@@ -228,6 +227,7 @@ namespace Fairground.View
         {
             _arPlane = GetComponent<ARPlane>();
             _meshRenderer = GetComponent<MeshRenderer>();
+            _meshFilter = GetComponent<MeshFilter>();
             _lineRenderer = GetComponent<LineRenderer>();
             _meshCollider = GetComponent<MeshCollider>();
             DisableConvex();
@@ -300,9 +300,8 @@ namespace Fairground.View
 
         void AssignFilter(Mesh mesh)
         {
-            var filter = GetComponent<MeshFilter>();
-            if (filter != null)
-                filter.sharedMesh = mesh;
+            if (_meshFilter != null)
+                _meshFilter.sharedMesh = mesh;
         }
 
         void AssignCollider(Mesh mesh)

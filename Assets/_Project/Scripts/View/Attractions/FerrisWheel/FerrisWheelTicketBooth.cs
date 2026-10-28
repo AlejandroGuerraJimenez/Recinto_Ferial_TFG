@@ -233,7 +233,7 @@ namespace Fairground.View.Attractions.FerrisWheel
             go.transform.SetParent(parent, false);
             go.transform.localPosition = localPosition;
             var text = go.AddComponent<TextMeshPro>();
-            text.font = Font();
+            text.font = TmpFontResolver.Font();
             text.text = value;
             text.alignment = TextAlignmentOptions.Center;
             text.color = new Color(1f, 0.93f, 0.55f, 1f);
@@ -244,14 +244,6 @@ namespace Fairground.View.Attractions.FerrisWheel
             text.fontSizeMin = 0.15f;
             text.fontSizeMax = 3f;
             return text;
-        }
-
-        static TMP_FontAsset Font()
-        {
-            if (TMP_Settings.defaultFontAsset != null)
-                return TMP_Settings.defaultFontAsset;
-
-            return Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
         }
 
         static InputAction Button(string name) => new InputAction(name, InputActionType.Button);

@@ -249,7 +249,7 @@ namespace Fairground.View
 
             if (_detection.IsSubsystemRunning)
             {
-                if (_catalog.Count < TrackedPlaneCount())
+                if (_catalog.Count < _detection.TrackedCount)
                     _registration.CatchUp(_detection.Manager);
                 OfferRoomCapture();
                 return;
@@ -363,7 +363,7 @@ namespace Fairground.View
 
         void OfferRoomCapture()
         {
-            if (_askedForRoom || TrackedPlaneCount() > 0)
+            if (_askedForRoom || _detection.TrackedCount > 0)
                 return;
 
             if (_scanSince < 0f)
@@ -390,24 +390,10 @@ namespace Fairground.View
                 _detection.IsSubsystemRunning,
                 _catalog.CandidateCount(),
                 State == PlaneSelectionState.PlaneSelected,
+                _detection.TrackedCount,
+                _detection.FirstPlaneStamp,
                 _detection.Manager,
                 tracked => _detection.Report(tracked, 0));
-        }
-
-        int TrackedPlaneCount()
-        {
-            var manager = _detection != null ? _detection.Manager : null;
-            if (manager == null)
-                return 0;
-
-            var count = 0;
-            foreach (var plane in manager.trackables)
-            {
-                if (plane != null)
-                    count++;
-            }
-
-            return count;
         }
 
         EditorInputContext EditorContext()

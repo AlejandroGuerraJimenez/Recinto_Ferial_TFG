@@ -19,11 +19,15 @@ namespace Fairground.View
         ARPlaneManager _manager;
         GameObject _prefab;
         bool _listening;
-        UnityAction<ARTrackablesChangedEventArgs<ARPlane>> _listener;
+        UnityAction<ARTrackablesChangedEventArgs<ARPlane>> _forward;
 
         public PlaneDetectionSession(ARPlaneManager manager) => _manager = manager;
 
         public ARPlaneManager Manager => _manager;
+
+        public int TrackedCount { get; private set; }
+
+        public int FirstPlaneStamp { get; private set; }
 
         public bool IsSubsystemRunning => _manager != null && _manager.subsystem != null && _manager.subsystem.running;
 
@@ -89,21 +93,66 @@ namespace Fairground.View
 
         public void Listen(UnityAction<ARTrackablesChangedEventArgs<ARPlane>> listener)
         {
-            _listener = listener;
+            _forward = listener;
             if (_manager == null || _listening)
                 return;
 
-            _manager.trackablesChanged.AddListener(listener);
+            _manager.trackablesChanged.AddListener(OnSetChanged);
             _listening = true;
+            ReadSet();
         }
 
         public void StopListening()
         {
-            if (_manager == null || !_listening || _listener == null)
+            if (_manager == null || !_listening)
                 return;
 
-            _manager.trackablesChanged.RemoveListener(_listener);
+            _manager.trackablesChanged.RemoveListener(OnSetChanged);
             _listening = false;
+        }
+
+        void OnSetChanged(ARTrackablesChangedEventArgs<ARPlane> args)
+        {
+            ReadSet();
+            _forward?.Invoke(args);
+        }
+
+        void ReadSet()
+        {
+            TrackedCount = 0;
+            FirstPlaneStamp = 0;
+            if (_manager == null)
+                return;
+
+            var stamped = false;
+            foreach (var plane in _manager.trackables)
+            {
+                if (plane == null)
+                    continue;
+
+                TrackedCount++;
+                if (stamped)
+                    continue;
+
+                stamped = true;
+                FirstPlaneStamp = Stamp(plane);
+            }
+        }
+
+        static int Stamp(ARPlane plane)
+        {
+            var boundary = plane.boundary;
+            var points = boundary.IsCreated ? boundary.Length : 0;
+            var absorbed = plane.subsumedBy != null ? 1 : 0;
+            unchecked
+            {
+                var stamp = points;
+                stamp = stamp * 31 + absorbed;
+                stamp = stamp * 31 + (int)plane.alignment;
+                stamp = stamp * 31 + (int)plane.classifications;
+                stamp = stamp * 31 + plane.trackableId.GetHashCode();
+                return stamp;
+            }
         }
 
         public void Pause()
