@@ -1,13 +1,14 @@
-using System;
 using Fairground.Core.Attractions;
+using Fairground.Model.Attractions;
 using Fairground.Model.Attractions.BalloonThrow;
+using Fairground.ViewModel.Attractions;
 
 namespace Fairground.ViewModel.Attractions.BalloonThrow
 {
     /// <summary>
-    /// MVVM presentation state. Observer via <see cref="StateChanged"/>.
+    /// Publishes balloon-match state. The session owns the counters.
     /// </summary>
-    public sealed class BalloonThrowViewModel
+    public sealed class BalloonThrowViewModel : BoothMatchViewModel
     {
         readonly BalloonThrowSession _session;
         readonly IBalloonThrowStatusPresenter _statusPresenter;
@@ -18,6 +19,7 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
         {
             _session = new BalloonThrowSession(rules ?? new BalloonThrowRules());
             _statusPresenter = statusPresenter ?? new DefaultBalloonThrowStatusPresenter();
+            PublishState();
         }
 
         public BalloonThrowViewModel(
@@ -31,22 +33,22 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
 
         public AttractionId AttractionId => AttractionId.BalloonThrow;
         public string SceneName => AttractionCatalog.BalloonThrow.SceneName;
-        public event Action StateChanged;
 
-        public BalloonThrowPhase Phase => _session.Phase;
+        public MatchPhase Phase => _session.Phase;
         public int Score => _session.Score;
         public int ThrowsRemaining => _session.ThrowsRemaining;
         public int BalloonsRemaining => _session.BalloonsRemaining;
         public int BalloonsPopped => _session.BalloonsPopped;
         public int BalloonCount => _session.Rules.BalloonCount;
-        public bool IsPlaying => Phase == BalloonThrowPhase.Playing;
+        public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanSpawnBall => IsPlaying && ThrowsRemaining > 0;
         public string StatusText => _statusPresenter.Present(Phase);
+        public string[] HudLines { get; private set; }
 
-        public void StartGame()
+        public override void StartGame()
         {
             _session.Start();
-            RaiseStateChanged();
+            Notify();
         }
 
         public bool NotifyBallThrown() => Apply(_session.TryRegisterThrow);
@@ -55,17 +57,21 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
 
         public bool NotifyThrowResolved() => Apply(_session.ResolveThrow);
 
-        public void Restart() => StartGame();
-
-        bool Apply(Func<bool> action)
+        public override void Restart()
         {
-            if (!action())
-                return false;
-
-            RaiseStateChanged();
-            return true;
+            _session.Restart();
+            Notify();
         }
 
-        void RaiseStateChanged() => StateChanged?.Invoke();
+        protected override void PublishState()
+        {
+            HudLines = new[]
+            {
+                $"Score: {Score}",
+                $"Throws: {ThrowsRemaining}",
+                $"Balloons: {BalloonsRemaining}",
+                StatusText,
+            };
+        }
     }
 }

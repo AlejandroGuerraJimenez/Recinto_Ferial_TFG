@@ -13,7 +13,6 @@ namespace Fairground.View.Attractions.FerrisWheel
     public sealed class FerrisWheelAttractionController : MonoBehaviour
     {
         [SerializeField] float degreesPerSecond = FerrisWheelRules.DefaultDegreesPerSecond;
-        [SerializeField] int cabinCount = FerrisWheelRules.DefaultCabinCount;
         [SerializeField] FerrisWheelRigView rig;
 
         FerrisWheelViewModel _viewModel;
@@ -28,7 +27,19 @@ namespace Fairground.View.Attractions.FerrisWheel
         {
             rig = wheelRig;
             degreesPerSecond = speed;
-            cabinCount = cabins;
+            int built = rig != null ? rig.CabinCount : 0;
+            if (built < 1)
+            {
+                Debug.LogError("[FerrisWheel] The ride has no cabins.");
+                return;
+            }
+
+            if (cabins != built)
+            {
+                Debug.LogError(
+                    "[FerrisWheel] Cabin count " + cabins + " does not match the wheel (" + built +
+                    "). Cabins come from " + nameof(LondonEyeLayout) + ".");
+            }
         }
 
         public void Receive(FairgroundSession session) => _session = session;
@@ -70,7 +81,7 @@ namespace Fairground.View.Attractions.FerrisWheel
             if (rig == null)
                 rig = FindAnyObjectByType<FerrisWheelRigView>();
 
-            _viewModel = new FerrisWheelViewModel(degreesPerSecond, cabinCount);
+            _viewModel = new FerrisWheelViewModel(degreesPerSecond);
             _viewModel.StartRide();
             rig?.ApplyAngle(_viewModel.AngleDegrees);
         }

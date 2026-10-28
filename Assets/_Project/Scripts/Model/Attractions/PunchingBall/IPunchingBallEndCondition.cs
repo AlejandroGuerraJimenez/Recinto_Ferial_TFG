@@ -1,3 +1,5 @@
+using Fairground.Model.Attractions;
+
 namespace Fairground.Model.Attractions.PunchingBall
 {
     /// <summary>
@@ -5,7 +7,7 @@ namespace Fairground.Model.Attractions.PunchingBall
     /// </summary>
     public interface IPunchingBallEndCondition
     {
-        PunchingBallPhase Evaluate(
+        MatchPhase Evaluate(
             PunchingBallRules rules,
             int bestScore,
             int punchesRemaining);

@@ -45,6 +45,26 @@ namespace Fairground.View
         int _attachAttempts;
         bool _askedForRoom;
         float _ignoreRestartUntil;
+        StatusKind _statusKind;
+        int _statusPrimary;
+        int _statusSecondary;
+        int _statusTertiary;
+        int _statusSample;
+        int _candidateCount;
+        string _statusText = string.Empty;
+        Action _confirm;
+        Action _restart;
+        Func<bool> _isAwaiting;
+
+        enum StatusKind
+        {
+            None,
+            Denied,
+            WaitingPermission,
+            Scanning,
+            Locked,
+            Choosing,
+        }
 
         /// <summary>
         /// Fired once when the user confirms a surface. Other surfaces are hidden. Parcels stay on this one.
@@ -135,7 +155,7 @@ namespace Fairground.View
             _appearance.Apply(State);
             _input.Read();
             _aimView.Draw(ShowAim(), _aim.Origin, _aim.End, _aim.Hovered != null);
-            var status = StatusText();
+            var status = CurrentStatus();
             _status?.Present(status);
             LogStatus(status);
         }
@@ -206,6 +226,9 @@ namespace Fairground.View
 
         void CreateTools()
         {
+            _confirm = Confirm;
+            _restart = RestartSelection;
+            _isAwaiting = IsAwaiting;
             _standIn = new EditorStandInHost(m_EnableEditorStandIn, transform, m_PlanePrefab, DetectionRunning);
             _registration = new PlaneRegistration(
                 _catalog,
@@ -216,7 +239,7 @@ namespace Fairground.View
                 snapshot => _viewModel.IsSelectable(snapshot));
             _aimView = AimRayView.Create(transform, BorderTemplate());
             _status = PlaneDetectionStatusView.Create();
-            _input = new PlaneSelectionInput(Confirm, RestartSelection, EditorContext);
+            _input = new PlaneSelectionInput(_confirm, _restart, EditorContext);
         }
 
         void EnsurePermission()
@@ -267,7 +290,7 @@ namespace Fairground.View
 
         void LogStatus(string status)
         {
-            if (CandidateCount() > 0 || Time.unscaledTime < _nextReport)
+            if (_candidateCount > 0 || Time.unscaledTime < _nextReport)
                 return;
 
             _nextReport = Time.unscaledTime + 2f;
@@ -374,23 +397,120 @@ namespace Fairground.View
 
         bool ShowAim() => _aim.HasAim && (IsAwaiting() || State == PlaneSelectionState.PlaneSelected);
 
-        string StatusText()
+        const string QuitLine = "\nY del mando izquierdo cierra la app.";
+        const string DeniedText =
+            "Sin permiso de escena.\nPulsa B para volver a pedir el aviso.\nSi no sale: Ajustes, Aplicaciones, permisos, datos espaciales." + QuitLine;
+        const string WaitingText =
+            "Permiso de escena.\nSi sale el aviso, acéptalo. La búsqueda empieza igual." + QuitLine;
+        const string LockedText =
+            "Plano fijado. El resto queda fuera.\nApunta una parcela y pulsa el gatillo.\nB suelta el plano." + QuitLine;
+        const string ChoosingLine = " planos. El marcado es la propuesta.\nGatillo: el apuntado, o esa si no apuntas.";
+
+        string CurrentStatus()
         {
-            const string quit = "\nY del mando izquierdo cierra la app.";
+            _candidateCount = _catalog.CandidateCount();
+
             if (PermissionDenied())
-                return "Sin permiso de escena.\nPulsa B para volver a pedir el aviso.\nSi no sale: Ajustes, Aplicaciones, permisos, datos espaciales." + quit;
+                return Status(StatusKind.Denied, 0, 0, 0, 0, DeniedText);
 
             if (!_permissionSettled && !_detection.IsSubsystemRunning)
-                return "Permiso de escena.\nSi sale el aviso, acéptalo. La búsqueda empieza igual." + quit;
+                return Status(StatusKind.WaitingPermission, 0, 0, 0, 0, WaitingText);
 
-            var planes = CandidateCount();
-            if (planes == 0)
-                return _detection.Report(TrackedPlaneCount(), 0) + quit;
+            if (_candidateCount == 0)
+            {
+                var tracked = TrackedPlaneCount();
+                var session = (int)ARSession.state;
+                var subsystem = SubsystemStamp();
+                var sample = FirstPlaneStamp();
+                if (Same(StatusKind.Scanning, tracked, session, subsystem, sample))
+                    return _statusText;
+
+                return Store(
+                    StatusKind.Scanning,
+                    tracked,
+                    session,
+                    subsystem,
+                    sample,
+                    _detection.Report(tracked, 0) + QuitLine);
+            }
 
             if (State == PlaneSelectionState.PlaneSelected)
-                return "Plano fijado. El resto queda fuera.\nApunta una parcela y pulsa el gatillo.\nB suelta el plano." + quit;
+                return Status(StatusKind.Locked, 0, 0, 0, 0, LockedText);
 
-            return planes + " planos. El marcado es la propuesta.\nGatillo: el apuntado, o esa si no apuntas." + quit;
+            if (Same(StatusKind.Choosing, _candidateCount, 0, 0, 0))
+                return _statusText;
+
+            return Store(StatusKind.Choosing, _candidateCount, 0, 0, 0, _candidateCount + ChoosingLine + QuitLine);
+        }
+
+        string Status(StatusKind kind, int primary, int secondary, int tertiary, int sample, string text)
+        {
+            if (Same(kind, primary, secondary, tertiary, sample))
+                return _statusText;
+
+            return Store(kind, primary, secondary, tertiary, sample, text);
+        }
+
+        bool Same(StatusKind kind, int primary, int secondary, int tertiary, int sample)
+        {
+            return _statusKind == kind
+                && _statusPrimary == primary
+                && _statusSecondary == secondary
+                && _statusTertiary == tertiary
+                && _statusSample == sample;
+        }
+
+        string Store(StatusKind kind, int primary, int secondary, int tertiary, int sample, string text)
+        {
+            _statusKind = kind;
+            _statusPrimary = primary;
+            _statusSecondary = secondary;
+            _statusTertiary = tertiary;
+            _statusSample = sample;
+            _statusText = text;
+            return text;
+        }
+
+        int SubsystemStamp()
+        {
+            var manager = _detection != null ? _detection.Manager : null;
+            if (manager == null)
+                return 0;
+
+            var subsystem = manager.subsystem;
+            if (subsystem == null)
+                return 1;
+
+            return subsystem.running ? 3 : 2;
+        }
+
+        int FirstPlaneStamp()
+        {
+            var manager = _detection != null ? _detection.Manager : null;
+            if (manager == null)
+                return 0;
+
+            foreach (var plane in manager.trackables)
+            {
+                if (plane == null)
+                    continue;
+
+                var boundary = plane.boundary;
+                var points = boundary.IsCreated ? boundary.Length : 0;
+                var absorbed = plane.subsumedBy != null ? 1 : 0;
+                var id = plane.trackableId;
+                unchecked
+                {
+                    var stamp = points;
+                    stamp = stamp * 31 + absorbed;
+                    stamp = stamp * 31 + (int)plane.alignment;
+                    stamp = stamp * 31 + (int)plane.classifications;
+                    stamp = stamp * 31 + id.GetHashCode();
+                    return stamp;
+                }
+            }
+
+            return 0;
         }
 
         int TrackedPlaneCount()
@@ -409,20 +529,9 @@ namespace Fairground.View
             return count;
         }
 
-        int CandidateCount()
-        {
-            var count = 0;
-            _catalog.ForEach(visual =>
-            {
-                if (visual != null && visual.IsCandidate)
-                    count++;
-            });
-            return count;
-        }
-
         EditorInputContext EditorContext()
         {
-            return new EditorInputContext(RestartSelection, Confirm, IsAwaiting, _aim, m_RayDistance);
+            return new EditorInputContext(_restart, _confirm, _isAwaiting, _aim, m_RayDistance);
         }
 
         IAimRaySource AimSource()

@@ -1,4 +1,5 @@
 using System;
+using Fairground.Model.Attractions;
 
 namespace Fairground.Model.Attractions.BasketballHoop
 {
@@ -17,18 +18,20 @@ namespace Fairground.Model.Attractions.BasketballHoop
         }
 
         public BasketballHoopRules Rules => _rules;
-        public BasketballHoopPhase Phase { get; private set; } = BasketballHoopPhase.NotStarted;
+        public MatchPhase Phase { get; private set; } = MatchPhase.NotStarted;
         public int Score { get; private set; }
         public int BallsRemaining { get; private set; }
         public int BallsInFlight { get; private set; }
 
         public void Start()
         {
-            Score = 0;
-            BallsRemaining = _rules.StartingBalls;
-            BallsInFlight = 0;
-            Phase = BasketballHoopPhase.Playing;
+            if (Phase != MatchPhase.NotStarted)
+                return;
+
+            BeginMatch();
         }
+
+        public void Restart() => BeginMatch();
 
         public bool TryRegisterThrow()
         {
@@ -61,9 +64,17 @@ namespace Fairground.Model.Attractions.BasketballHoop
             return true;
         }
 
-        bool CanRegisterThrow() => Phase == BasketballHoopPhase.Playing && BallsRemaining > 0;
+        void BeginMatch()
+        {
+            Score = 0;
+            BallsRemaining = _rules.StartingBalls;
+            BallsInFlight = 0;
+            Phase = MatchPhase.Playing;
+        }
 
-        bool CanRegisterBasket() => Phase == BasketballHoopPhase.Playing;
+        bool CanRegisterThrow() => Phase == MatchPhase.Playing && BallsRemaining > 0;
+
+        bool CanRegisterBasket() => Phase == MatchPhase.Playing;
 
         void RefreshPhase()
         {

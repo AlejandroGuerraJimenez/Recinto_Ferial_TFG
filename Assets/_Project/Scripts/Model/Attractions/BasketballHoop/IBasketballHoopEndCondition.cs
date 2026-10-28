@@ -1,3 +1,5 @@
+using Fairground.Model.Attractions;
+
 namespace Fairground.Model.Attractions.BasketballHoop
 {
     /// <summary>
@@ -5,7 +7,7 @@ namespace Fairground.Model.Attractions.BasketballHoop
     /// </summary>
     public interface IBasketballHoopEndCondition
     {
-        BasketballHoopPhase Evaluate(
+        MatchPhase Evaluate(
             BasketballHoopRules rules,
             int score,
             int ballsRemaining,

@@ -43,13 +43,7 @@ namespace Fairground.View.Attractions.PunchingBall
 
         public static string[] FormatHud(PunchingBallViewModel viewModel)
         {
-            return new[]
-            {
-                $"Best: {viewModel.BestScore}",
-                $"Punches: {viewModel.PunchesRemaining}",
-                $"Last: {viewModel.LastPunchPower}",
-                viewModel.StatusText,
-            };
+            return viewModel.HudLines;
         }
     }
 }

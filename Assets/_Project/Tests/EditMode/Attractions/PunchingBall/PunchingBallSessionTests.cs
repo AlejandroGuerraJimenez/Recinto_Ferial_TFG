@@ -1,4 +1,5 @@
 using Fairground.Core.Attractions;
+using Fairground.Model.Attractions;
 using Fairground.Model.Attractions.PunchingBall;
 using Fairground.ViewModel.Attractions.PunchingBall;
 using NUnit.Framework;
@@ -23,10 +24,25 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
         {
             var session = CreateSession(5, 700, 999, 8f);
             session.Start();
-            Assert.AreEqual(PunchingBallPhase.Playing, session.Phase);
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.AreEqual(0, session.Score);
             Assert.AreEqual(0, session.BestScore);
             Assert.AreEqual(5, session.PunchesRemaining);
+        }
+
+        [Test]
+        public void Session_Start_DoesNotReset_RestartDoes()
+        {
+            var session = CreateSession(2, 700, 999, 8f);
+            session.Start();
+            Assert.IsTrue(session.TryRegisterPunch(2f));
+            session.Start();
+            Assert.AreEqual(1, session.PunchesRemaining);
+            session.Restart();
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
+            Assert.AreEqual(0, session.Score);
+            Assert.AreEqual(0, session.BestScore);
+            Assert.AreEqual(2, session.PunchesRemaining);
         }
 
         [Test]
@@ -36,7 +52,7 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
             session.Start();
             Assert.IsTrue(session.TryRegisterPunch(8f));
             Assert.AreEqual(999, session.LastPunchPower);
-            Assert.AreEqual(PunchingBallPhase.Won, session.Phase);
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
         }
 
         [Test]
@@ -45,9 +61,9 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
             var session = CreateSession(2, 700, 999, 8f);
             session.Start();
             Assert.IsTrue(session.TryRegisterPunch(2f));
-            Assert.AreEqual(PunchingBallPhase.Playing, session.Phase);
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.IsTrue(session.TryRegisterPunch(2f));
-            Assert.AreEqual(PunchingBallPhase.Lost, session.Phase);
+            Assert.AreEqual(MatchPhase.Lost, session.Phase);
             Assert.IsFalse(session.TryRegisterPunch(8f));
         }
 
@@ -79,7 +95,7 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
             var session = new PunchingBallSession(new PunchingBallRules(5, 700, 999, 8f), new AlwaysWinEndCondition());
             session.Start();
             session.TryRegisterPunch(1f);
-            Assert.AreEqual(PunchingBallPhase.Won, session.Phase);
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
         }
 
         [Test]
@@ -116,9 +132,9 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
 
         sealed class AlwaysWinEndCondition : IPunchingBallEndCondition
         {
-            public PunchingBallPhase Evaluate(PunchingBallRules rules, int bestScore, int punchesRemaining)
+            public MatchPhase Evaluate(PunchingBallRules rules, int bestScore, int punchesRemaining)
             {
-                return PunchingBallPhase.Won;
+                return MatchPhase.Won;
             }
         }
     }

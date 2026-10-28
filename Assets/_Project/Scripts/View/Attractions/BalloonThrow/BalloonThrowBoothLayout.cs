@@ -43,13 +43,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         public static string[] FormatHud(BalloonThrowViewModel viewModel)
         {
-            return new[]
-            {
-                $"Score: {viewModel.Score}",
-                $"Throws: {viewModel.ThrowsRemaining}",
-                $"Balloons: {viewModel.BalloonsRemaining}",
-                viewModel.StatusText,
-            };
+            return viewModel.HudLines;
         }
     }
 }

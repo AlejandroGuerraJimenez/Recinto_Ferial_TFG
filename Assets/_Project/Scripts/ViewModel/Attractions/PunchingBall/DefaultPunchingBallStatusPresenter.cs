@@ -1,18 +1,18 @@
-using Fairground.Model.Attractions.PunchingBall;
+using Fairground.Model.Attractions;
 
 namespace Fairground.ViewModel.Attractions.PunchingBall
 {
     public sealed class DefaultPunchingBallStatusPresenter : IPunchingBallStatusPresenter
     {
-        public string Present(PunchingBallPhase phase, int winScoreThreshold)
+        public string Present(MatchPhase phase, int winScoreThreshold)
         {
             switch (phase)
             {
-                case PunchingBallPhase.Playing:
+                case MatchPhase.Playing:
                     return $"Hit {winScoreThreshold}+ to win!";
-                case PunchingBallPhase.Won:
+                case MatchPhase.Won:
                     return "Strongman!";
-                case PunchingBallPhase.Lost:
+                case MatchPhase.Lost:
                     return "Too weak!";
                 default:
                     return "Ready";

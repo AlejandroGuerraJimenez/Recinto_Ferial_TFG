@@ -1,4 +1,5 @@
 using Fairground.Core.Attractions;
+using Fairground.Model.Attractions;
 using Fairground.Model.Attractions.BalloonThrow;
 using Fairground.ViewModel.Attractions.BalloonThrow;
 using NUnit.Framework;
@@ -23,10 +24,25 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         {
             var session = CreateSession(10, 8, 6);
             session.Start();
-            Assert.AreEqual(BalloonThrowPhase.Playing, session.Phase);
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.AreEqual(0, session.Score);
             Assert.AreEqual(8, session.ThrowsRemaining);
             Assert.AreEqual(6, session.BalloonsRemaining);
+        }
+
+        [Test]
+        public void Session_Start_DoesNotReset_RestartDoes()
+        {
+            var session = CreateSession(10, 2, 3);
+            session.Start();
+            Assert.IsTrue(session.TryRegisterThrow());
+            session.Start();
+            Assert.AreEqual(1, session.ThrowsRemaining);
+            session.Restart();
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
+            Assert.AreEqual(0, session.Score);
+            Assert.AreEqual(2, session.ThrowsRemaining);
+            Assert.AreEqual(0, session.ThrowsInFlight);
         }
 
         [Test]
@@ -37,7 +53,7 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             Assert.IsTrue(session.TryRegisterBalloonHit());
             Assert.AreEqual(10, session.Score);
             Assert.IsTrue(session.TryRegisterBalloonHit());
-            Assert.AreEqual(BalloonThrowPhase.Won, session.Phase);
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
         }
 
         [Test]
@@ -47,10 +63,10 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             session.Start();
             Assert.IsTrue(session.TryRegisterThrow());
             Assert.IsTrue(session.TryRegisterThrow());
-            Assert.AreEqual(BalloonThrowPhase.Playing, session.Phase);
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.IsTrue(session.ResolveThrow());
             Assert.IsTrue(session.ResolveThrow());
-            Assert.AreEqual(BalloonThrowPhase.Lost, session.Phase);
+            Assert.AreEqual(MatchPhase.Lost, session.Phase);
             Assert.IsFalse(session.TryRegisterThrow());
         }
 
@@ -60,11 +76,11 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             var session = CreateSession(10, 1, 1);
             session.Start();
             Assert.IsTrue(session.TryRegisterThrow());
-            Assert.AreEqual(BalloonThrowPhase.Playing, session.Phase);
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.IsTrue(session.TryRegisterBalloonHit());
-            Assert.AreEqual(BalloonThrowPhase.Won, session.Phase);
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
             Assert.IsTrue(session.ResolveThrow());
-            Assert.AreEqual(BalloonThrowPhase.Won, session.Phase);
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
         }
 
         [Test]
@@ -73,9 +89,9 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             var session = CreateSession(10, 1, 2);
             session.Start();
             Assert.IsTrue(session.TryRegisterThrow());
-            Assert.AreEqual(BalloonThrowPhase.Playing, session.Phase);
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.IsTrue(session.ResolveThrow());
-            Assert.AreEqual(BalloonThrowPhase.Lost, session.Phase);
+            Assert.AreEqual(MatchPhase.Lost, session.Phase);
         }
 
         [Test]
@@ -84,7 +100,7 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             var session = new BalloonThrowSession(new BalloonThrowRules(10, 8, 6), new AlwaysWinEndCondition());
             session.Start();
             session.TryRegisterThrow();
-            Assert.AreEqual(BalloonThrowPhase.Won, session.Phase);
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
         }
 
         [Test]
@@ -98,6 +114,8 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             Assert.IsTrue(vm.NotifyBalloonHit());
             Assert.AreEqual(3, events);
             Assert.AreEqual("Pop the balloons!", vm.StatusText);
+            Assert.AreEqual("Score: 10", vm.HudLines[0]);
+            Assert.AreEqual("Pop the balloons!", vm.HudLines[3]);
             Assert.AreEqual(AttractionId.BalloonThrow, vm.AttractionId);
         }
 
@@ -123,14 +141,14 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
 
         sealed class AlwaysWinEndCondition : IBalloonThrowEndCondition
         {
-            public BalloonThrowPhase Evaluate(
+            public MatchPhase Evaluate(
                 BalloonThrowRules rules,
                 int balloonsPopped,
                 int throwsRemaining,
                 int balloonsRemaining,
                 int throwsInFlight)
             {
-                return BalloonThrowPhase.Won;
+                return MatchPhase.Won;
             }
         }
     }

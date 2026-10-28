@@ -63,13 +63,7 @@ namespace Fairground.View.Attractions.DuckFishing
 
         public static string[] FormatHud(DuckFishingViewModel viewModel)
         {
-            return new[]
-            {
-                $"Score: {viewModel.Score}",
-                $"Hooks: {viewModel.AttemptsRemaining}",
-                $"Caught: {viewModel.DucksCaught}/{viewModel.DucksToWin}",
-                viewModel.StatusText,
-            };
+            return viewModel.HudLines;
         }
     }
 }

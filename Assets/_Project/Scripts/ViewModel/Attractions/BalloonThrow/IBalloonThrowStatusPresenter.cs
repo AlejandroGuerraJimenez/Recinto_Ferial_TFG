@@ -1,4 +1,4 @@
-using Fairground.Model.Attractions.BalloonThrow;
+using Fairground.Model.Attractions;
 
 namespace Fairground.ViewModel.Attractions.BalloonThrow
 {
@@ -7,6 +7,6 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
     /// </summary>
     public interface IBalloonThrowStatusPresenter
     {
-        string Present(BalloonThrowPhase phase);
+        string Present(MatchPhase phase);
     }
 }

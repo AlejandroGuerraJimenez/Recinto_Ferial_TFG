@@ -1,4 +1,5 @@
 using System;
+using Fairground.Model.Attractions;
 
 namespace Fairground.Model.Attractions.PunchingBall
 {
@@ -17,7 +18,7 @@ namespace Fairground.Model.Attractions.PunchingBall
         }
 
         public PunchingBallRules Rules => _rules;
-        public PunchingBallPhase Phase { get; private set; } = PunchingBallPhase.NotStarted;
+        public MatchPhase Phase { get; private set; } = MatchPhase.NotStarted;
         public int Score { get; private set; }
         public int BestScore { get; private set; }
         public int LastPunchPower { get; private set; }
@@ -25,12 +26,13 @@ namespace Fairground.Model.Attractions.PunchingBall
 
         public void Start()
         {
-            Score = 0;
-            BestScore = 0;
-            LastPunchPower = 0;
-            PunchesRemaining = _rules.StartingPunches;
-            Phase = PunchingBallPhase.Playing;
+            if (Phase != MatchPhase.NotStarted)
+                return;
+
+            BeginMatch();
         }
+
+        public void Restart() => BeginMatch();
 
         public bool TryRegisterPunch(float impactMagnitude)
         {
@@ -47,7 +49,16 @@ namespace Fairground.Model.Attractions.PunchingBall
             return true;
         }
 
-        bool CanRegisterPunch() => Phase == PunchingBallPhase.Playing && PunchesRemaining > 0;
+        void BeginMatch()
+        {
+            Score = 0;
+            BestScore = 0;
+            LastPunchPower = 0;
+            PunchesRemaining = _rules.StartingPunches;
+            Phase = MatchPhase.Playing;
+        }
+
+        bool CanRegisterPunch() => Phase == MatchPhase.Playing && PunchesRemaining > 0;
 
         void RefreshPhase()
         {

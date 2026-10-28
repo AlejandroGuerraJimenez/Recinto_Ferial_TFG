@@ -1,4 +1,4 @@
-using Fairground.Model.Attractions.BasketballHoop;
+using Fairground.Model.Attractions;
 
 namespace Fairground.ViewModel.Attractions.BasketballHoop
 {
@@ -7,6 +7,6 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
     /// </summary>
     public interface IBasketballHoopStatusPresenter
     {
-        string Present(BasketballHoopPhase phase);
+        string Present(MatchPhase phase);
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using Fairground.Model.Attractions;
 
 namespace Fairground.Model.Attractions.BalloonThrow
 {
@@ -17,7 +18,7 @@ namespace Fairground.Model.Attractions.BalloonThrow
         }
 
         public BalloonThrowRules Rules => _rules;
-        public BalloonThrowPhase Phase { get; private set; } = BalloonThrowPhase.NotStarted;
+        public MatchPhase Phase { get; private set; } = MatchPhase.NotStarted;
         public int Score { get; private set; }
         public int ThrowsRemaining { get; private set; }
         public int BalloonsRemaining { get; private set; }
@@ -26,12 +27,13 @@ namespace Fairground.Model.Attractions.BalloonThrow
 
         public void Start()
         {
-            Score = 0;
-            ThrowsRemaining = _rules.StartingThrows;
-            BalloonsRemaining = _rules.BalloonCount;
-            ThrowsInFlight = 0;
-            Phase = BalloonThrowPhase.Playing;
+            if (Phase != MatchPhase.NotStarted)
+                return;
+
+            BeginMatch();
         }
+
+        public void Restart() => BeginMatch();
 
         public bool TryRegisterThrow()
         {
@@ -65,9 +67,18 @@ namespace Fairground.Model.Attractions.BalloonThrow
             return true;
         }
 
-        bool CanRegisterThrow() => Phase == BalloonThrowPhase.Playing && ThrowsRemaining > 0;
+        void BeginMatch()
+        {
+            Score = 0;
+            ThrowsRemaining = _rules.StartingThrows;
+            BalloonsRemaining = _rules.BalloonCount;
+            ThrowsInFlight = 0;
+            Phase = MatchPhase.Playing;
+        }
 
-        bool CanRegisterHit() => Phase == BalloonThrowPhase.Playing && BalloonsRemaining > 0;
+        bool CanRegisterThrow() => Phase == MatchPhase.Playing && ThrowsRemaining > 0;
+
+        bool CanRegisterHit() => Phase == MatchPhase.Playing && BalloonsRemaining > 0;
 
         void RefreshPhase()
         {

@@ -1,4 +1,4 @@
-using Fairground.Model.Attractions.PunchingBall;
+using Fairground.Model.Attractions;
 
 namespace Fairground.ViewModel.Attractions.PunchingBall
 {
@@ -7,6 +7,6 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
     /// </summary>
     public interface IPunchingBallStatusPresenter
     {
-        string Present(PunchingBallPhase phase, int winScoreThreshold);
+        string Present(MatchPhase phase, int winScoreThreshold);
     }
 }

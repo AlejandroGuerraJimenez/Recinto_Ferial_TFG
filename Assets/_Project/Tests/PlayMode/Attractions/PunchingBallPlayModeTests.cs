@@ -1,5 +1,6 @@
 using System.Collections;
 using Fairground.Core.Attractions;
+using Fairground.Model.Attractions;
 using Fairground.Model.Attractions.PunchingBall;
 using Fairground.Tests.PlayMode.Support;
 using Fairground.View.Attractions;
@@ -26,7 +27,7 @@ namespace Fairground.Tests.PlayMode.Attractions
 
             PunchingBallViewModel vm = controller.ViewModel;
             Assert.AreEqual(AttractionId.PunchingBall, controller.AttractionId);
-            Assert.AreEqual(PunchingBallPhase.Playing, vm.Phase);
+            Assert.AreEqual(MatchPhase.Playing, vm.Phase);
             Assert.Greater(vm.PunchesRemaining, 0);
             Assert.AreEqual(0, vm.BestScore);
             Assert.IsNotNull(Object.FindAnyObjectByType<PunchPadView>());
@@ -57,7 +58,7 @@ namespace Fairground.Tests.PlayMode.Attractions
                 "Punch was not registered in the ViewModel.");
 
             Assert.GreaterOrEqual(vm.BestScore, vm.WinScoreThreshold);
-            Assert.AreEqual(PunchingBallPhase.Won, vm.Phase);
+            Assert.AreEqual(MatchPhase.Won, vm.Phase);
             Assert.AreEqual("Strongman!", vm.StatusText);
         }
 
@@ -75,14 +76,14 @@ namespace Fairground.Tests.PlayMode.Attractions
             var pad = AttractionSceneTestHelper.Require<PunchPadView>();
             PunchingBallViewModel vm = controller.ViewModel;
 
-            while (vm.Phase == PunchingBallPhase.Playing)
+            while (vm.Phase == MatchPhase.Playing)
             {
                 int punchesBefore = vm.PunchesRemaining;
                 Assert.Greater(punchesBefore, 0, "Match still Playing but no punches remain.");
                 Assert.IsTrue(pad.TryApplyImpact(1.5f), "Weak impact should still consume a punch.");
 
                 yield return AttractionSceneTestHelper.WaitUntil(
-                    () => vm.PunchesRemaining < punchesBefore || vm.Phase != PunchingBallPhase.Playing,
+                    () => vm.PunchesRemaining < punchesBefore || vm.Phase != MatchPhase.Playing,
                     2f,
                     "Pad/ViewModel did not react to weak punch.");
 
@@ -90,13 +91,13 @@ namespace Fairground.Tests.PlayMode.Attractions
                 yield return new WaitForSeconds(0.55f);
             }
 
-            Assert.AreEqual(PunchingBallPhase.Lost, vm.Phase);
+            Assert.AreEqual(MatchPhase.Lost, vm.Phase);
             Assert.Less(vm.BestScore, vm.WinScoreThreshold);
 
             controller.RestartMatch();
             yield return null;
 
-            Assert.AreEqual(PunchingBallPhase.Playing, vm.Phase);
+            Assert.AreEqual(MatchPhase.Playing, vm.Phase);
             Assert.Greater(vm.PunchesRemaining, 0);
             Assert.AreEqual(0, vm.BestScore);
             Assert.IsTrue(vm.CanPunch);

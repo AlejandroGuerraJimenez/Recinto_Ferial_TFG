@@ -1,5 +1,6 @@
 using System.Collections;
 using Fairground.Core.Attractions;
+using Fairground.Model.Attractions;
 using Fairground.Model.Attractions.BalloonThrow;
 using Fairground.Tests.PlayMode.Support;
 using Fairground.View.Attractions;
@@ -26,7 +27,7 @@ namespace Fairground.Tests.PlayMode.Attractions
 
             BalloonThrowViewModel vm = controller.ViewModel;
             Assert.AreEqual(AttractionId.BalloonThrow, controller.AttractionId);
-            Assert.AreEqual(BalloonThrowPhase.Playing, vm.Phase);
+            Assert.AreEqual(MatchPhase.Playing, vm.Phase);
             Assert.Greater(vm.ThrowsRemaining, 0);
             Assert.Greater(vm.BalloonsRemaining, 0);
             Assert.IsNotNull(Object.FindAnyObjectByType<BallSpawnerView>());
@@ -124,7 +125,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             controller.RestartMatch();
             yield return null;
 
-            Assert.AreEqual(BalloonThrowPhase.Playing, vm.Phase);
+            Assert.AreEqual(MatchPhase.Playing, vm.Phase);
             Assert.AreEqual(startingThrows, vm.ThrowsRemaining);
             Assert.AreEqual(0, vm.Score);
             Assert.Greater(vm.BalloonsRemaining, 0);

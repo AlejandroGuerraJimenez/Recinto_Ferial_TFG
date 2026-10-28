@@ -50,20 +50,19 @@ namespace Fairground.Tests.EditMode.Attractions.FerrisWheel
         [Test]
         public void Session_AdvancesWhileRiding()
         {
-            var session = new FerrisWheelSession(new FerrisWheelRules(16f, 8));
+            var session = new FerrisWheelSession(new FerrisWheelRules(16f));
             session.Start();
             session.Advance(0.5f);
 
             Assert.AreEqual(FerrisWheelPhase.Riding, session.Phase);
             Assert.AreEqual(8f, session.AngleDegrees, 0.001f);
-            Assert.AreEqual(8, session.Rules.CabinCount);
         }
 
         [Test]
-        public void Rules_RejectNonPositiveSpeedAndCabinCount()
+        public void Rules_RejectNonPositiveSpeed()
         {
-            Assert.Throws<System.ArgumentOutOfRangeException>(() => new FerrisWheelRules(0f, 8));
-            Assert.Throws<System.ArgumentOutOfRangeException>(() => new FerrisWheelRules(16f, 0));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => new FerrisWheelRules(0f));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => new FerrisWheelRules(-1f));
         }
 
         [Test]
@@ -80,13 +79,12 @@ namespace Fairground.Tests.EditMode.Attractions.FerrisWheel
             Assert.AreEqual("FerrisWheel", vm.SceneName);
             Assert.AreEqual(FerrisWheelPhase.Riding, vm.Phase);
             Assert.AreEqual(FerrisWheelRules.DefaultDegreesPerSecond, vm.AngleDegrees, 0.001f);
-            Assert.AreEqual(FerrisWheelRules.DefaultCabinCount, vm.CabinCount);
         }
 
         [Test]
         public void ViewModel_AdvanceBeforeStartDoesNothing()
         {
-            var vm = new FerrisWheelViewModel(20f, 6);
+            var vm = new FerrisWheelViewModel(20f);
             vm.Advance(2f);
             Assert.AreEqual(0f, vm.AngleDegrees, 0.001f);
             Assert.AreEqual(FerrisWheelPhase.NotStarted, vm.Phase);

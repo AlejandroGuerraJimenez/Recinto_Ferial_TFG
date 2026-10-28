@@ -1,16 +1,16 @@
-using Fairground.Model.Attractions.BalloonThrow;
+using Fairground.Model.Attractions;
 
 namespace Fairground.ViewModel.Attractions.BalloonThrow
 {
     public sealed class DefaultBalloonThrowStatusPresenter : IBalloonThrowStatusPresenter
     {
-        public string Present(BalloonThrowPhase phase)
+        public string Present(MatchPhase phase)
         {
             switch (phase)
             {
-                case BalloonThrowPhase.Playing: return "Pop the balloons!";
-                case BalloonThrowPhase.Won: return "You win!";
-                case BalloonThrowPhase.Lost: return "Out of throws!";
+                case MatchPhase.Playing: return "Pop the balloons!";
+                case MatchPhase.Won: return "You win!";
+                case MatchPhase.Lost: return "Out of throws!";
                 default: return "Ready";
             }
         }

@@ -1,3 +1,5 @@
+using Fairground.Model.Attractions;
+
 namespace Fairground.Model.Attractions.DuckFishing
 {
     /// <summary>
@@ -5,7 +7,7 @@ namespace Fairground.Model.Attractions.DuckFishing
     /// </summary>
     public interface IDuckFishingEndCondition
     {
-        DuckFishingPhase Evaluate(
+        MatchPhase Evaluate(
             DuckFishingRules rules,
             int ducksCaught,
             int attemptsRemaining,

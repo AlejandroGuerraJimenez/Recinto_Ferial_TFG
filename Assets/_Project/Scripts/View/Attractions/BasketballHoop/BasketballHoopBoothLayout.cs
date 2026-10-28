@@ -66,12 +66,7 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         public static string[] FormatHud(BasketballHoopViewModel viewModel)
         {
-            return new[]
-            {
-                $"Score: {viewModel.Score}",
-                $"Balls: {viewModel.BallsRemaining}",
-                viewModel.StatusText,
-            };
+            return viewModel.HudLines;
         }
 
         static void MarkOutOfPlay(GameObject target)

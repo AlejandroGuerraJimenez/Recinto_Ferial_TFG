@@ -1,3 +1,5 @@
+using Fairground.Model.Attractions;
+
 namespace Fairground.Model.Attractions.BalloonThrow
 {
     /// <summary>
@@ -5,7 +7,7 @@ namespace Fairground.Model.Attractions.BalloonThrow
     /// </summary>
     public interface IBalloonThrowEndCondition
     {
-        BalloonThrowPhase Evaluate(
+        MatchPhase Evaluate(
             BalloonThrowRules rules,
             int balloonsPopped,
             int throwsRemaining,

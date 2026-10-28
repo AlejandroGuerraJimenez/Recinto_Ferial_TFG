@@ -1,8 +1,10 @@
+using Fairground.Model.Attractions;
+
 namespace Fairground.Model.Attractions.BalloonThrow
 {
     public sealed class DefaultBalloonThrowEndCondition : IBalloonThrowEndCondition
     {
-        public BalloonThrowPhase Evaluate(
+        public MatchPhase Evaluate(
             BalloonThrowRules rules,
             int balloonsPopped,
             int throwsRemaining,
@@ -10,12 +12,12 @@ namespace Fairground.Model.Attractions.BalloonThrow
             int throwsInFlight)
         {
             if (rules.IsWin(balloonsPopped))
-                return BalloonThrowPhase.Won;
+                return MatchPhase.Won;
 
             if (rules.IsLose(throwsRemaining, balloonsRemaining, throwsInFlight))
-                return BalloonThrowPhase.Lost;
+                return MatchPhase.Lost;
 
-            return BalloonThrowPhase.Playing;
+            return MatchPhase.Playing;
         }
     }
 }

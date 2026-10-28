@@ -1,20 +1,22 @@
+using Fairground.Model.Attractions;
+
 namespace Fairground.Model.Attractions.DuckFishing
 {
     public sealed class DefaultDuckFishingEndCondition : IDuckFishingEndCondition
     {
-        public DuckFishingPhase Evaluate(
+        public MatchPhase Evaluate(
             DuckFishingRules rules,
             int ducksCaught,
             int attemptsRemaining,
             int dipsInFlight)
         {
             if (rules.IsWin(ducksCaught))
-                return DuckFishingPhase.Won;
+                return MatchPhase.Won;
 
             if (rules.IsLose(attemptsRemaining, ducksCaught, dipsInFlight))
-                return DuckFishingPhase.Lost;
+                return MatchPhase.Lost;
 
-            return DuckFishingPhase.Playing;
+            return MatchPhase.Playing;
         }
     }
 }

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using CesiumForUnity;
-using Fairground.Model.Attractions.FerrisWheel;
 using Fairground.View.Attractions.Rendering;
 using Unity.Mathematics;
 using UnityEngine;
@@ -132,7 +131,7 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             axis.transform.localRotation = Quaternion.Euler(0f, LondonEyeLayout.AxisYawDegrees, 0f);
 
             var factory = new FerrisWheelFactory();
-            FerrisWheelRigView rig = factory.Create(FerrisWheelRules.DefaultCabinCount);
+            FerrisWheelRigView rig = factory.Create(LondonEyeLayout.CabinCount);
             Transform wheelRoot = rig.transform;
             float scale = LondonEyeLayout.RadiusMeters / FerrisWheelLayout.Radius;
             wheelRoot.SetParent(axis.transform, false);

@@ -12,6 +12,8 @@ namespace Fairground.View
 
         public int Count => _visuals.Count;
 
+        public PlaneSurfaceVisual this[int index] => _visuals[index];
+
         public void Track(PlaneSurfaceVisual visual)
         {
             var id = visual.Snapshot.Id;
@@ -30,7 +32,36 @@ namespace Fairground.View
             return true;
         }
 
-        public void Prune() => _visuals.RemoveAll(visual => visual == null);
+        public void Prune()
+        {
+            var count = _visuals.Count;
+            var write = 0;
+            for (var i = 0; i < count; i++)
+            {
+                var visual = _visuals[i];
+                if (visual == null)
+                    continue;
+
+                _visuals[write] = visual;
+                write++;
+            }
+
+            if (write < count)
+                _visuals.RemoveRange(write, count - write);
+        }
+
+        public int CandidateCount()
+        {
+            var count = 0;
+            for (var i = 0; i < _visuals.Count; i++)
+            {
+                var visual = _visuals[i];
+                if (visual != null && visual.IsCandidate)
+                    count++;
+            }
+
+            return count;
+        }
 
         public void ForEach(Action<PlaneSurfaceVisual> action)
         {

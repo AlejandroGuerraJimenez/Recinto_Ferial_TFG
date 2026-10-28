@@ -21,17 +21,26 @@ namespace Fairground.View
         public void Apply(PlaneSelectionState state)
         {
             Proposal = Choose();
-            _catalog.ForEach(visual => visual.ApplyStyle(Style(state, visual)));
+            var count = _catalog.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var visual = _catalog[i];
+                if (visual != null)
+                    visual.ApplyStyle(Style(state, visual));
+            }
         }
 
         PlaneSurfaceVisual Choose()
         {
             PlaneSurfaceVisual best = null;
-            _catalog.ForEach(visual =>
+            var count = _catalog.Count;
+            for (var i = 0; i < count; i++)
             {
+                var visual = _catalog[i];
                 if (visual != null && visual.IsCandidate && (best == null || visual.Rank.CompareTo(best.Rank) > 0))
                     best = visual;
-            });
+            }
+
             return best;
         }
 

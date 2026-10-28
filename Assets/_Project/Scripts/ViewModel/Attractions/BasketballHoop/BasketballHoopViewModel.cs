@@ -1,13 +1,14 @@
-using System;
 using Fairground.Core.Attractions;
+using Fairground.Model.Attractions;
 using Fairground.Model.Attractions.BasketballHoop;
+using Fairground.ViewModel.Attractions;
 
 namespace Fairground.ViewModel.Attractions.BasketballHoop
 {
     /// <summary>
-    /// MVVM presentation state. Observer via <see cref="StateChanged"/>.
+    /// Publishes hoop-match state. The session owns the counters.
     /// </summary>
-    public sealed class BasketballHoopViewModel
+    public sealed class BasketballHoopViewModel : BoothMatchViewModel
     {
         readonly BasketballHoopSession _session;
         readonly IBasketballHoopStatusPresenter _statusPresenter;
@@ -18,6 +19,7 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
         {
             _session = new BasketballHoopSession(rules ?? new BasketballHoopRules());
             _statusPresenter = statusPresenter ?? new DefaultBasketballHoopStatusPresenter();
+            PublishState();
         }
 
         public BasketballHoopViewModel(
@@ -31,19 +33,19 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
 
         public AttractionId AttractionId => AttractionId.BasketballHoop;
         public string SceneName => AttractionCatalog.BasketballHoop.SceneName;
-        public event Action StateChanged;
 
-        public BasketballHoopPhase Phase => _session.Phase;
+        public MatchPhase Phase => _session.Phase;
         public int Score => _session.Score;
         public int BallsRemaining => _session.BallsRemaining;
-        public bool IsPlaying => Phase == BasketballHoopPhase.Playing;
+        public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanThrow => IsPlaying && BallsRemaining > 0;
         public string StatusText => _statusPresenter.Present(Phase);
+        public string[] HudLines { get; private set; }
 
-        public void StartGame()
+        public override void StartGame()
         {
             _session.Start();
-            RaiseStateChanged();
+            Notify();
         }
 
         public bool NotifyBallThrown() => Apply(_session.TryRegisterThrow);
@@ -52,17 +54,20 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
 
         public bool NotifyThrowResolved() => Apply(_session.ResolveThrow);
 
-        public void Restart() => StartGame();
-
-        bool Apply(Func<bool> action)
+        public override void Restart()
         {
-            if (!action())
-                return false;
-
-            RaiseStateChanged();
-            return true;
+            _session.Restart();
+            Notify();
         }
 
-        void RaiseStateChanged() => StateChanged?.Invoke();
+        protected override void PublishState()
+        {
+            HudLines = new[]
+            {
+                $"Score: {Score}",
+                $"Balls: {BallsRemaining}",
+                StatusText,
+            };
+        }
     }
 }

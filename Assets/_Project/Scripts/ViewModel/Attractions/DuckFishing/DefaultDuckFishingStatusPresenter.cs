@@ -1,18 +1,18 @@
-using Fairground.Model.Attractions.DuckFishing;
+using Fairground.Model.Attractions;
 
 namespace Fairground.ViewModel.Attractions.DuckFishing
 {
     public sealed class DefaultDuckFishingStatusPresenter : IDuckFishingStatusPresenter
     {
-        public string Present(DuckFishingPhase phase, int ducksToWin)
+        public string Present(MatchPhase phase, int ducksToWin)
         {
             switch (phase)
             {
-                case DuckFishingPhase.Playing:
+                case MatchPhase.Playing:
                     return $"Catch {ducksToWin} ducks!";
-                case DuckFishingPhase.Won:
+                case MatchPhase.Won:
                     return "You win!";
-                case DuckFishingPhase.Lost:
+                case MatchPhase.Lost:
                     return "Out of hooks!";
                 default:
                     return "Ready";

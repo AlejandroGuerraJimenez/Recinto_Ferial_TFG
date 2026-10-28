@@ -1,4 +1,4 @@
-using Fairground.Model.Attractions.DuckFishing;
+using Fairground.Model.Attractions;
 
 namespace Fairground.ViewModel.Attractions.DuckFishing
 {
@@ -7,6 +7,6 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
     /// </summary>
     public interface IDuckFishingStatusPresenter
     {
-        string Present(DuckFishingPhase phase, int ducksToWin);
+        string Present(MatchPhase phase, int ducksToWin);
     }
 }

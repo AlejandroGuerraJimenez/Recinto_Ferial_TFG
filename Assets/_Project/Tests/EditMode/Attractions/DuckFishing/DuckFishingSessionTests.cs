@@ -1,4 +1,5 @@
 using Fairground.Core.Attractions;
+using Fairground.Model.Attractions;
 using Fairground.Model.Attractions.DuckFishing;
 using Fairground.ViewModel.Attractions.DuckFishing;
 using NUnit.Framework;
@@ -23,10 +24,25 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         {
             var session = CreateSession(10, 8, 6, 4);
             session.Start();
-            Assert.AreEqual(DuckFishingPhase.Playing, session.Phase);
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.AreEqual(0, session.Score);
             Assert.AreEqual(8, session.AttemptsRemaining);
             Assert.AreEqual(6, session.DucksRemaining);
+        }
+
+        [Test]
+        public void Session_Start_DoesNotReset_RestartDoes()
+        {
+            var session = CreateSession(10, 2, 6, 4);
+            session.Start();
+            Assert.IsTrue(session.TryRegisterDip());
+            session.Start();
+            Assert.AreEqual(1, session.AttemptsRemaining);
+            session.Restart();
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
+            Assert.AreEqual(0, session.Score);
+            Assert.AreEqual(2, session.AttemptsRemaining);
+            Assert.AreEqual(0, session.DipsInFlight);
         }
 
         [Test]
@@ -37,7 +53,7 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
             Assert.IsTrue(session.TryRegisterCatch());
             Assert.AreEqual(10, session.Score);
             Assert.IsTrue(session.TryRegisterCatch());
-            Assert.AreEqual(DuckFishingPhase.Won, session.Phase);
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
         }
 
         [Test]
@@ -47,10 +63,10 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
             session.Start();
             Assert.IsTrue(session.TryRegisterDip());
             Assert.IsTrue(session.TryRegisterDip());
-            Assert.AreEqual(DuckFishingPhase.Playing, session.Phase);
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.IsTrue(session.ResolveDip());
             Assert.IsTrue(session.ResolveDip());
-            Assert.AreEqual(DuckFishingPhase.Lost, session.Phase);
+            Assert.AreEqual(MatchPhase.Lost, session.Phase);
             Assert.IsFalse(session.TryRegisterDip());
         }
 
@@ -60,11 +76,11 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
             var session = CreateSession(10, 1, 6, 1);
             session.Start();
             Assert.IsTrue(session.TryRegisterDip());
-            Assert.AreEqual(DuckFishingPhase.Playing, session.Phase);
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.IsTrue(session.TryRegisterCatch());
-            Assert.AreEqual(DuckFishingPhase.Won, session.Phase);
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
             Assert.IsTrue(session.ResolveDip());
-            Assert.AreEqual(DuckFishingPhase.Won, session.Phase);
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
         }
 
         [Test]
@@ -73,7 +89,7 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
             var session = new DuckFishingSession(new DuckFishingRules(10, 8, 6, 4), new AlwaysWinEndCondition());
             session.Start();
             session.TryRegisterDip();
-            Assert.AreEqual(DuckFishingPhase.Won, session.Phase);
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
         }
 
         [Test]
@@ -112,13 +128,13 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
 
         sealed class AlwaysWinEndCondition : IDuckFishingEndCondition
         {
-            public DuckFishingPhase Evaluate(
+            public MatchPhase Evaluate(
                 DuckFishingRules rules,
                 int ducksCaught,
                 int attemptsRemaining,
                 int dipsInFlight)
             {
-                return DuckFishingPhase.Won;
+                return MatchPhase.Won;
             }
         }
     }

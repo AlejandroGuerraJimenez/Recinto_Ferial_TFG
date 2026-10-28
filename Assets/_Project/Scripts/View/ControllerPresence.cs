@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,15 +15,23 @@ namespace Fairground.View
     {
         const string LeftName = "Left Controller";
         const string RightName = "Right Controller";
+        const string LeftVisualName = LeftName + " Visual";
+        const string RightVisualName = RightName + " Visual";
         const string RuntimeName = "Meta Runtime Controller";
         const string LeftModelPath = "/model_fb/controller/left";
         const string RightModelPath = "/model_fb/controller/right";
+        const string ErrorShaderName = "Hidden/InternalErrorShader";
+        const float ModelPathPollSeconds = 0.5f;
 
         static readonly Color FallbackColor = new Color(0.92f, 0.93f, 0.95f, 1f);
 
         static bool _installed;
         static Shader _modelShader;
+        static Shader _errorShader;
+        static bool _errorShaderResolved;
         static Material _fallbackMaterial;
+        static string[] _renderModelPaths;
+        static float _nextModelPathPoll = -1f;
 
         readonly Hand _left = new Hand();
         readonly Hand _right = new Hand();
@@ -52,8 +61,8 @@ namespace Fairground.View
         void LateUpdate()
         {
             PumpInput();
-            Show(_left, LeftName, LeftModelPath, OVRInput.Controller.LTouch);
-            Show(_right, RightName, RightModelPath, OVRInput.Controller.RTouch);
+            Show(_left, LeftName, LeftVisualName, LeftModelPath, OVRInput.Controller.LTouch);
+            Show(_right, RightName, RightVisualName, RightModelPath, OVRInput.Controller.RTouch);
         }
 
         static void PumpInput()
@@ -64,7 +73,7 @@ namespace Fairground.View
             OVRInput.Update();
         }
 
-        static void Show(Hand hand, string controllerName, string modelPath, OVRInput.Controller kind)
+        static void Show(Hand hand, string controllerName, string visualName, string modelPath, OVRInput.Controller kind)
         {
             if (hand.Controller == null)
                 hand.Controller = FindController(controllerName);
@@ -77,23 +86,40 @@ namespace Fairground.View
 
             KeepModelShown(hand.Runtime);
 
-            if (ModelIsVisible(hand.Runtime))
+            if (ModelIsVisible(hand))
             {
-                SetStarterVisual(hand.Controller, false);
+                SetStarterVisual(hand, visualName, false);
                 return;
             }
 
-            SetStarterVisual(hand.Controller, true);
+            SetStarterVisual(hand, visualName, true);
             if (!hand.StarterTinted)
-                hand.StarterTinted = TintStarter(hand.Controller);
+                hand.StarterTinted = TintStarter(hand, visualName);
         }
 
         static bool RuntimeHasModel(string modelPath)
         {
-            if (!OVRPlugin.initialized)
-                return false;
+            return ContainsPath(RenderModelPaths(), modelPath);
+        }
 
-            var paths = OVRPlugin.GetRenderModelPaths();
+        static string[] RenderModelPaths()
+        {
+            if (ContainsPath(_renderModelPaths, LeftModelPath) && ContainsPath(_renderModelPaths, RightModelPath))
+                return _renderModelPaths;
+
+            if (_nextModelPathPoll >= 0f && Time.unscaledTime < _nextModelPathPoll)
+                return _renderModelPaths;
+
+            if (!OVRPlugin.initialized)
+                return _renderModelPaths;
+
+            _nextModelPathPoll = Time.unscaledTime + ModelPathPollSeconds;
+            _renderModelPaths = OVRPlugin.GetRenderModelPaths();
+            return _renderModelPaths;
+        }
+
+        static bool ContainsPath(string[] paths, string modelPath)
+        {
             if (paths == null)
                 return false;
 
@@ -145,26 +171,59 @@ namespace Fairground.View
             }
         }
 
-        static bool ModelIsVisible(OVRRuntimeController runtime)
+        static bool ModelIsVisible(Hand hand)
         {
-            if (runtime == null)
+            if (hand.Runtime == null)
                 return false;
 
-            var renderers = runtime.GetComponentsInChildren<MeshRenderer>(false);
-            for (var i = 0; i < renderers.Length; i++)
+            if (!hand.ModelVisible)
+                hand.Runtime.GetComponentsInChildren(false, hand.Renderers);
+
+            hand.ModelVisible = AnyDrawn(hand.Renderers);
+            return hand.ModelVisible;
+        }
+
+        static bool AnyDrawn(List<MeshRenderer> renderers)
+        {
+            for (var i = 0; i < renderers.Count; i++)
             {
-                var material = renderers[i].sharedMaterial;
-                var shader = material != null ? material.shader : null;
-                if (renderers[i].enabled && shader != null && shader.name != "Hidden/InternalErrorShader")
+                if (IsDrawn(renderers[i]))
                     return true;
             }
 
             return false;
         }
 
-        static void SetStarterVisual(Transform controller, bool visible)
+        static bool IsDrawn(MeshRenderer renderer)
         {
-            var visual = controller.Find(controller.name + " Visual");
+            if (renderer == null || !renderer.enabled)
+                return false;
+
+            var material = renderer.sharedMaterial;
+            var shader = material != null ? material.shader : null;
+            if (shader == null)
+                return false;
+
+            var error = ErrorShader();
+            if (error != null)
+                return shader != error;
+
+            return shader.name != ErrorShaderName;
+        }
+
+        static Shader ErrorShader()
+        {
+            if (_errorShaderResolved)
+                return _errorShader;
+
+            _errorShaderResolved = true;
+            _errorShader = Shader.Find(ErrorShaderName);
+            return _errorShader;
+        }
+
+        static void SetStarterVisual(Hand hand, string visualName, bool visible)
+        {
+            var visual = StarterVisual(hand, visualName);
             if (visual == null)
                 return;
 
@@ -172,9 +231,23 @@ namespace Fairground.View
                 visual.gameObject.SetActive(visible);
         }
 
-        static bool TintStarter(Transform controller)
+        static Transform StarterVisual(Hand hand, string visualName)
         {
-            var visual = controller.Find(controller.name + " Visual");
+            if (hand.Visual != null)
+                return hand.Visual;
+
+            if (hand.Controller == null)
+                return null;
+
+            var found = hand.Controller.Find(visualName);
+            if (found != null)
+                hand.Visual = found;
+            return found;
+        }
+
+        static bool TintStarter(Hand hand, string visualName)
+        {
+            var visual = StarterVisual(hand, visualName);
             var material = FallbackMaterial();
             if (visual == null || material == null)
                 return false;
@@ -236,12 +309,18 @@ namespace Fairground.View
             public Transform Controller;
             public OVRRuntimeController Runtime;
             public bool StarterTinted;
+            public Transform Visual;
+            public bool ModelVisible;
+            public readonly List<MeshRenderer> Renderers = new List<MeshRenderer>();
 
             public void Clear()
             {
                 Controller = null;
                 Runtime = null;
                 StarterTinted = false;
+                Visual = null;
+                ModelVisible = false;
+                Renderers.Clear();
             }
         }
     }

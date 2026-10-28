@@ -1,4 +1,5 @@
 using System;
+using Fairground.Model.Attractions;
 
 namespace Fairground.Model.Attractions.DuckFishing
 {
@@ -17,7 +18,7 @@ namespace Fairground.Model.Attractions.DuckFishing
         }
 
         public DuckFishingRules Rules => _rules;
-        public DuckFishingPhase Phase { get; private set; } = DuckFishingPhase.NotStarted;
+        public MatchPhase Phase { get; private set; } = MatchPhase.NotStarted;
         public int Score { get; private set; }
         public int AttemptsRemaining { get; private set; }
         public int DucksRemaining { get; private set; }
@@ -26,12 +27,13 @@ namespace Fairground.Model.Attractions.DuckFishing
 
         public void Start()
         {
-            Score = 0;
-            AttemptsRemaining = _rules.StartingAttempts;
-            DucksRemaining = _rules.DuckCount;
-            DipsInFlight = 0;
-            Phase = DuckFishingPhase.Playing;
+            if (Phase != MatchPhase.NotStarted)
+                return;
+
+            BeginMatch();
         }
+
+        public void Restart() => BeginMatch();
 
         public bool TryRegisterDip()
         {
@@ -65,9 +67,18 @@ namespace Fairground.Model.Attractions.DuckFishing
             return true;
         }
 
-        bool CanRegisterDip() => Phase == DuckFishingPhase.Playing && AttemptsRemaining > 0;
+        void BeginMatch()
+        {
+            Score = 0;
+            AttemptsRemaining = _rules.StartingAttempts;
+            DucksRemaining = _rules.DuckCount;
+            DipsInFlight = 0;
+            Phase = MatchPhase.Playing;
+        }
 
-        bool CanRegisterCatch() => Phase == DuckFishingPhase.Playing && DucksRemaining > 0;
+        bool CanRegisterDip() => Phase == MatchPhase.Playing && AttemptsRemaining > 0;
+
+        bool CanRegisterCatch() => Phase == MatchPhase.Playing && DucksRemaining > 0;
 
         void RefreshPhase()
         {

@@ -6,6 +6,7 @@ namespace Fairground.ViewModel.Attractions.FerrisWheel
 {
     /// <summary>
     /// Presentation state for the basic wheel. The view applies <see cref="AngleDegrees"/> each frame.
+    /// Cabin count is geometry on the rig, not a ride rule.
     /// </summary>
     public sealed class FerrisWheelViewModel
     {
@@ -16,8 +17,8 @@ namespace Fairground.ViewModel.Attractions.FerrisWheel
             _session = new FerrisWheelSession(rules ?? new FerrisWheelRules());
         }
 
-        public FerrisWheelViewModel(float degreesPerSecond, int cabinCount)
-            : this(new FerrisWheelRules(degreesPerSecond, cabinCount))
+        public FerrisWheelViewModel(float degreesPerSecond)
+            : this(new FerrisWheelRules(degreesPerSecond))
         {
         }
 
@@ -28,7 +29,6 @@ namespace Fairground.ViewModel.Attractions.FerrisWheel
         public FerrisWheelPhase Phase => _session.Phase;
         public float AngleDegrees => _session.AngleDegrees;
         public float DegreesPerSecond => _session.Rules.DegreesPerSecond;
-        public int CabinCount => _session.Rules.CabinCount;
         public bool IsRiding => Phase == FerrisWheelPhase.Riding;
 
         public void StartRide()

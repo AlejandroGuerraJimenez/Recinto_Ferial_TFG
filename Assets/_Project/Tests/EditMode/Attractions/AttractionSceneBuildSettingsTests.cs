@@ -8,27 +8,13 @@ namespace Fairground.Tests.EditMode.Attractions
     public sealed class AttractionSceneBuildSettingsTests
     {
         [Test]
-        public void BalloonThrowScene_IsEnabledInBuildSettings()
+        public void EveryPlayableAttraction_IsEnabledInBuildSettings()
         {
-            AssertSceneEnabled(AttractionId.BalloonThrow);
-        }
+            var playable = AttractionCatalog.Playable;
+            Assert.Greater(playable.Length, 0);
 
-        [Test]
-        public void PunchingBallScene_IsEnabledInBuildSettings()
-        {
-            AssertSceneEnabled(AttractionId.PunchingBall);
-        }
-
-        [Test]
-        public void BasketballHoopScene_IsEnabledInBuildSettings()
-        {
-            AssertSceneEnabled(AttractionId.BasketballHoop);
-        }
-
-        [Test]
-        public void FerrisWheelScene_IsEnabledInBuildSettings()
-        {
-            AssertSceneEnabled(AttractionId.FerrisWheel);
+            for (var i = 0; i < playable.Length; i++)
+                AssertSceneEnabled(playable[i].Id);
         }
 
         static void AssertSceneEnabled(AttractionId attractionId)

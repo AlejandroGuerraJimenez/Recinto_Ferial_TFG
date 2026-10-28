@@ -1,5 +1,6 @@
 using System.Collections;
 using Fairground.Core.Attractions;
+using Fairground.Model.Attractions;
 using Fairground.Model.Attractions.BasketballHoop;
 using Fairground.Tests.PlayMode.Support;
 using Fairground.View.Attractions;
@@ -26,7 +27,7 @@ namespace Fairground.Tests.PlayMode.Attractions
 
             BasketballHoopViewModel vm = controller.ViewModel;
             Assert.AreEqual(AttractionId.BasketballHoop, controller.AttractionId);
-            Assert.AreEqual(BasketballHoopPhase.Playing, vm.Phase);
+            Assert.AreEqual(MatchPhase.Playing, vm.Phase);
             Assert.Greater(vm.BallsRemaining, 0);
             Assert.AreEqual(0, vm.Score);
             Assert.IsTrue(vm.CanThrow);
@@ -123,7 +124,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             controller.RestartMatch();
             yield return null;
 
-            Assert.AreEqual(BasketballHoopPhase.Playing, vm.Phase);
+            Assert.AreEqual(MatchPhase.Playing, vm.Phase);
             Assert.AreEqual(startingBalls, vm.BallsRemaining);
             Assert.AreEqual(0, vm.Score);
             Assert.IsTrue(vm.CanThrow);
