@@ -1,4 +1,4 @@
-namespace Fairground.Model
+namespace Fairground.Core.Planes
 {
     /// <summary>
     /// Semantic label used to choose a surface for the fairground.

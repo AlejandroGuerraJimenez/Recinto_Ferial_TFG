@@ -28,7 +28,6 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
         }
 
         public AttractionId AttractionId => AttractionId.PunchingBall;
-        public string SceneName => AttractionCatalog.PunchingBall.SceneName;
 
         public MatchPhase Phase => _session.Phase;
         public int Score => _session.Score;
@@ -40,7 +39,7 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanPunch => IsPlaying && PunchesRemaining > 0;
         public string StatusText => Describe(Phase);
-        public string[] HudLines { get; private set; }
+        public override string[] HudLines { get; protected set; }
 
         public override void StartGame()
         {
@@ -48,7 +47,7 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
             Notify();
         }
 
-        public bool NotifyPunch(float impactMagnitude) => Apply(() => _session.TryRegisterPunch(impactMagnitude));
+        public bool TryRegisterPunch(float impactMagnitude) => Apply(() => _session.TryRegisterPunch(impactMagnitude));
 
         public override void Restart()
         {
@@ -60,9 +59,9 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
         {
             HudLines = new[]
             {
-                $"Best: {BestScore}",
-                $"Punches: {PunchesRemaining}",
-                $"Last: {LastPunchPower}",
+                $"Mejor: {BestScore}",
+                $"Golpes: {PunchesRemaining}",
+                $"Último: {LastPunchPower}",
                 StatusText,
             };
         }
@@ -71,10 +70,10 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
         {
             switch (phase)
             {
-                case MatchPhase.Playing: return $"Hit {WinScoreThreshold}+ to win!";
-                case MatchPhase.Won: return "Strongman!";
-                case MatchPhase.Lost: return "Too weak!";
-                default: return "Ready";
+                case MatchPhase.Playing: return $"¡Supera {WinScoreThreshold}!";
+                case MatchPhase.Won: return "¡Fuerza!";
+                case MatchPhase.Lost: return "¡Muy flojo!";
+                default: return "Listo";
             }
         }
     }

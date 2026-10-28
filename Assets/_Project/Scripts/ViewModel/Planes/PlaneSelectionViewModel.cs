@@ -1,4 +1,5 @@
 using System;
+using Fairground.Core.Planes;
 using Fairground.Model;
 
 namespace Fairground.ViewModel
@@ -27,7 +28,9 @@ namespace Fairground.ViewModel
 
         public bool SelectPlane(DetectedPlane plane) => _context.State.Select(_context, plane);
 
-        public bool IsSelectable(DetectedPlane plane) => PlaneCandidateFilter.TryRank(plane, out _);
+        public bool TryRank(DetectedPlane plane, out PlaneRank rank) => PlaneCandidateFilter.TryRank(plane, out rank);
+
+        public bool IsSelectable(DetectedPlane plane) => TryRank(plane, out _);
 
         public void RestartSelection() => _context.State.Restart(_context);
 

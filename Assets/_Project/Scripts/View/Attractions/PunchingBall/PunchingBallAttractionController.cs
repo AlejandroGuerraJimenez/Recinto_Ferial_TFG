@@ -1,9 +1,7 @@
-using Fairground.Model.Attractions.PunchingBall;
 using Fairground.Core.Attractions;
 using Fairground.ViewModel;
 using Fairground.ViewModel.Attractions.PunchingBall;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Fairground.View.Attractions.PunchingBall
 {
@@ -12,10 +10,6 @@ namespace Fairground.View.Attractions.PunchingBall
     /// </summary>
     public sealed class PunchingBallAttractionController : MonoBehaviour
     {
-        [SerializeField] int startingPunches = PunchingBallRules.DefaultStartingPunches;
-        [SerializeField] int winScoreThreshold = PunchingBallRules.DefaultWinScoreThreshold;
-        [SerializeField] int maxScore = PunchingBallRules.DefaultMaxScore;
-        [SerializeField] float maxImpactSpeed = PunchingBallRules.DefaultMaxImpactSpeed;
         [SerializeField] PunchPadView punchPad;
         [SerializeField] PunchPowerMeterView powerMeter;
         [SerializeField] BoothHudView hud;
@@ -32,18 +26,13 @@ namespace Fairground.View.Attractions.PunchingBall
             PunchPadView pad,
             PunchPowerMeterView meter,
             BoothHudView hudView,
-            int punches,
-            int winThreshold,
-            int scoreCap,
-            float impactCap)
+            PunchingBallViewModel match)
         {
             punchPad = pad;
             powerMeter = meter;
             hud = hudView;
-            startingPunches = punches;
-            winScoreThreshold = winThreshold;
-            maxScore = scoreCap;
-            maxImpactSpeed = impactCap;
+            _viewModel = match;
+            OpenMatch();
         }
 
         public void Receive(FairgroundSession session) => _session = session;
@@ -52,14 +41,6 @@ namespace Fairground.View.Attractions.PunchingBall
         {
             _input = new AttractionInput();
             _input.Enable();
-        }
-
-        void Start()
-        {
-            if (_viewModel != null)
-                return;
-
-            BootstrapMatch();
         }
 
         void Update()
@@ -71,7 +52,7 @@ namespace Fairground.View.Attractions.PunchingBall
                 RestartMatch();
 
             if (_input.ReturnToFairgroundPressed)
-                ReturnToFairground();
+                AttractionExit.ReturnToFairground(_session);
         }
 
         void OnDestroy()
@@ -81,14 +62,13 @@ namespace Fairground.View.Attractions.PunchingBall
             _input = null;
         }
 
-        void BootstrapMatch()
+        void OpenMatch()
         {
+            if (_viewModel == null)
+                return;
+
             ResolvePad();
-            _viewModel = CreateViewModel();
-            hud?.Bind(
-                () => _viewModel.HudLines,
-                handler => _viewModel.StateChanged += handler,
-                handler => _viewModel.StateChanged -= handler);
+            BoothHudBinding.Attach(hud, _viewModel);
             Subscribe();
             _viewModel.StartGame();
             UpdatePadAvailability();
@@ -102,11 +82,6 @@ namespace Fairground.View.Attractions.PunchingBall
 
             if (powerMeter == null)
                 powerMeter = FindAnyObjectByType<PunchPowerMeterView>();
-        }
-
-        PunchingBallViewModel CreateViewModel()
-        {
-            return new PunchingBallViewModel(startingPunches, winScoreThreshold, maxScore, maxImpactSpeed);
         }
 
         void Subscribe()
@@ -126,7 +101,7 @@ namespace Fairground.View.Attractions.PunchingBall
             if (_viewModel == null)
                 return;
 
-            if (!_viewModel.NotifyPunch(impactMagnitude))
+            if (!_viewModel.TryRegisterPunch(impactMagnitude))
                 return;
 
             powerMeter?.SetPower(_viewModel.LastPunchPower, _viewModel.MaxScore);
@@ -150,12 +125,6 @@ namespace Fairground.View.Attractions.PunchingBall
             punchPad?.ResetVisual();
             powerMeter?.ResetMeter();
             UpdatePadAvailability();
-        }
-
-        public void ReturnToFairground()
-        {
-            _session?.LeaveAttraction();
-            SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }
 }

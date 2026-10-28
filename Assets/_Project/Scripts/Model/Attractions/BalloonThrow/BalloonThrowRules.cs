@@ -1,4 +1,5 @@
 using System;
+using Fairground.Core.Attractions;
 using Fairground.Model.Attractions;
 
 namespace Fairground.Model.Attractions.BalloonThrow
@@ -8,9 +9,9 @@ namespace Fairground.Model.Attractions.BalloonThrow
     /// </summary>
     public sealed class BalloonThrowRules
     {
-        public const int DefaultPointsPerBalloon = 10;
-        public const int DefaultStartingThrows = 8;
-        public const int DefaultBalloonCount = 6;
+        public const int DefaultPointsPerBalloon = BalloonThrowBalance.PointsPerBalloon;
+        public const int DefaultStartingThrows = BalloonThrowBalance.StartingThrows;
+        public const int DefaultBalloonCount = BalloonThrowBalance.BalloonCount;
 
         public BalloonThrowRules(
             int pointsPerBalloon = DefaultPointsPerBalloon,

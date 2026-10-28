@@ -59,7 +59,7 @@ namespace Fairground.Tests.PlayMode.Attractions
 
             Assert.GreaterOrEqual(vm.BestScore, vm.WinScoreThreshold);
             Assert.AreEqual(MatchPhase.Won, vm.Phase);
-            Assert.AreEqual("Strongman!", vm.StatusText);
+            Assert.AreEqual("¡Fuerza!", vm.StatusText);
         }
 
         [UnityTest]

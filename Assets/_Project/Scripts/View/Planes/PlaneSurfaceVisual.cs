@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Fairground.Model;
+using Fairground.Core.Planes;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 
@@ -91,8 +91,7 @@ namespace Fairground.View
 
         public void Bind(DetectedPlane snapshot, bool isCandidate)
         {
-            var rank = isCandidate && PlaneCandidateFilter.TryRank(snapshot, out var scored) ? scored : default;
-            ApplySnapshot(snapshot, isCandidate, rank);
+            ApplySnapshot(snapshot, isCandidate, default);
         }
 
         public void BuildStandaloneMesh(IReadOnlyList<Vector2> boundary)

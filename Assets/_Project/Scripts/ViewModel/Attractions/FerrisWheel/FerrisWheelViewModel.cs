@@ -23,7 +23,6 @@ namespace Fairground.ViewModel.Attractions.FerrisWheel
         }
 
         public AttractionId AttractionId => AttractionId.FerrisWheel;
-        public string SceneName => AttractionCatalog.FerrisWheel.SceneName;
         public event Action StateChanged;
 
         public FerrisWheelPhase Phase => _session.Phase;
@@ -43,7 +42,6 @@ namespace Fairground.ViewModel.Attractions.FerrisWheel
                 return;
 
             _session.Advance(deltaSeconds);
-            StateChanged?.Invoke();
         }
     }
 }

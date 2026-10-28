@@ -1,4 +1,4 @@
-namespace Fairground.Model
+namespace Fairground.Core.Planes
 {
     /// <summary>
     /// Boundary vertex in plane space. X is local X and Y is local Z.

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Fairground.Core.Attractions;
-using Fairground.Model;
+using Fairground.Core.Planes;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;

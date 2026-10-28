@@ -105,10 +105,10 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
             int events = 0;
             vm.StateChanged += () => events++;
             vm.StartGame();
-            Assert.IsTrue(vm.NotifyDipStarted());
-            Assert.IsTrue(vm.NotifyDuckCaught());
+            Assert.IsTrue(vm.TryRegisterDip());
+            Assert.IsTrue(vm.TryRegisterCatch());
             Assert.AreEqual(3, events);
-            Assert.AreEqual("Catch 2 ducks!", vm.StatusText);
+            Assert.AreEqual("¡Atrapa 2 patos!", vm.StatusText);
             Assert.AreEqual(AttractionId.DuckFishing, vm.AttractionId);
         }
 
@@ -118,7 +118,7 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
             var vm = new DuckFishingViewModel(10, 2, 6, 4);
             vm.StartGame();
             Assert.IsTrue(vm.CanDip);
-            Assert.IsTrue(vm.NotifyDipStarted());
+            Assert.IsTrue(vm.TryRegisterDip());
             Assert.IsTrue(vm.CanDip);
             Assert.AreEqual(1, vm.AttemptsRemaining);
             vm.Restart();

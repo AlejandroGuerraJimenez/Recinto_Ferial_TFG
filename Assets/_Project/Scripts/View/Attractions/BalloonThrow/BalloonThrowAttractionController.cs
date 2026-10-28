@@ -1,11 +1,9 @@
 using System.Collections.Generic;
-using Fairground.Model.Attractions.BalloonThrow;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BalloonThrow.Factories;
 using Fairground.ViewModel;
 using Fairground.ViewModel.Attractions.BalloonThrow;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Fairground.View.Attractions.BalloonThrow
 {
@@ -14,8 +12,6 @@ namespace Fairground.View.Attractions.BalloonThrow
     /// </summary>
     public sealed class BalloonThrowAttractionController : MonoBehaviour
     {
-        [SerializeField] int pointsPerBalloon = BalloonThrowRules.DefaultPointsPerBalloon;
-        [SerializeField] int startingThrows = BalloonThrowRules.DefaultStartingThrows;
         [SerializeField] BalloonTargetView[] balloons;
         [SerializeField] BallSpawnerView ballSpawner;
         [SerializeField] BoothHudView hud;
@@ -35,14 +31,13 @@ namespace Fairground.View.Attractions.BalloonThrow
             BalloonTargetView[] balloonTargets,
             BallSpawnerView spawner,
             BoothHudView hudView,
-            int points,
-            int throws)
+            BalloonThrowViewModel match)
         {
             balloons = balloonTargets;
             ballSpawner = spawner;
             hud = hudView;
-            pointsPerBalloon = points;
-            startingThrows = throws;
+            _viewModel = match;
+            OpenMatch();
         }
 
         public void Receive(FairgroundSession session) => _session = session;
@@ -51,14 +46,6 @@ namespace Fairground.View.Attractions.BalloonThrow
         {
             _input = new AttractionInput();
             _input.Enable();
-        }
-
-        void Start()
-        {
-            if (_viewModel != null)
-                return;
-
-            BootstrapMatch();
         }
 
         void Update()
@@ -70,7 +57,7 @@ namespace Fairground.View.Attractions.BalloonThrow
                 RestartMatch();
 
             if (_input.ReturnToFairgroundPressed)
-                ReturnToFairground();
+                AttractionExit.ReturnToFairground(_session);
         }
 
         void OnDestroy()
@@ -80,14 +67,13 @@ namespace Fairground.View.Attractions.BalloonThrow
             _input = null;
         }
 
-        void BootstrapMatch()
+        void OpenMatch()
         {
+            if (_viewModel == null)
+                return;
+
             ResolveBalloons();
-            _viewModel = CreateViewModel();
-            hud?.Bind(
-                () => _viewModel.HudLines,
-                handler => _viewModel.StateChanged += handler,
-                handler => _viewModel.StateChanged -= handler);
+            BoothHudBinding.Attach(hud, _viewModel);
             Subscribe();
             _viewModel.StartGame();
             UpdateSpawnerAvailability();
@@ -99,12 +85,6 @@ namespace Fairground.View.Attractions.BalloonThrow
                 balloons = FindObjectsByType<BalloonTargetView>();
 
             RememberBalloonRoot();
-        }
-
-        BalloonThrowViewModel CreateViewModel()
-        {
-            int balloonCount = balloons != null ? Mathf.Max(1, balloons.Length) : 1;
-            return new BalloonThrowViewModel(pointsPerBalloon, startingThrows, balloonCount);
         }
 
         void Subscribe()
@@ -199,15 +179,15 @@ namespace Fairground.View.Attractions.BalloonThrow
                 UnregisterBall(ball);
         }
 
-        void OnBallThrown(ThrowableBallView ball) => Forward(_viewModel.NotifyBallThrown);
+        void OnBallThrown(ThrowableBallView ball) => Forward(_viewModel.TryRegisterThrow);
 
         void OnBallResolved(ThrowableBallView ball)
         {
-            Forward(_viewModel.NotifyThrowResolved);
+            Forward(_viewModel.TryResolveThrow);
             UnregisterBall(ball);
         }
 
-        void OnBalloonPopped(BalloonTargetView balloon) => Forward(_viewModel.NotifyBalloonHit);
+        void OnBalloonPopped(BalloonTargetView balloon) => Forward(_viewModel.TryRegisterHit);
 
         void Forward(System.Func<bool> action)
         {
@@ -277,12 +257,6 @@ namespace Fairground.View.Attractions.BalloonThrow
                 return;
 
             _balloonRoot = balloons[0].transform.parent;
-        }
-
-        public void ReturnToFairground()
-        {
-            _session?.LeaveAttraction();
-            SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }
 }

@@ -9,6 +9,8 @@ namespace Fairground.ViewModel.Attractions
     {
         public event Action StateChanged;
 
+        public abstract string[] HudLines { get; protected set; }
+
         public abstract void StartGame();
 
         public abstract void Restart();

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Fairground.Model
+namespace Fairground.Core.Planes
 {
     public static class PlaneArea
     {

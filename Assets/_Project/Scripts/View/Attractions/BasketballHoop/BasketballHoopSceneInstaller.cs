@@ -1,5 +1,6 @@
-using Fairground.Model.Attractions.BasketballHoop;
+using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BasketballHoop.Builders;
+using Fairground.ViewModel.Attractions.BasketballHoop;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.BasketballHoop
@@ -9,9 +10,9 @@ namespace Fairground.View.Attractions.BasketballHoop
     /// </summary>
     public sealed class BasketballHoopSceneInstaller : BoothSceneInstaller
     {
-        [SerializeField] int pointsPerBasket = BasketballHoopRules.DefaultPointsPerBasket;
-        [SerializeField] int startingBalls = BasketballHoopRules.DefaultStartingBalls;
-        [SerializeField] int winScoreThreshold = BasketballHoopRules.DefaultWinScoreThreshold;
+        [SerializeField] int pointsPerBasket = BasketballHoopBalance.PointsPerBasket;
+        [SerializeField] int startingBalls = BasketballHoopBalance.StartingBalls;
+        [SerializeField] int winScoreThreshold = BasketballHoopBalance.WinScoreThreshold;
 
         protected override BoothBuilder CreateBuilder()
         {
@@ -22,14 +23,9 @@ namespace Fairground.View.Attractions.BasketballHoop
         {
             var booth = (BasketballHoopBoothBuilder)builder;
             var go = new GameObject("BasketballHoopGame");
+            var match = new BasketballHoopViewModel(pointsPerBasket, startingBalls, winScoreThreshold);
             var controller = go.AddComponent<BasketballHoopAttractionController>();
-            controller.Configure(
-                booth.Hoop,
-                booth.Spawner,
-                booth.Hud,
-                pointsPerBasket,
-                startingBalls,
-                winScoreThreshold);
+            controller.Configure(booth.Hoop, booth.Spawner, booth.Hud, match);
             controller.Receive(Session);
             AttachPlaySupport(
                 booth.XrOrigin,

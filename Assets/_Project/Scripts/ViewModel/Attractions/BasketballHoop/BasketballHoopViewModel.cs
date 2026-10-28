@@ -24,7 +24,6 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
         }
 
         public AttractionId AttractionId => AttractionId.BasketballHoop;
-        public string SceneName => AttractionCatalog.BasketballHoop.SceneName;
 
         public MatchPhase Phase => _match.Phase;
         public int Score => _match.Score;
@@ -32,7 +31,7 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanThrow => IsPlaying && BallsRemaining > 0;
         public string StatusText => Describe(Phase);
-        public string[] HudLines { get; private set; }
+        public override string[] HudLines { get; protected set; }
 
         public override void StartGame()
         {
@@ -40,11 +39,11 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
             Notify();
         }
 
-        public bool NotifyBallThrown() => Apply(_match.TrySpendAttempt);
+        public bool TryRegisterThrow() => Apply(_match.TrySpendAttempt);
 
-        public bool NotifyBasket() => Apply(_match.TryRegisterSuccess);
+        public bool TryRegisterBasket() => Apply(_match.TryRegisterSuccess);
 
-        public bool NotifyThrowResolved() => Apply(_match.ResolveAttempt);
+        public bool TryResolveThrow() => Apply(_match.ResolveAttempt);
 
         public override void Restart()
         {
@@ -56,8 +55,8 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
         {
             HudLines = new[]
             {
-                $"Score: {Score}",
-                $"Balls: {BallsRemaining}",
+                $"Puntos: {Score}",
+                $"Balones: {BallsRemaining}",
                 StatusText,
             };
         }
@@ -66,10 +65,10 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
         {
             switch (phase)
             {
-                case MatchPhase.Playing: return "Shoot the hoop!";
-                case MatchPhase.Won: return "You win!";
-                case MatchPhase.Lost: return "Out of balls!";
-                default: return "Ready";
+                case MatchPhase.Playing: return "¡A la canasta!";
+                case MatchPhase.Won: return "¡Ganaste!";
+                case MatchPhase.Lost: return "¡Sin balones!";
+                default: return "Listo";
             }
         }
     }

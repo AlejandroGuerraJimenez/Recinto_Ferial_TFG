@@ -1,4 +1,4 @@
-namespace Fairground.Model
+namespace Fairground.Core.Planes
 {
     /// <summary>
     /// World pose stored without engine types. Rotation is a quaternion.

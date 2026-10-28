@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Fairground.Model
+namespace Fairground.Core.Planes
 {
     /// <summary>
     /// Snapshot of a detected flat surface. Boundary vertices are in plane space:
@@ -8,6 +8,8 @@ namespace Fairground.Model
     /// </summary>
     public readonly struct DetectedPlane
     {
+        public const int MinimumBoundaryVertices = 3;
+
         public DetectedPlane(
             string id,
             PlanePose pose,

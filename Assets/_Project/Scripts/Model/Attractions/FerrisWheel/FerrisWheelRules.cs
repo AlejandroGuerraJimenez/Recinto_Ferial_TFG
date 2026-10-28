@@ -1,4 +1,5 @@
 using System;
+using Fairground.Core.Attractions;
 
 namespace Fairground.Model.Attractions.FerrisWheel
 {
@@ -7,7 +8,7 @@ namespace Fairground.Model.Attractions.FerrisWheel
     /// </summary>
     public sealed class FerrisWheelRules
     {
-        public const float DefaultDegreesPerSecond = 16f;
+        public const float DefaultDegreesPerSecond = FerrisWheelBalance.DegreesPerSecond;
 
         public FerrisWheelRules(float degreesPerSecond = DefaultDegreesPerSecond)
         {

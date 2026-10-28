@@ -26,7 +26,6 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
         }
 
         public AttractionId AttractionId => AttractionId.BalloonThrow;
-        public string SceneName => AttractionCatalog.BalloonThrow.SceneName;
 
         public MatchPhase Phase => _match.Phase;
         public int Score => _match.Score;
@@ -37,7 +36,7 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanSpawnBall => IsPlaying && ThrowsRemaining > 0;
         public string StatusText => Describe(Phase);
-        public string[] HudLines { get; private set; }
+        public override string[] HudLines { get; protected set; }
 
         public override void StartGame()
         {
@@ -45,11 +44,11 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
             Notify();
         }
 
-        public bool NotifyBallThrown() => Apply(_match.TrySpendAttempt);
+        public bool TryRegisterThrow() => Apply(_match.TrySpendAttempt);
 
-        public bool NotifyBalloonHit() => Apply(_match.TryRegisterSuccess);
+        public bool TryRegisterHit() => Apply(_match.TryRegisterSuccess);
 
-        public bool NotifyThrowResolved() => Apply(_match.ResolveAttempt);
+        public bool TryResolveThrow() => Apply(_match.ResolveAttempt);
 
         public override void Restart()
         {
@@ -61,9 +60,9 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
         {
             HudLines = new[]
             {
-                $"Score: {Score}",
-                $"Throws: {ThrowsRemaining}",
-                $"Balloons: {BalloonsRemaining}",
+                $"Puntos: {Score}",
+                $"Lanzamientos: {ThrowsRemaining}",
+                $"Globos: {BalloonsRemaining}",
                 StatusText,
             };
         }
@@ -72,10 +71,10 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
         {
             switch (phase)
             {
-                case MatchPhase.Playing: return "Pop the balloons!";
-                case MatchPhase.Won: return "You win!";
-                case MatchPhase.Lost: return "Out of throws!";
-                default: return "Ready";
+                case MatchPhase.Playing: return "¡Explota los globos!";
+                case MatchPhase.Won: return "¡Ganaste!";
+                case MatchPhase.Lost: return "¡Sin lanzamientos!";
+                default: return "Listo";
             }
         }
     }

@@ -1,10 +1,8 @@
-using Fairground.Model.Attractions.DuckFishing;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.DuckFishing.Factories;
 using Fairground.ViewModel;
 using Fairground.ViewModel.Attractions.DuckFishing;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Fairground.View.Attractions.DuckFishing
 {
@@ -13,9 +11,6 @@ namespace Fairground.View.Attractions.DuckFishing
     /// </summary>
     public sealed class DuckFishingAttractionController : MonoBehaviour
     {
-        [SerializeField] int pointsPerDuck = DuckFishingRules.DefaultPointsPerDuck;
-        [SerializeField] int startingAttempts = DuckFishingRules.DefaultStartingAttempts;
-        [SerializeField] int ducksToWin = DuckFishingRules.DefaultDucksToWin;
         [SerializeField] DuckTargetView[] ducks;
         [SerializeField] FishingRodView rod;
         [SerializeField] BoothHudView hud;
@@ -36,17 +31,14 @@ namespace Fairground.View.Attractions.DuckFishing
             FishingRodView fishingRod,
             BoothHudView hudView,
             Transform pondRoot,
-            int points,
-            int attempts,
-            int winCount)
+            DuckFishingViewModel match)
         {
             ducks = duckTargets;
             rod = fishingRod;
             hud = hudView;
             pond = pondRoot;
-            pointsPerDuck = points;
-            startingAttempts = attempts;
-            ducksToWin = winCount;
+            _viewModel = match;
+            OpenMatch();
         }
 
         public void Receive(FairgroundSession session) => _session = session;
@@ -55,14 +47,6 @@ namespace Fairground.View.Attractions.DuckFishing
         {
             _input = new AttractionInput(headsetTriggers: true);
             _input.Enable();
-        }
-
-        void Start()
-        {
-            if (_viewModel != null)
-                return;
-
-            BootstrapMatch();
         }
 
         void Update()
@@ -74,7 +58,7 @@ namespace Fairground.View.Attractions.DuckFishing
                 RestartMatch();
 
             if (_input.ReturnToFairgroundPressed)
-                ReturnToFairground();
+                AttractionExit.ReturnToFairground(_session);
 
             if (_input.PlayPressed)
                 rod?.Hook?.TryStartDip();
@@ -87,14 +71,13 @@ namespace Fairground.View.Attractions.DuckFishing
             _input = null;
         }
 
-        void BootstrapMatch()
+        void OpenMatch()
         {
+            if (_viewModel == null)
+                return;
+
             ResolveRefs();
-            _viewModel = CreateViewModel();
-            hud?.Bind(
-                () => _viewModel.HudLines,
-                handler => _viewModel.StateChanged += handler,
-                handler => _viewModel.StateChanged -= handler);
+            BoothHudBinding.Attach(hud, _viewModel);
             Subscribe();
             _viewModel.StartGame();
             UpdateHookAvailability();
@@ -117,13 +100,6 @@ namespace Fairground.View.Attractions.DuckFishing
             RememberDuckRoot();
         }
 
-        DuckFishingViewModel CreateViewModel()
-        {
-            int duckCount = ducks != null ? Mathf.Max(1, ducks.Length) : 1;
-            int winCount = Mathf.Clamp(ducksToWin, 1, duckCount);
-            return new DuckFishingViewModel(pointsPerDuck, startingAttempts, duckCount, winCount);
-        }
-
         void Subscribe()
         {
             if (rod?.Hook != null)
@@ -144,11 +120,11 @@ namespace Fairground.View.Attractions.DuckFishing
             rod.Hook.DuckCaught -= OnDuckCaught;
         }
 
-        void OnDipStarted() => Forward(_viewModel.NotifyDipStarted);
+        void OnDipStarted() => Forward(_viewModel.TryRegisterDip);
 
-        void OnDipResolved() => Forward(_viewModel.NotifyDipResolved);
+        void OnDipResolved() => Forward(_viewModel.TryResolveDip);
 
-        void OnDuckCaught(DuckTargetView duck) => Forward(_viewModel.NotifyDuckCaught);
+        void OnDuckCaught(DuckTargetView duck) => Forward(_viewModel.TryRegisterCatch);
 
         void Forward(System.Func<bool> action)
         {
@@ -195,12 +171,6 @@ namespace Fairground.View.Attractions.DuckFishing
                 return;
 
             _duckRoot = ducks[0].transform.parent;
-        }
-
-        public void ReturnToFairground()
-        {
-            _session?.LeaveAttraction();
-            SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }
 }

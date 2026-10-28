@@ -1,4 +1,4 @@
-using Fairground.Model.Attractions.PunchingBall;
+using Fairground.Core.Attractions;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.PunchingBall
@@ -14,10 +14,10 @@ namespace Fairground.View.Attractions.PunchingBall
         public static readonly Vector3 HudPosition = new Vector3(-1.6f, 2.1f, 3.2f);
         public static readonly string[] HudLines =
         {
-            "Best: 0",
-            "Punches: " + PunchingBallRules.DefaultStartingPunches,
-            "Last: 0",
-            "Hit " + PunchingBallRules.DefaultWinScoreThreshold + "+ to win!",
+            "Mejor: 0",
+            "Golpes: " + PunchingBallBalance.StartingPunches,
+            "Último: 0",
+            "¡Supera " + PunchingBallBalance.WinScoreThreshold + "!",
         };
 
         public static BoothLayout Props()

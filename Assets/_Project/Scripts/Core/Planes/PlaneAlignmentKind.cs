@@ -1,4 +1,4 @@
-namespace Fairground.Model
+namespace Fairground.Core.Planes
 {
     /// <summary>
     /// Coarse alignment used by the candidate filter.

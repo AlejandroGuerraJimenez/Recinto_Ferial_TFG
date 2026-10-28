@@ -1,7 +1,8 @@
 using System;
-using Fairground.Model;
+using Fairground.Core.Planes;
 using Fairground.ViewModel;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.XR.ARFoundation;
 
 namespace Fairground.View
@@ -19,10 +20,10 @@ namespace Fairground.View
     [AddComponentMenu("Fairground/Plane Selection")]
     public sealed class PlaneSelectionView : MonoBehaviour
     {
-        [SerializeField] ARPlaneManager m_PlaneManager;
-        [SerializeField] GameObject m_PlanePrefab;
+        [SerializeField, FormerlySerializedAs("m_PlaneManager")] ARPlaneManager planeManager;
+        [SerializeField, FormerlySerializedAs("m_PlanePrefab")] GameObject planePrefab;
         [SerializeField] Transform m_RightController;
-        [SerializeField] float m_RayDistance = 8f;
+        [SerializeField, FormerlySerializedAs("m_RayDistance")] float rayDistance = 8f;
         [SerializeField] bool m_EnableEditorStandIn = true;
 
         PlaneSelectionViewModel _viewModel;
@@ -37,6 +38,7 @@ namespace Fairground.View
         EditorStandInHost _standIn;
         PlaneRegistration _registration;
         PlaneDetectionStatusView _status;
+        readonly PlaneStatusText _statusText = new PlaneStatusText();
         bool _permissionGranted;
         bool _permissionSettled;
         float _nextAttach;
@@ -45,26 +47,9 @@ namespace Fairground.View
         int _attachAttempts;
         bool _askedForRoom;
         float _ignoreRestartUntil;
-        StatusKind _statusKind;
-        int _statusPrimary;
-        int _statusSecondary;
-        int _statusTertiary;
-        int _statusSample;
-        int _candidateCount;
-        string _statusText = string.Empty;
         Action _confirm;
         Action _restart;
         Func<bool> _isAwaiting;
-
-        enum StatusKind
-        {
-            None,
-            Denied,
-            WaitingPermission,
-            Scanning,
-            Locked,
-            Choosing,
-        }
 
         /// <summary>
         /// Fired once when the user confirms a surface. Other surfaces are hidden. Parcels stay on this one.
@@ -155,7 +140,7 @@ namespace Fairground.View
             _appearance.Apply(State);
             _input.Read();
             _aimView.Draw(ShowAim(), _aim.Origin, _aim.End, _aim.Hovered != null);
-            var status = CurrentStatus();
+            var status = DescribeStatus();
             _status?.Present(status);
             LogStatus(status);
         }
@@ -168,7 +153,7 @@ namespace Fairground.View
             if (_viewModel == null || State != PlaneSelectionState.AwaitingSelection)
                 return false;
 
-            if (!PlaneCandidateFilter.TryRank(plane, out _))
+            if (!_viewModel.IsSelectable(plane))
                 return false;
 
             var visual = SavedPlaneSurface.Spawn(plane, transform, FillTemplate(), BorderTemplate());
@@ -204,7 +189,7 @@ namespace Fairground.View
             _attachAttempts = 0;
             _scanSince = -1f;
             _askedForRoom = false;
-            _detection.TryAttach(m_PlanePrefab, _registration.OnChanged);
+            _detection.TryAttach(planePrefab, _registration.OnChanged);
             _viewModel?.RestartSelection();
             OnRestarted?.Invoke();
         }
@@ -218,8 +203,8 @@ namespace Fairground.View
 
         void CreateSession()
         {
-            _detection = new PlaneDetectionSession(m_PlaneManager);
-            _aim = new PlaneAimController(AimSource(), m_RayDistance);
+            _detection = new PlaneDetectionSession(planeManager);
+            _aim = new PlaneAimController(AimSource(), rayDistance);
             _appearance = new PlaneAppearanceController(_catalog, _pointer, _aim);
             CreateTools();
         }
@@ -229,14 +214,14 @@ namespace Fairground.View
             _confirm = Confirm;
             _restart = RestartSelection;
             _isAwaiting = IsAwaiting;
-            _standIn = new EditorStandInHost(m_EnableEditorStandIn, transform, m_PlanePrefab, DetectionRunning);
+            _standIn = new EditorStandInHost(m_EnableEditorStandIn, transform, planePrefab, DetectionRunning);
             _registration = new PlaneRegistration(
                 _catalog,
                 _aim,
                 _pointer,
                 _standIn,
                 () => State,
-                snapshot => _viewModel.IsSelectable(snapshot));
+                snapshot => _viewModel.TryRank(snapshot, out var rank) ? (PlaneRank?)rank : null);
             _aimView = AimRayView.Create(transform, BorderTemplate());
             _status = PlaneDetectionStatusView.Create();
             _input = new PlaneSelectionInput(_confirm, _restart, EditorContext);
@@ -279,7 +264,7 @@ namespace Fairground.View
 
             _nextAttach = Time.unscaledTime + 1.5f;
             _attachAttempts++;
-            _detection.TryAttach(m_PlanePrefab, _registration.OnChanged);
+            _detection.TryAttach(planePrefab, _registration.OnChanged);
         }
 
         void OnDenied()
@@ -290,7 +275,7 @@ namespace Fairground.View
 
         void LogStatus(string status)
         {
-            if (_candidateCount > 0 || Time.unscaledTime < _nextReport)
+            if (_catalog.CandidateCount() > 0 || Time.unscaledTime < _nextReport)
                 return;
 
             _nextReport = Time.unscaledTime + 2f;
@@ -310,7 +295,7 @@ namespace Fairground.View
         void Resume()
         {
             ReleaseHold();
-            _detection.Prepare(m_PlanePrefab);
+            _detection.Prepare(planePrefab);
             _detection.ResumeHorizontal(_permissionGranted);
             _detection.Listen(_registration.OnChanged);
             _standIn.AllowAgain(_catalog);
@@ -397,120 +382,16 @@ namespace Fairground.View
 
         bool ShowAim() => _aim.HasAim && (IsAwaiting() || State == PlaneSelectionState.PlaneSelected);
 
-        const string QuitLine = "\nY del mando izquierdo cierra la app.";
-        const string DeniedText =
-            "Sin permiso de escena.\nPulsa B para volver a pedir el aviso.\nSi no sale: Ajustes, Aplicaciones, permisos, datos espaciales." + QuitLine;
-        const string WaitingText =
-            "Permiso de escena.\nSi sale el aviso, acéptalo. La búsqueda empieza igual." + QuitLine;
-        const string LockedText =
-            "Plano fijado. El resto queda fuera.\nApunta una parcela y pulsa el gatillo.\nB suelta el plano." + QuitLine;
-        const string ChoosingLine = " planos. El marcado es la propuesta.\nGatillo: el apuntado, o esa si no apuntas.";
-
-        string CurrentStatus()
+        string DescribeStatus()
         {
-            _candidateCount = _catalog.CandidateCount();
-
-            if (PermissionDenied())
-                return Status(StatusKind.Denied, 0, 0, 0, 0, DeniedText);
-
-            if (!_permissionSettled && !_detection.IsSubsystemRunning)
-                return Status(StatusKind.WaitingPermission, 0, 0, 0, 0, WaitingText);
-
-            if (_candidateCount == 0)
-            {
-                var tracked = TrackedPlaneCount();
-                var session = (int)ARSession.state;
-                var subsystem = SubsystemStamp();
-                var sample = FirstPlaneStamp();
-                if (Same(StatusKind.Scanning, tracked, session, subsystem, sample))
-                    return _statusText;
-
-                return Store(
-                    StatusKind.Scanning,
-                    tracked,
-                    session,
-                    subsystem,
-                    sample,
-                    _detection.Report(tracked, 0) + QuitLine);
-            }
-
-            if (State == PlaneSelectionState.PlaneSelected)
-                return Status(StatusKind.Locked, 0, 0, 0, 0, LockedText);
-
-            if (Same(StatusKind.Choosing, _candidateCount, 0, 0, 0))
-                return _statusText;
-
-            return Store(StatusKind.Choosing, _candidateCount, 0, 0, 0, _candidateCount + ChoosingLine + QuitLine);
-        }
-
-        string Status(StatusKind kind, int primary, int secondary, int tertiary, int sample, string text)
-        {
-            if (Same(kind, primary, secondary, tertiary, sample))
-                return _statusText;
-
-            return Store(kind, primary, secondary, tertiary, sample, text);
-        }
-
-        bool Same(StatusKind kind, int primary, int secondary, int tertiary, int sample)
-        {
-            return _statusKind == kind
-                && _statusPrimary == primary
-                && _statusSecondary == secondary
-                && _statusTertiary == tertiary
-                && _statusSample == sample;
-        }
-
-        string Store(StatusKind kind, int primary, int secondary, int tertiary, int sample, string text)
-        {
-            _statusKind = kind;
-            _statusPrimary = primary;
-            _statusSecondary = secondary;
-            _statusTertiary = tertiary;
-            _statusSample = sample;
-            _statusText = text;
-            return text;
-        }
-
-        int SubsystemStamp()
-        {
-            var manager = _detection != null ? _detection.Manager : null;
-            if (manager == null)
-                return 0;
-
-            var subsystem = manager.subsystem;
-            if (subsystem == null)
-                return 1;
-
-            return subsystem.running ? 3 : 2;
-        }
-
-        int FirstPlaneStamp()
-        {
-            var manager = _detection != null ? _detection.Manager : null;
-            if (manager == null)
-                return 0;
-
-            foreach (var plane in manager.trackables)
-            {
-                if (plane == null)
-                    continue;
-
-                var boundary = plane.boundary;
-                var points = boundary.IsCreated ? boundary.Length : 0;
-                var absorbed = plane.subsumedBy != null ? 1 : 0;
-                var id = plane.trackableId;
-                unchecked
-                {
-                    var stamp = points;
-                    stamp = stamp * 31 + absorbed;
-                    stamp = stamp * 31 + (int)plane.alignment;
-                    stamp = stamp * 31 + (int)plane.classifications;
-                    stamp = stamp * 31 + id.GetHashCode();
-                    return stamp;
-                }
-            }
-
-            return 0;
+            return _statusText.Current(
+                PermissionDenied(),
+                _permissionSettled,
+                _detection.IsSubsystemRunning,
+                _catalog.CandidateCount(),
+                State == PlaneSelectionState.PlaneSelected,
+                _detection.Manager,
+                tracked => _detection.Report(tracked, 0));
         }
 
         int TrackedPlaneCount()
@@ -531,7 +412,7 @@ namespace Fairground.View
 
         EditorInputContext EditorContext()
         {
-            return new EditorInputContext(_restart, _confirm, _isAwaiting, _aim, m_RayDistance);
+            return new EditorInputContext(_restart, _confirm, _isAwaiting, _aim, rayDistance);
         }
 
         IAimRaySource AimSource()
@@ -549,7 +430,7 @@ namespace Fairground.View
 
         Material Template(System.Func<PlaneSurfaceVisual, Material> pick)
         {
-            var visual = m_PlanePrefab != null ? m_PlanePrefab.GetComponent<PlaneSurfaceVisual>() : null;
+            var visual = planePrefab != null ? planePrefab.GetComponent<PlaneSurfaceVisual>() : null;
             return visual != null ? pick(visual) : null;
         }
 

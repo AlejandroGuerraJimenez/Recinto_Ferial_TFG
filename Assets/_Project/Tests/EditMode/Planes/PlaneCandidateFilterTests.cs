@@ -1,3 +1,4 @@
+using Fairground.Core.Planes;
 using Fairground.Model;
 using NUnit.Framework;
 

@@ -1,4 +1,5 @@
 using System;
+using Fairground.Core.Attractions;
 using Fairground.Model.Attractions;
 
 namespace Fairground.Model.Attractions.BasketballHoop
@@ -8,9 +9,9 @@ namespace Fairground.Model.Attractions.BasketballHoop
     /// </summary>
     public sealed class BasketballHoopRules
     {
-        public const int DefaultPointsPerBasket = 2;
-        public const int DefaultStartingBalls = 10;
-        public const int DefaultWinScoreThreshold = 5;
+        public const int DefaultPointsPerBasket = BasketballHoopBalance.PointsPerBasket;
+        public const int DefaultStartingBalls = BasketballHoopBalance.StartingBalls;
+        public const int DefaultWinScoreThreshold = BasketballHoopBalance.WinScoreThreshold;
 
         public BasketballHoopRules(
             int pointsPerBasket = DefaultPointsPerBasket,

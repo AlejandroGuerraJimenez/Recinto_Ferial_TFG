@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Fairground.Model;
+using Fairground.Core.Planes;
 using Fairground.ViewModel;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
@@ -14,7 +14,7 @@ namespace Fairground.View
         readonly PlanePointer _pointer;
         readonly EditorStandInHost _standIn;
         readonly Func<PlaneSelectionState> _state;
-        readonly Func<DetectedPlane, bool> _isSelectable;
+        readonly Func<DetectedPlane, PlaneRank?> _rank;
         readonly Dictionary<string, ARPlane> _watched = new Dictionary<string, ARPlane>();
 
         public PlaneRegistration(
@@ -23,14 +23,14 @@ namespace Fairground.View
             PlanePointer pointer,
             EditorStandInHost standIn,
             Func<PlaneSelectionState> state,
-            Func<DetectedPlane, bool> isSelectable)
+            Func<DetectedPlane, PlaneRank?> rank)
         {
             _catalog = catalog;
             _aim = aim;
             _pointer = pointer;
             _standIn = standIn;
             _state = state;
-            _isSelectable = isSelectable;
+            _rank = rank;
         }
 
         public void CatchUp(ARPlaneManager manager)
@@ -83,8 +83,9 @@ namespace Fairground.View
             }
 
             var snapshot = DetectedPlaneMapper.FromPlane(plane);
-            var accepted = plane.subsumedBy == null && _isSelectable(snapshot);
-            var rank = accepted && PlaneCandidateFilter.TryRank(snapshot, out var scored) ? scored : default;
+            var scored = _rank(snapshot);
+            var accepted = plane.subsumedBy == null && scored.HasValue;
+            var rank = accepted ? scored.Value : default;
             visual.ApplySnapshot(snapshot, accepted, rank);
             _catalog.Track(visual);
             return visual;

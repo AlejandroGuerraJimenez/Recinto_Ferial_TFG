@@ -1,4 +1,4 @@
-using Fairground.Model;
+using Fairground.Core.Planes;
 using NUnit.Framework;
 
 namespace Fairground.Tests.EditMode

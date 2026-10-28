@@ -101,12 +101,12 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             int events = 0;
             vm.StateChanged += () => events++;
             vm.StartGame();
-            Assert.IsTrue(vm.NotifyBallThrown());
-            Assert.IsTrue(vm.NotifyBalloonHit());
+            Assert.IsTrue(vm.TryRegisterThrow());
+            Assert.IsTrue(vm.TryRegisterHit());
             Assert.AreEqual(3, events);
-            Assert.AreEqual("Pop the balloons!", vm.StatusText);
-            Assert.AreEqual("Score: 10", vm.HudLines[0]);
-            Assert.AreEqual("Pop the balloons!", vm.HudLines[3]);
+            Assert.AreEqual("¡Explota los globos!", vm.StatusText);
+            Assert.AreEqual("Puntos: 10", vm.HudLines[0]);
+            Assert.AreEqual("¡Explota los globos!", vm.HudLines[3]);
             Assert.AreEqual(AttractionId.BalloonThrow, vm.AttractionId);
         }
 
@@ -117,7 +117,7 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             vm.StartGame();
             Assert.IsTrue(vm.CanSpawnBall);
             Assert.AreEqual(2, vm.BalloonCount);
-            Assert.IsTrue(vm.NotifyBallThrown());
+            Assert.IsTrue(vm.TryRegisterThrow());
             Assert.IsFalse(vm.CanSpawnBall);
             vm.Restart();
             Assert.IsTrue(vm.CanSpawnBall);

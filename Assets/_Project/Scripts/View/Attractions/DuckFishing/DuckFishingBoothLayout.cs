@@ -1,4 +1,4 @@
-using Fairground.Model.Attractions.DuckFishing;
+using Fairground.Core.Attractions;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.DuckFishing
@@ -15,10 +15,10 @@ namespace Fairground.View.Attractions.DuckFishing
         public static readonly Vector3 HudPosition = new Vector3(0f, 2.2f, 3.6f);
         public static readonly string[] HudLines =
         {
-            "Score: 0",
-            "Hooks: " + DuckFishingRules.DefaultStartingAttempts,
-            "Caught: 0/" + DuckFishingRules.DefaultDucksToWin,
-            "Catch " + DuckFishingRules.DefaultDucksToWin + " ducks!",
+            "Puntos: 0",
+            "Intentos: " + DuckFishingBalance.StartingAttempts,
+            "Patos: 0/" + DuckFishingBalance.DucksToWin,
+            "¡Atrapa " + DuckFishingBalance.DucksToWin + " patos!",
         };
 
         public static BoothLayout Props()

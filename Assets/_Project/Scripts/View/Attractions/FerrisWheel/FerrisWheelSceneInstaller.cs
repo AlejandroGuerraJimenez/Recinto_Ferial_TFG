@@ -1,4 +1,5 @@
 using Fairground.View.Attractions.FerrisWheel.Factories;
+using Fairground.ViewModel.Attractions.FerrisWheel;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.FerrisWheel
@@ -22,8 +23,9 @@ namespace Fairground.View.Attractions.FerrisWheel
             FerrisWheelRigView rig = ride.Create(xrOrigin);
 
             var go = new GameObject("FerrisWheelGame");
+            var match = new FerrisWheelViewModel(degreesPerSecond);
             var controller = go.AddComponent<FerrisWheelAttractionController>();
-            controller.Configure(rig, degreesPerSecond, cabinCount);
+            controller.Configure(rig, cabinCount, match);
             controller.Receive(Session);
 
             AttractionSceneSupport.CreateVrCamera(xrOrigin);

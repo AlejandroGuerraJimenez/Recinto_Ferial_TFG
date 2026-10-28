@@ -22,6 +22,7 @@ namespace Fairground.View
         const string RightModelPath = "/model_fb/controller/right";
         const string ErrorShaderName = "Hidden/InternalErrorShader";
         const float ModelPathPollSeconds = 0.5f;
+        const float OriginSearchSeconds = 0.5f;
 
         static readonly Color FallbackColor = new Color(0.92f, 0.93f, 0.95f, 1f);
 
@@ -32,6 +33,7 @@ namespace Fairground.View
         static Material _fallbackMaterial;
         static string[] _renderModelPaths;
         static float _nextModelPathPoll = -1f;
+        static float _nextOriginSearch = -1f;
 
         readonly Hand _left = new Hand();
         readonly Hand _right = new Hand();
@@ -56,13 +58,31 @@ namespace Fairground.View
         {
             _left.Clear();
             _right.Clear();
+            _nextOriginSearch = -1f;
+            TryFindControllers();
         }
 
         void LateUpdate()
         {
             PumpInput();
-            Show(_left, LeftName, LeftVisualName, LeftModelPath, OVRInput.Controller.LTouch);
-            Show(_right, RightName, RightVisualName, RightModelPath, OVRInput.Controller.RTouch);
+            TryFindControllers();
+            Show(_left, LeftVisualName, LeftModelPath, OVRInput.Controller.LTouch);
+            Show(_right, RightVisualName, RightModelPath, OVRInput.Controller.RTouch);
+        }
+
+        void TryFindControllers()
+        {
+            if (_left.Controller != null && _right.Controller != null)
+                return;
+
+            if (_nextOriginSearch >= 0f && Time.unscaledTime < _nextOriginSearch)
+                return;
+
+            _nextOriginSearch = Time.unscaledTime + OriginSearchSeconds;
+            if (_left.Controller == null)
+                _left.Controller = FindController(LeftName);
+            if (_right.Controller == null)
+                _right.Controller = FindController(RightName);
         }
 
         static void PumpInput()
@@ -73,11 +93,8 @@ namespace Fairground.View
             OVRInput.Update();
         }
 
-        static void Show(Hand hand, string controllerName, string visualName, string modelPath, OVRInput.Controller kind)
+        static void Show(Hand hand, string visualName, string modelPath, OVRInput.Controller kind)
         {
-            if (hand.Controller == null)
-                hand.Controller = FindController(controllerName);
-
             if (hand.Controller == null)
                 return;
 

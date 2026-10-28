@@ -1,5 +1,5 @@
 using Fairground.Core.Attractions;
-using Fairground.Model;
+using Fairground.Core.Planes;
 using Fairground.ViewModel;
 using NUnit.Framework;
 

@@ -3,7 +3,6 @@
     "rootNamespace": "Fairground.View",
     "references": [
         "Fairground.Core",
-        "Fairground.Model",
         "Fairground.ViewModel",
         "Unity.XR.ARFoundation",
         "Unity.XR.ARSubsystems",

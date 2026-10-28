@@ -1,5 +1,5 @@
 using System;
-using Fairground.Model;
+using Fairground.Core.Planes;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
@@ -110,7 +110,7 @@ namespace Fairground.View
         static PlanePoint[] CopyBoundary(ARPlane plane)
         {
             var source = plane.boundary;
-            if (source.IsCreated && source.Length >= PlaneCandidateFilter.MinimumBoundaryVertices)
+            if (source.IsCreated && source.Length >= DetectedPlane.MinimumBoundaryVertices)
                 return Filled(plane);
 
             return Rectangle(plane);

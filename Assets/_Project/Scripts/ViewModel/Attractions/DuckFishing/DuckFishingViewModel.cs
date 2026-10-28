@@ -26,7 +26,6 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
         }
 
         public AttractionId AttractionId => AttractionId.DuckFishing;
-        public string SceneName => AttractionCatalog.DuckFishing.SceneName;
 
         public MatchPhase Phase => _match.Phase;
         public int Score => _match.Score;
@@ -38,7 +37,7 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanDip => IsPlaying && AttemptsRemaining > 0;
         public string StatusText => Describe(Phase);
-        public string[] HudLines { get; private set; }
+        public override string[] HudLines { get; protected set; }
 
         public override void StartGame()
         {
@@ -46,11 +45,11 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
             Notify();
         }
 
-        public bool NotifyDipStarted() => Apply(_match.TrySpendAttempt);
+        public bool TryRegisterDip() => Apply(_match.TrySpendAttempt);
 
-        public bool NotifyDuckCaught() => Apply(_match.TryRegisterSuccess);
+        public bool TryRegisterCatch() => Apply(_match.TryRegisterSuccess);
 
-        public bool NotifyDipResolved() => Apply(_match.ResolveAttempt);
+        public bool TryResolveDip() => Apply(_match.ResolveAttempt);
 
         public override void Restart()
         {
@@ -62,9 +61,9 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
         {
             HudLines = new[]
             {
-                $"Score: {Score}",
-                $"Hooks: {AttemptsRemaining}",
-                $"Caught: {DucksCaught}/{DucksToWin}",
+                $"Puntos: {Score}",
+                $"Intentos: {AttemptsRemaining}",
+                $"Patos: {DucksCaught}/{DucksToWin}",
                 StatusText,
             };
         }
@@ -73,10 +72,10 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
         {
             switch (phase)
             {
-                case MatchPhase.Playing: return $"Catch {DucksToWin} ducks!";
-                case MatchPhase.Won: return "You win!";
-                case MatchPhase.Lost: return "Out of hooks!";
-                default: return "Ready";
+                case MatchPhase.Playing: return $"¡Atrapa {DucksToWin} patos!";
+                case MatchPhase.Won: return "¡Ganaste!";
+                case MatchPhase.Lost: return "¡Sin intentos!";
+                default: return "Listo";
             }
         }
     }

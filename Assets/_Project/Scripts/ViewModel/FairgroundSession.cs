@@ -1,5 +1,5 @@
 using Fairground.Core.Attractions;
-using Fairground.Model;
+using Fairground.Core.Planes;
 
 namespace Fairground.ViewModel
 {

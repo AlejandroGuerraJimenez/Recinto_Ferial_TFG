@@ -1,5 +1,6 @@
-using Fairground.Model.Attractions.PunchingBall;
+using Fairground.Core.Attractions;
 using Fairground.View.Attractions.PunchingBall.Builders;
+using Fairground.ViewModel.Attractions.PunchingBall;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.PunchingBall
@@ -9,10 +10,10 @@ namespace Fairground.View.Attractions.PunchingBall
     /// </summary>
     public sealed class PunchingBallSceneInstaller : BoothSceneInstaller
     {
-        [SerializeField] int startingPunches = PunchingBallRules.DefaultStartingPunches;
-        [SerializeField] int winScoreThreshold = PunchingBallRules.DefaultWinScoreThreshold;
-        [SerializeField] int maxScore = PunchingBallRules.DefaultMaxScore;
-        [SerializeField] float maxImpactSpeed = PunchingBallRules.DefaultMaxImpactSpeed;
+        [SerializeField] int startingPunches = PunchingBallBalance.StartingPunches;
+        [SerializeField] int winScoreThreshold = PunchingBallBalance.WinScoreThreshold;
+        [SerializeField] int maxScore = PunchingBallBalance.MaxScore;
+        [SerializeField] float maxImpactSpeed = PunchingBallBalance.MaxImpactSpeed;
 
         protected override BoothBuilder CreateBuilder()
         {
@@ -23,15 +24,9 @@ namespace Fairground.View.Attractions.PunchingBall
         {
             var booth = (PunchingBallBoothBuilder)builder;
             var go = new GameObject("PunchingBallGame");
+            var match = new PunchingBallViewModel(startingPunches, winScoreThreshold, maxScore, maxImpactSpeed);
             var controller = go.AddComponent<PunchingBallAttractionController>();
-            controller.Configure(
-                booth.Pad,
-                booth.Meter,
-                booth.Hud,
-                startingPunches,
-                winScoreThreshold,
-                maxScore,
-                maxImpactSpeed);
+            controller.Configure(booth.Pad, booth.Meter, booth.Hud, match);
             controller.Receive(Session);
             AttachPlaySupport(booth.XrOrigin, controller.Input, PunchingBallDesktopPlay.Profile(booth.Pad));
         }

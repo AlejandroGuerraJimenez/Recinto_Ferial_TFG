@@ -1,4 +1,4 @@
-using Fairground.Model.Attractions.BalloonThrow;
+using Fairground.Core.Attractions;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.BalloonThrow
@@ -14,10 +14,10 @@ namespace Fairground.View.Attractions.BalloonThrow
         public static readonly Vector3 HudPosition = new Vector3(0f, 2.1f, 3.2f);
         public static readonly string[] HudLines =
         {
-            "Score: 0",
-            "Throws: " + BalloonThrowRules.DefaultStartingThrows,
-            "Balloons: " + BalloonThrowRules.DefaultBalloonCount,
-            "Pop the balloons!",
+            "Puntos: 0",
+            "Lanzamientos: " + BalloonThrowBalance.StartingThrows,
+            "Globos: " + BalloonThrowBalance.BalloonCount,
+            "¡Explota los globos!",
         };
 
         public static BoothLayout Props()

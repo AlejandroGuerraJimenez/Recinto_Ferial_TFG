@@ -1,4 +1,5 @@
 using System;
+using Fairground.Core.Attractions;
 
 namespace Fairground.Model.Attractions.PunchingBall
 {
@@ -7,10 +8,10 @@ namespace Fairground.Model.Attractions.PunchingBall
     /// </summary>
     public sealed class PunchingBallRules
     {
-        public const int DefaultStartingPunches = 5;
-        public const int DefaultWinScoreThreshold = 700;
-        public const int DefaultMaxScore = 999;
-        public const float DefaultMaxImpactSpeed = 8f;
+        public const int DefaultStartingPunches = PunchingBallBalance.StartingPunches;
+        public const int DefaultWinScoreThreshold = PunchingBallBalance.WinScoreThreshold;
+        public const int DefaultMaxScore = PunchingBallBalance.MaxScore;
+        public const float DefaultMaxImpactSpeed = PunchingBallBalance.MaxImpactSpeed;
 
         public PunchingBallRules(
             int startingPunches = DefaultStartingPunches,

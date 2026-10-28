@@ -1,9 +1,7 @@
 using Fairground.Core.Attractions;
-using Fairground.Model.Attractions.FerrisWheel;
 using Fairground.ViewModel;
 using Fairground.ViewModel.Attractions.FerrisWheel;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Fairground.View.Attractions.FerrisWheel
 {
@@ -12,7 +10,6 @@ namespace Fairground.View.Attractions.FerrisWheel
     /// </summary>
     public sealed class FerrisWheelAttractionController : MonoBehaviour
     {
-        [SerializeField] float degreesPerSecond = FerrisWheelRules.DefaultDegreesPerSecond;
         [SerializeField] FerrisWheelRigView rig;
 
         FerrisWheelViewModel _viewModel;
@@ -23,23 +20,23 @@ namespace Fairground.View.Attractions.FerrisWheel
         public FerrisWheelViewModel ViewModel => _viewModel;
         public AttractionInput Input => _input;
 
-        public void Configure(FerrisWheelRigView wheelRig, float speed, int cabins)
+        public void Configure(FerrisWheelRigView wheelRig, int cabins, FerrisWheelViewModel match)
         {
             rig = wheelRig;
-            degreesPerSecond = speed;
+            _viewModel = match;
             int built = rig != null ? rig.CabinCount : 0;
             if (built < 1)
-            {
                 Debug.LogError("[FerrisWheel] The ride has no cabins.");
-                return;
-            }
-
-            if (cabins != built)
-            {
+            else if (cabins != built)
                 Debug.LogError(
                     "[FerrisWheel] Cabin count " + cabins + " does not match the wheel (" + built +
                     "). Cabins come from " + nameof(LondonEyeLayout) + ".");
-            }
+
+            if (_viewModel == null)
+                return;
+
+            _viewModel.StartRide();
+            rig?.ApplyAngle(_viewModel.AngleDegrees);
         }
 
         public void Receive(FairgroundSession session) => _session = session;
@@ -48,14 +45,6 @@ namespace Fairground.View.Attractions.FerrisWheel
         {
             _input = new AttractionInput(restart: false, play: false);
             _input.Enable();
-        }
-
-        void Start()
-        {
-            if (_viewModel != null)
-                return;
-
-            Bootstrap();
         }
 
         void Update()
@@ -67,29 +56,13 @@ namespace Fairground.View.Attractions.FerrisWheel
             rig?.ApplyAngle(_viewModel.AngleDegrees);
 
             if (_input != null && _input.ReturnToFairgroundPressed)
-                ReturnToFairground();
+                AttractionExit.ReturnToFairground(_session);
         }
 
         void OnDestroy()
         {
             _input?.Dispose();
             _input = null;
-        }
-
-        void Bootstrap()
-        {
-            if (rig == null)
-                rig = FindAnyObjectByType<FerrisWheelRigView>();
-
-            _viewModel = new FerrisWheelViewModel(degreesPerSecond);
-            _viewModel.StartRide();
-            rig?.ApplyAngle(_viewModel.AngleDegrees);
-        }
-
-        public void ReturnToFairground()
-        {
-            _session?.LeaveAttraction();
-            SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }
 }

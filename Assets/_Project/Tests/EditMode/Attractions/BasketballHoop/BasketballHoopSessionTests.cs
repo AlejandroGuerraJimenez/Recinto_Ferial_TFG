@@ -109,14 +109,14 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
             int events = 0;
             vm.StateChanged += () => events++;
             vm.StartGame();
-            Assert.IsTrue(vm.NotifyBallThrown());
-            Assert.IsTrue(vm.NotifyBasket());
+            Assert.IsTrue(vm.TryRegisterThrow());
+            Assert.IsTrue(vm.TryRegisterBasket());
             Assert.AreEqual(3, events);
             Assert.AreEqual(2, vm.Score);
             Assert.AreEqual(9, vm.BallsRemaining);
-            Assert.AreEqual("Shoot the hoop!", vm.StatusText);
+            Assert.AreEqual("¡A la canasta!", vm.StatusText);
             Assert.AreEqual(AttractionId.BasketballHoop, vm.AttractionId);
-            Assert.AreEqual("BasketballHoop", vm.SceneName);
+            Assert.AreEqual("BasketballHoop", AttractionCatalog.GetSceneName(vm.AttractionId));
         }
 
         [Test]
@@ -126,12 +126,12 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
             vm.StartGame();
             Assert.IsTrue(vm.CanThrow);
             Assert.AreEqual(MatchPhase.Playing, vm.Phase);
-            Assert.IsTrue(vm.NotifyBallThrown());
+            Assert.IsTrue(vm.TryRegisterThrow());
             Assert.IsFalse(vm.CanThrow);
             Assert.AreEqual(0, vm.BallsRemaining);
-            vm.NotifyThrowResolved();
+            vm.TryResolveThrow();
             Assert.AreEqual(MatchPhase.Lost, vm.Phase);
-            Assert.AreEqual("Out of balls!", vm.StatusText);
+            Assert.AreEqual("¡Sin balones!", vm.StatusText);
             vm.Restart();
             Assert.IsTrue(vm.CanThrow);
             Assert.AreEqual(1, vm.BallsRemaining);
@@ -144,12 +144,12 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
         {
             var vm = new BasketballHoopViewModel(5, 3, 5);
             vm.StartGame();
-            Assert.IsTrue(vm.NotifyBasket());
+            Assert.IsTrue(vm.TryRegisterBasket());
             Assert.AreEqual(MatchPhase.Won, vm.Phase);
-            Assert.AreEqual("You win!", vm.StatusText);
+            Assert.AreEqual("¡Ganaste!", vm.StatusText);
             Assert.IsFalse(vm.CanThrow);
-            Assert.IsFalse(vm.NotifyBallThrown());
-            Assert.IsFalse(vm.NotifyBasket());
+            Assert.IsFalse(vm.TryRegisterThrow());
+            Assert.IsFalse(vm.TryRegisterBasket());
         }
 
         static AttemptMatch CreateSession(int points, int balls, int winScore)

@@ -96,9 +96,9 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
             int events = 0;
             vm.StateChanged += () => events++;
             vm.StartGame();
-            Assert.IsTrue(vm.NotifyPunch(4f));
+            Assert.IsTrue(vm.TryRegisterPunch(4f));
             Assert.AreEqual(2, events);
-            Assert.AreEqual("Hit 700+ to win!", vm.StatusText);
+            Assert.AreEqual("¡Supera 700!", vm.StatusText);
             Assert.AreEqual(AttractionId.PunchingBall, vm.AttractionId);
         }
 
@@ -107,7 +107,7 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
         {
             var vm = new PunchingBallViewModel(2, 700, 999, 8f);
             vm.StartGame();
-            Assert.IsTrue(vm.NotifyPunch(3f));
+            Assert.IsTrue(vm.TryRegisterPunch(3f));
             Assert.IsTrue(vm.CanPunch);
             Assert.AreEqual(1, vm.PunchesRemaining);
             vm.Restart();

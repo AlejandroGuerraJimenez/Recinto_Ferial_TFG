@@ -1,9 +1,8 @@
 using Fairground.Core.Attractions;
-using Fairground.Model;
+using Fairground.Core.Planes;
 using Fairground.View.Attractions;
 using Fairground.ViewModel;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Fairground.View
 {
@@ -76,7 +75,7 @@ namespace Fairground.View
             var session = CurrentSession();
             session.Remember(_locked.Value, chosen);
             FairgroundVisit.Deliver(session);
-            SceneManager.LoadScene(AttractionScenes.GetSceneName(chosen));
+            AttractionExit.Enter(AttractionScenes.GetSceneName(chosen));
         }
 
         void RestoreParcelMenu()

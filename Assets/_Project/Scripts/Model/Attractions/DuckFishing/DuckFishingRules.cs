@@ -1,4 +1,5 @@
 using System;
+using Fairground.Core.Attractions;
 using Fairground.Model.Attractions;
 
 namespace Fairground.Model.Attractions.DuckFishing
@@ -8,10 +9,10 @@ namespace Fairground.Model.Attractions.DuckFishing
     /// </summary>
     public sealed class DuckFishingRules
     {
-        public const int DefaultPointsPerDuck = 10;
-        public const int DefaultStartingAttempts = 8;
-        public const int DefaultDuckCount = 6;
-        public const int DefaultDucksToWin = 4;
+        public const int DefaultPointsPerDuck = DuckFishingBalance.PointsPerDuck;
+        public const int DefaultStartingAttempts = DuckFishingBalance.StartingAttempts;
+        public const int DefaultDuckCount = DuckFishingBalance.DuckCount;
+        public const int DefaultDucksToWin = DuckFishingBalance.DucksToWin;
 
         public DuckFishingRules(
             int pointsPerDuck = DefaultPointsPerDuck,

@@ -1,4 +1,4 @@
-namespace Fairground.Model
+namespace Fairground.Core.Planes
 {
     /// <summary>
     /// Higher class rank wins. Equal class rank uses surface area.

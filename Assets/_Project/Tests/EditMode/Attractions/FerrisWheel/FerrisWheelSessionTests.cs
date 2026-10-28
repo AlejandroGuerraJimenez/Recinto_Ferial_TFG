@@ -76,7 +76,7 @@ namespace Fairground.Tests.EditMode.Attractions.FerrisWheel
             vm.Advance(1f);
 
             Assert.AreEqual(AttractionId.FerrisWheel, vm.AttractionId);
-            Assert.AreEqual("FerrisWheel", vm.SceneName);
+            Assert.AreEqual("FerrisWheel", AttractionCatalog.GetSceneName(vm.AttractionId));
             Assert.AreEqual(FerrisWheelPhase.Riding, vm.Phase);
             Assert.AreEqual(FerrisWheelRules.DefaultDegreesPerSecond, vm.AngleDegrees, 0.001f);
         }

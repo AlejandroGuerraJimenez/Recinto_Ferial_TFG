@@ -1,10 +1,8 @@
-using Fairground.Model.Attractions.BasketballHoop;
-using System.Collections.Generic;
 using Fairground.Core.Attractions;
+using System.Collections.Generic;
 using Fairground.ViewModel;
 using Fairground.ViewModel.Attractions.BasketballHoop;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Fairground.View.Attractions.BasketballHoop
 {
@@ -13,9 +11,6 @@ namespace Fairground.View.Attractions.BasketballHoop
     /// </summary>
     public sealed class BasketballHoopAttractionController : MonoBehaviour
     {
-        [SerializeField] int pointsPerBasket = BasketballHoopRules.DefaultPointsPerBasket;
-        [SerializeField] int startingBalls = BasketballHoopRules.DefaultStartingBalls;
-        [SerializeField] int winScoreThreshold = BasketballHoopRules.DefaultWinScoreThreshold;
         [SerializeField] BasketDetectorView hoop;
         [SerializeField] BallSpawnerView ballSpawner;
         [SerializeField] BoothHudView hud;
@@ -33,16 +28,13 @@ namespace Fairground.View.Attractions.BasketballHoop
             BasketDetectorView hoopDetector,
             BallSpawnerView spawner,
             BoothHudView hudView,
-            int points,
-            int balls,
-            int winThreshold)
+            BasketballHoopViewModel match)
         {
             hoop = hoopDetector;
             ballSpawner = spawner;
             hud = hudView;
-            pointsPerBasket = points;
-            startingBalls = balls;
-            winScoreThreshold = winThreshold;
+            _viewModel = match;
+            OpenMatch();
         }
 
         public void Receive(FairgroundSession session) => _session = session;
@@ -51,14 +43,6 @@ namespace Fairground.View.Attractions.BasketballHoop
         {
             _input = new AttractionInput();
             _input.Enable();
-        }
-
-        void Start()
-        {
-            if (_viewModel != null)
-                return;
-
-            BootstrapMatch();
         }
 
         void Update()
@@ -70,7 +54,7 @@ namespace Fairground.View.Attractions.BasketballHoop
                 RestartMatch();
 
             if (_input.ReturnToFairgroundPressed)
-                ReturnToFairground();
+                AttractionExit.ReturnToFairground(_session);
         }
 
         void OnDestroy()
@@ -80,14 +64,13 @@ namespace Fairground.View.Attractions.BasketballHoop
             _input = null;
         }
 
-        void BootstrapMatch()
+        void OpenMatch()
         {
+            if (_viewModel == null)
+                return;
+
             ResolveHoop();
-            _viewModel = CreateViewModel();
-            hud?.Bind(
-                () => _viewModel.HudLines,
-                handler => _viewModel.StateChanged += handler,
-                handler => _viewModel.StateChanged -= handler);
+            BoothHudBinding.Attach(hud, _viewModel);
             Subscribe();
             _viewModel.StartGame();
             UpdateSpawnerAvailability();
@@ -100,11 +83,6 @@ namespace Fairground.View.Attractions.BasketballHoop
 
             if (ballSpawner == null)
                 ballSpawner = FindAnyObjectByType<BallSpawnerView>();
-        }
-
-        BasketballHoopViewModel CreateViewModel()
-        {
-            return new BasketballHoopViewModel(pointsPerBasket, startingBalls, winScoreThreshold);
         }
 
         void Subscribe()
@@ -187,15 +165,15 @@ namespace Fairground.View.Attractions.BasketballHoop
                 UnregisterBall(ball);
         }
 
-        void OnBallThrown(BasketballBallView ball) => Forward(_viewModel.NotifyBallThrown);
+        void OnBallThrown(BasketballBallView ball) => Forward(_viewModel.TryRegisterThrow);
 
         void OnBallResolved(BasketballBallView ball)
         {
-            Forward(_viewModel.NotifyThrowResolved);
+            Forward(_viewModel.TryResolveThrow);
             UnregisterBall(ball);
         }
 
-        void OnBasket(BasketballBallView ball) => Forward(_viewModel.NotifyBasket);
+        void OnBasket(BasketballBallView ball) => Forward(_viewModel.TryRegisterBasket);
 
         void Forward(System.Func<bool> action)
         {
@@ -246,12 +224,6 @@ namespace Fairground.View.Attractions.BasketballHoop
                 ball.Destroyed -= OnBallDestroyed;
                 Destroy(ball.gameObject);
             }
-        }
-
-        public void ReturnToFairground()
-        {
-            _session?.LeaveAttraction();
-            SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }
 }

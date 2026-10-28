@@ -1,4 +1,3 @@
-using Fairground.Model;
 using UnityEngine;
 
 namespace Fairground.View

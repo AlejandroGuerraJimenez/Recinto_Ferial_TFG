@@ -1,3 +1,5 @@
+using Fairground.Core.Planes;
+
 namespace Fairground.Model
 {
     /// <summary>
@@ -9,7 +11,7 @@ namespace Fairground.Model
         public const int FloorClassRank = 2;
         public const int TableClassRank = 1;
         public const int OpenClassRank = 0;
-        public const int MinimumBoundaryVertices = 3;
+        public const int MinimumBoundaryVertices = DetectedPlane.MinimumBoundaryVertices;
 
         public static bool TryRank(in DetectedPlane plane, out PlaneRank rank)
         {
