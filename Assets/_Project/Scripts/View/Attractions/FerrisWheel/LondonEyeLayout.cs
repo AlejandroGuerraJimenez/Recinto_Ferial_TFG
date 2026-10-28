@@ -30,6 +30,11 @@ namespace Fairground.View.Attractions.FerrisWheel
         public const float EyeHeightMeters = 1.7f;
         public const float CabinClearanceMeters = 1.5f;
 
+        /// <summary>Player spawn on the platform, on the land side of the axle. The booth stands just in front.</summary>
+        public static float PlayerLocalZ => -(PlatformHalfAxleMeters - 8f);
+
+        public const float TicketReachMeters = 12f;
+
         /// <summary>Half-length of the tileset hole, along the wheel, in metres.</summary>
         public const float CutoutHalfLengthMeters = 80f;
 

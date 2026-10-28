@@ -4,65 +4,49 @@ using UnityEngine;
 namespace Fairground.View.Attractions.BasketballHoop.Builders
 {
     /// <summary>
-    /// Builder: assembles booth environment + gameplay objects.
+    /// Assembles the hoop, the ball spawner, and the shared booth shell.
     /// </summary>
     public sealed class BasketballHoopBoothBuilder
     {
-        readonly BoothPropFactory _boothFactory = new BoothPropFactory();
         readonly HoopFactory _hoopFactory = new HoopFactory();
         readonly BasketballBallFactory _ballFactory = new BasketballBallFactory();
         readonly BallSpawnerFactory _spawnerFactory = new BallSpawnerFactory();
-        readonly BasketballHoopHudFactory _hudFactory = new BasketballHoopHudFactory();
-        readonly XrAttractionRigFactory _rigFactory;
+        readonly BoothHudFactory _hudFactory = new BoothHudFactory();
+        readonly BoothAssembly _shell;
 
-        GameObject _xrOrigin;
-        GameObject _environment;
         BasketDetectorView _hoop;
         BallSpawnerView _spawner;
-        BasketballHoopHudView _hud;
+        BoothHudView _hud;
 
         public BasketballHoopBoothBuilder(GameObject xrOriginPrefab)
         {
-            _rigFactory = new XrAttractionRigFactory(xrOriginPrefab);
+            _shell = new BoothAssembly(
+                BasketballHoopBoothLayout.Props(),
+                xrOriginPrefab,
+                BasketballHoopBoothLayout.LogTag,
+                BasketballHoopBoothLayout.Sky);
         }
 
-        public GameObject XrOrigin => _xrOrigin;
-        public GameObject Environment => _environment;
+        public GameObject XrOrigin => _shell.XrOrigin;
         public BasketDetectorView Hoop => _hoop;
         public BallSpawnerView Spawner => _spawner;
-        public BasketballHoopHudView Hud => _hud;
+        public BoothHudView Hud => _hud;
 
-        /// <summary>
-        /// Lighting only — booth mesh already present in the baked scene.
-        /// </summary>
         public BasketballHoopBoothBuilder UseBakedEnvironment(Transform bakedRoot)
         {
-            _boothFactory.EnsureLighting();
-            _environment = bakedRoot != null ? bakedRoot.gameObject : null;
+            _shell.UseBakedEnvironment(bakedRoot);
             return this;
         }
 
-        /// <summary>
-        /// Instantiates a prebuilt booth prefab, or falls back to CreatePrimitive factory.
-        /// </summary>
         public BasketballHoopBoothBuilder BuildEnvironment(GameObject boothEnvironmentPrefab)
         {
-            _boothFactory.EnsureLighting();
-            _environment = boothEnvironmentPrefab != null
-                ? Object.Instantiate(boothEnvironmentPrefab)
-                : _boothFactory.CreateEnvironment();
-
-            if (_environment != null)
-                _environment.name = BoothPropFactory.EnvironmentRootName;
-
+            _shell.BuildEnvironment(boothEnvironmentPrefab);
             return this;
         }
 
         public BasketballHoopBoothBuilder BuildXrRig()
         {
-            _xrOrigin = _rigFactory.EnsureXrOrigin();
-            _rigFactory.EnsureInteractionManager();
-            _rigFactory.EnsureEventSystem();
+            _shell.BuildXrRig();
             return this;
         }
 
@@ -70,7 +54,7 @@ namespace Fairground.View.Attractions.BasketballHoop.Builders
         {
             _hoop = _hoopFactory.Create();
             _spawner = _spawnerFactory.Create(_ballFactory.CreateTemplate());
-            _hud = _hudFactory.Create();
+            _hud = _hudFactory.Create(BasketballHoopLayout.HudPosition, BasketballHoopBoothLayout.HudLines);
             return this;
         }
 
@@ -80,9 +64,6 @@ namespace Fairground.View.Attractions.BasketballHoop.Builders
                 _spawner.TrySpawnImmediate();
         }
 
-        /// <summary>
-        /// Top-level booth-space roots to place with AttractionPlacement.
-        /// </summary>
         public Transform[] BoothSpaceRoots()
         {
             Transform hoopRoot = null;
@@ -95,7 +76,7 @@ namespace Fairground.View.Attractions.BasketballHoop.Builders
 
             return new[]
             {
-                _environment != null ? _environment.transform : null,
+                _shell.Environment != null ? _shell.Environment.transform : null,
                 hoopRoot,
                 _spawner != null ? _spawner.transform : null,
                 _hud != null ? _hud.transform : null,

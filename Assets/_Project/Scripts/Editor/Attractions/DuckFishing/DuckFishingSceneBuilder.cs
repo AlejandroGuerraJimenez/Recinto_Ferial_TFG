@@ -1,7 +1,7 @@
 using System.IO;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.DuckFishing;
-using Fairground.View.Attractions.DuckFishing.Factories;
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.Rendering;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -101,7 +101,7 @@ namespace Fairground.Editor.Attractions.DuckFishing
 
         static GameObject BakeBoothEnvironmentPrefab()
         {
-            var factory = new BoothPropFactory();
+            var factory = new BoothPropFactory(DuckFishingBoothLayout.Props());
             var environment = factory.CreateEnvironment();
             ApplyBakedMaterials(environment);
 
@@ -155,7 +155,7 @@ namespace Fairground.Editor.Attractions.DuckFishing
             var installer = go.AddComponent<DuckFishingSceneInstaller>();
             ApplyInstallerDefaults(installer, xrOriginPrefab, boothPrefab, bakedRoot);
 
-            var lightFactory = new BoothPropFactory();
+            var lightFactory = new BoothPropFactory(DuckFishingBoothLayout.Props());
             lightFactory.EnsureLighting();
         }
 

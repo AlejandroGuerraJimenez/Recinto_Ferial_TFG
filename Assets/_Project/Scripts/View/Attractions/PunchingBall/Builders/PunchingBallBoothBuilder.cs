@@ -4,66 +4,49 @@ using UnityEngine;
 namespace Fairground.View.Attractions.PunchingBall.Builders
 {
     /// <summary>
-    /// Builder: assembles booth environment + gameplay objects.
+    /// Assembles the punch pad, the meter, and the shared booth shell.
     /// </summary>
     public sealed class PunchingBallBoothBuilder
     {
-        readonly BoothPropFactory _boothFactory = new BoothPropFactory();
         readonly PunchPadFactory _padFactory = new PunchPadFactory();
         readonly PunchPowerMeterFactory _meterFactory = new PunchPowerMeterFactory();
-        readonly PunchingBallHudFactory _hudFactory = new PunchingBallHudFactory();
         readonly ControllerFistFactory _fistFactory = new ControllerFistFactory();
-        readonly XrAttractionRigFactory _rigFactory;
+        readonly BoothHudFactory _hudFactory = new BoothHudFactory();
+        readonly BoothAssembly _shell;
 
-        GameObject _xrOrigin;
-        GameObject _environment;
         PunchPadView _pad;
         PunchPowerMeterView _meter;
-        PunchingBallHudView _hud;
+        BoothHudView _hud;
 
         public PunchingBallBoothBuilder(GameObject xrOriginPrefab)
         {
-            _rigFactory = new XrAttractionRigFactory(xrOriginPrefab);
+            _shell = new BoothAssembly(
+                PunchingBallBoothLayout.Props(),
+                xrOriginPrefab,
+                PunchingBallBoothLayout.LogTag,
+                PunchingBallBoothLayout.Sky);
         }
 
-        public GameObject XrOrigin => _xrOrigin;
-        public GameObject Environment => _environment;
+        public GameObject XrOrigin => _shell.XrOrigin;
         public PunchPadView Pad => _pad;
         public PunchPowerMeterView Meter => _meter;
-        public PunchingBallHudView Hud => _hud;
+        public BoothHudView Hud => _hud;
 
-        /// <summary>
-        /// Lighting only — booth mesh already present in the baked scene.
-        /// </summary>
         public PunchingBallBoothBuilder UseBakedEnvironment(Transform bakedRoot)
         {
-            _boothFactory.EnsureLighting();
-            _environment = bakedRoot != null ? bakedRoot.gameObject : null;
+            _shell.UseBakedEnvironment(bakedRoot);
             return this;
         }
 
-        /// <summary>
-        /// Instantiates a prebuilt booth prefab, or falls back to CreatePrimitive factory.
-        /// </summary>
         public PunchingBallBoothBuilder BuildEnvironment(GameObject boothEnvironmentPrefab)
         {
-            _boothFactory.EnsureLighting();
-            _environment = boothEnvironmentPrefab != null
-                ? Object.Instantiate(boothEnvironmentPrefab)
-                : _boothFactory.CreateEnvironment();
-
-            if (_environment != null)
-                _environment.name = BoothPropFactory.EnvironmentRootName;
-
+            _shell.BuildEnvironment(boothEnvironmentPrefab);
             return this;
         }
 
         public PunchingBallBoothBuilder BuildXrRig()
         {
-            _xrOrigin = _rigFactory.EnsureXrOrigin();
-            _rigFactory.EnsureInteractionManager();
-            _rigFactory.EnsureEventSystem();
-            _fistFactory.AttachFists(_xrOrigin);
+            _shell.BuildXrRig(_fistFactory.AttachFists);
             return this;
         }
 
@@ -71,18 +54,15 @@ namespace Fairground.View.Attractions.PunchingBall.Builders
         {
             _pad = _padFactory.Create();
             _meter = _meterFactory.Create();
-            _hud = _hudFactory.Create();
+            _hud = _hudFactory.Create(PunchingBallBoothLayout.HudPosition, PunchingBallBoothLayout.HudLines);
             return this;
         }
 
-        /// <summary>
-        /// Top-level booth-space roots to place with AttractionPlacement.
-        /// </summary>
         public Transform[] BoothSpaceRoots()
         {
             return new[]
             {
-                _environment != null ? _environment.transform : null,
+                _shell.Environment != null ? _shell.Environment.transform : null,
                 _pad != null ? _pad.transform.root : null,
                 _meter != null ? _meter.transform.root : null,
                 _hud != null ? _hud.transform : null,

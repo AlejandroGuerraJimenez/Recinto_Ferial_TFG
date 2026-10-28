@@ -17,11 +17,11 @@ namespace Fairground.View.Attractions.FerrisWheel
         [SerializeField] FerrisWheelRigView rig;
 
         FerrisWheelViewModel _viewModel;
-        FerrisWheelInput _input;
+        AttractionInput _input;
 
         public AttractionId AttractionId => AttractionId.FerrisWheel;
         public FerrisWheelViewModel ViewModel => _viewModel;
-        public FerrisWheelInput Input => _input;
+        public AttractionInput Input => _input;
 
         public void Configure(FerrisWheelRigView wheelRig, float speed, int cabins)
         {
@@ -32,7 +32,7 @@ namespace Fairground.View.Attractions.FerrisWheel
 
         void Awake()
         {
-            _input = new FerrisWheelInput();
+            _input = new AttractionInput(restart: false, play: false);
             _input.Enable();
         }
 

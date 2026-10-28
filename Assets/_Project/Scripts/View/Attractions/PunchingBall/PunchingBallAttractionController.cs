@@ -17,19 +17,19 @@ namespace Fairground.View.Attractions.PunchingBall
         [SerializeField] float maxImpactSpeed = 8f;
         [SerializeField] PunchPadView punchPad;
         [SerializeField] PunchPowerMeterView powerMeter;
-        [SerializeField] PunchingBallHudView hud;
+        [SerializeField] BoothHudView hud;
 
         PunchingBallViewModel _viewModel;
-        PunchingBallInput _input;
+        AttractionInput _input;
 
         public AttractionId AttractionId => AttractionId.PunchingBall;
         public PunchingBallViewModel ViewModel => _viewModel;
-        public PunchingBallInput Input => _input;
+        public AttractionInput Input => _input;
 
         public void Configure(
             PunchPadView pad,
             PunchPowerMeterView meter,
-            PunchingBallHudView hudView,
+            BoothHudView hudView,
             int punches,
             int winThreshold,
             int scoreCap,
@@ -46,7 +46,7 @@ namespace Fairground.View.Attractions.PunchingBall
 
         void Awake()
         {
-            _input = new PunchingBallInput();
+            _input = new AttractionInput();
             _input.Enable();
         }
 
@@ -81,7 +81,10 @@ namespace Fairground.View.Attractions.PunchingBall
         {
             ResolvePad();
             _viewModel = CreateViewModel();
-            hud?.Bind(_viewModel);
+            hud?.Bind(
+                () => PunchingBallBoothLayout.FormatHud(_viewModel),
+                handler => _viewModel.StateChanged += handler,
+                handler => _viewModel.StateChanged -= handler);
             Subscribe();
             _viewModel.StartGame();
             UpdatePadAvailability();

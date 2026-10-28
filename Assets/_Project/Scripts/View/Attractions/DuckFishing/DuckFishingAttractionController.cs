@@ -17,22 +17,22 @@ namespace Fairground.View.Attractions.DuckFishing
         [SerializeField] int ducksToWin = 4;
         [SerializeField] DuckTargetView[] ducks;
         [SerializeField] FishingRodView rod;
-        [SerializeField] DuckFishingHudView hud;
+        [SerializeField] BoothHudView hud;
         [SerializeField] Transform pond;
 
         DuckFishingViewModel _viewModel;
-        DuckFishingInput _input;
+        AttractionInput _input;
         readonly DuckTargetFactory _duckFactory = new DuckTargetFactory();
         Transform _duckRoot;
 
         public AttractionId AttractionId => AttractionId.DuckFishing;
         public DuckFishingViewModel ViewModel => _viewModel;
-        public DuckFishingInput Input => _input;
+        public AttractionInput Input => _input;
 
         public void Configure(
             DuckTargetView[] duckTargets,
             FishingRodView fishingRod,
-            DuckFishingHudView hudView,
+            BoothHudView hudView,
             Transform pondRoot,
             int points,
             int attempts,
@@ -49,7 +49,7 @@ namespace Fairground.View.Attractions.DuckFishing
 
         void Awake()
         {
-            _input = new DuckFishingInput();
+            _input = new AttractionInput(headsetTriggers: true);
             _input.Enable();
         }
 
@@ -72,7 +72,7 @@ namespace Fairground.View.Attractions.DuckFishing
             if (_input.ReturnToFairgroundPressed)
                 ReturnToFairground();
 
-            if (_input.DipPressed)
+            if (_input.PlayPressed)
                 rod?.Hook?.TryStartDip();
         }
 
@@ -87,7 +87,10 @@ namespace Fairground.View.Attractions.DuckFishing
         {
             ResolveRefs();
             _viewModel = CreateViewModel();
-            hud?.Bind(_viewModel);
+            hud?.Bind(
+                () => DuckFishingBoothLayout.FormatHud(_viewModel),
+                handler => _viewModel.StateChanged += handler,
+                handler => _viewModel.StateChanged -= handler);
             Subscribe();
             _viewModel.StartGame();
             UpdateHookAvailability();

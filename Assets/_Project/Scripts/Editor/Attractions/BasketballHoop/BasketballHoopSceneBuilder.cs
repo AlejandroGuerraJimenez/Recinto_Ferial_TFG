@@ -1,7 +1,7 @@
 using System.IO;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BasketballHoop;
-using Fairground.View.Attractions.BasketballHoop.Factories;
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.Rendering;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -103,7 +103,7 @@ namespace Fairground.Editor.Attractions.BasketballHoop
 
         static GameObject BakeBoothEnvironmentPrefab()
         {
-            var factory = new BoothPropFactory();
+            var factory = new BoothPropFactory(BasketballHoopBoothLayout.Props());
             var environment = factory.CreateEnvironment();
             ApplyBakedMaterials(environment);
 
@@ -157,7 +157,7 @@ namespace Fairground.Editor.Attractions.BasketballHoop
             var installer = go.AddComponent<BasketballHoopSceneInstaller>();
             ApplyInstallerDefaults(installer, xrOriginPrefab, boothPrefab, bakedRoot);
 
-            var lightFactory = new BoothPropFactory();
+            var lightFactory = new BoothPropFactory(BasketballHoopBoothLayout.Props());
             lightFactory.EnsureLighting();
         }
 

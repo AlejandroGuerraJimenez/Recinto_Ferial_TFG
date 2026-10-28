@@ -4,61 +4,70 @@ using UnityEngine;
 namespace Fairground.View.Attractions.DuckFishing.Builders
 {
     /// <summary>
-    /// Builder: assembles pond environment + gameplay objects.
+    /// Assembles ducks, the rod, and the shared booth shell.
     /// </summary>
     public sealed class DuckFishingBoothBuilder
     {
-        readonly BoothPropFactory _boothFactory = new BoothPropFactory();
         readonly DuckTargetFactory _duckFactory = new DuckTargetFactory();
         readonly FishingRodFactory _rodFactory = new FishingRodFactory();
-        readonly DuckFishingHudFactory _hudFactory = new DuckFishingHudFactory();
-        readonly XrAttractionRigFactory _rigFactory;
+        readonly BoothHudFactory _hudFactory = new BoothHudFactory();
+        readonly BoothAssembly _shell;
 
-        GameObject _xrOrigin;
-        GameObject _environment;
         Transform _pond;
         DuckTargetView[] _ducks;
         FishingRodView _rod;
-        DuckFishingHudView _hud;
+        BoothHudView _hud;
 
         public DuckFishingBoothBuilder(GameObject xrOriginPrefab)
         {
-            _rigFactory = new XrAttractionRigFactory(xrOriginPrefab);
+            _shell = new BoothAssembly(
+                DuckFishingBoothLayout.Props(),
+                xrOriginPrefab,
+                DuckFishingBoothLayout.LogTag,
+                DuckFishingBoothLayout.Sky);
         }
 
-        public GameObject XrOrigin => _xrOrigin;
-        public GameObject Environment => _environment;
+        public GameObject XrOrigin => _shell.XrOrigin;
         public Transform Pond => _pond;
         public DuckTargetView[] Ducks => _ducks;
         public FishingRodView Rod => _rod;
-        public DuckFishingHudView Hud => _hud;
+        public BoothHudView Hud => _hud;
 
-        /// <summary>
-        /// Lighting only — booth mesh already present in the baked scene.
-        /// </summary>
         public DuckFishingBoothBuilder UseBakedEnvironment(Transform bakedRoot)
         {
-            _boothFactory.EnsureLighting();
-            _environment = bakedRoot != null ? bakedRoot.gameObject : null;
+            _shell.UseBakedEnvironment(bakedRoot);
             _pond = ResolvePond(bakedRoot);
             return this;
         }
 
-        /// <summary>
-        /// Instantiates a prebuilt booth prefab, or falls back to CreatePrimitive factory.
-        /// </summary>
         public DuckFishingBoothBuilder BuildEnvironment(GameObject boothEnvironmentPrefab)
         {
-            _boothFactory.EnsureLighting();
-            _environment = boothEnvironmentPrefab != null
-                ? Object.Instantiate(boothEnvironmentPrefab)
-                : _boothFactory.CreateEnvironment();
-
-            if (_environment != null)
-                _environment.name = BoothPropFactory.EnvironmentRootName;
-
-            _pond = ResolvePond(_environment != null ? _environment.transform : null);
+            _shell.BuildEnvironment(boothEnvironmentPrefab);
+            _pond = ResolvePond(_shell.Environment != null ? _shell.Environment.transform : null);
             return this;
+        }
+
+        public DuckFishingBoothBuilder BuildXrRig()
+        {
+            _shell.BuildXrRig();
+            return this;
+        }
+
+        public DuckFishingBoothBuilder BuildGameplay(int duckCount)
+        {
+            _ducks = _duckFactory.CreateRing(_pond, duckCount);
+            _rod = _rodFactory.Create(_shell.XrOrigin);
+            _hud = _hudFactory.Create(DuckFishingBoothLayout.HudPosition, DuckFishingBoothLayout.HudLines);
+            return this;
+        }
+
+        public Transform[] BoothSpaceRoots()
+        {
+            return new[]
+            {
+                _shell.Environment != null ? _shell.Environment.transform : null,
+                _hud != null ? _hud.transform : null,
+            };
         }
 
         static Transform ResolvePond(Transform environmentRoot)
@@ -66,36 +75,8 @@ namespace Fairground.View.Attractions.DuckFishing.Builders
             if (environmentRoot == null)
                 return null;
 
-            var pond = environmentRoot.Find(BoothPropFactory.PondName);
+            Transform pond = environmentRoot.Find(DuckFishingBoothLayout.PondName);
             return pond != null ? pond : environmentRoot;
-        }
-
-        public DuckFishingBoothBuilder BuildXrRig()
-        {
-            _xrOrigin = _rigFactory.EnsureXrOrigin();
-            _rigFactory.EnsureInteractionManager();
-            _rigFactory.EnsureEventSystem();
-            return this;
-        }
-
-        public DuckFishingBoothBuilder BuildGameplay(int duckCount)
-        {
-            _ducks = _duckFactory.CreateRing(_pond, duckCount);
-            _rod = _rodFactory.Create(_xrOrigin);
-            _hud = _hudFactory.Create();
-            return this;
-        }
-
-        /// <summary>
-        /// Booth content only (pond/ducks live under environment). Rod stays on XR.
-        /// </summary>
-        public Transform[] BoothSpaceRoots()
-        {
-            return new[]
-            {
-                _environment != null ? _environment.transform : null,
-                _hud != null ? _hud.transform : null,
-            };
         }
     }
 }

@@ -17,22 +17,22 @@ namespace Fairground.View.Attractions.BalloonThrow
         [SerializeField] int startingThrows = 8;
         [SerializeField] BalloonTargetView[] balloons;
         [SerializeField] BallSpawnerView ballSpawner;
-        [SerializeField] BalloonThrowHudView hud;
+        [SerializeField] BoothHudView hud;
 
         BalloonThrowViewModel _viewModel;
-        BalloonThrowInput _input;
+        AttractionInput _input;
         readonly BalloonTargetFactory _balloonFactory = new BalloonTargetFactory();
         readonly HashSet<ThrowableBallView> _liveBalls = new HashSet<ThrowableBallView>();
         Transform _balloonRoot;
 
         public AttractionId AttractionId => AttractionId.BalloonThrow;
         public BalloonThrowViewModel ViewModel => _viewModel;
-        public BalloonThrowInput Input => _input;
+        public AttractionInput Input => _input;
 
         public void Configure(
             BalloonTargetView[] balloonTargets,
             BallSpawnerView spawner,
-            BalloonThrowHudView hudView,
+            BoothHudView hudView,
             int points,
             int throws)
         {
@@ -45,7 +45,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         void Awake()
         {
-            _input = new BalloonThrowInput();
+            _input = new AttractionInput();
             _input.Enable();
         }
 
@@ -80,7 +80,10 @@ namespace Fairground.View.Attractions.BalloonThrow
         {
             ResolveBalloons();
             _viewModel = CreateViewModel();
-            hud?.Bind(_viewModel);
+            hud?.Bind(
+                () => BalloonThrowBoothLayout.FormatHud(_viewModel),
+                handler => _viewModel.StateChanged += handler,
+                handler => _viewModel.StateChanged -= handler);
             Subscribe();
             _viewModel.StartGame();
             UpdateSpawnerAvailability();

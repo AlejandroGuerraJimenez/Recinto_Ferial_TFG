@@ -1,7 +1,7 @@
 using System.IO;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.PunchingBall;
-using Fairground.View.Attractions.PunchingBall.Factories;
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.Rendering;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -95,7 +95,7 @@ namespace Fairground.Editor.Attractions.PunchingBall
 
         static GameObject BakeBoothEnvironmentPrefab()
         {
-            var factory = new BoothPropFactory();
+            var factory = new BoothPropFactory(PunchingBallBoothLayout.Props());
             var environment = factory.CreateEnvironment();
             ApplyBakedMaterials(environment);
 
@@ -149,7 +149,7 @@ namespace Fairground.Editor.Attractions.PunchingBall
             var installer = go.AddComponent<PunchingBallSceneInstaller>();
             ApplyInstallerDefaults(installer, xrOriginPrefab, boothPrefab, bakedRoot);
 
-            var lightFactory = new BoothPropFactory();
+            var lightFactory = new BoothPropFactory(PunchingBallBoothLayout.Props());
             lightFactory.EnsureLighting();
         }
 

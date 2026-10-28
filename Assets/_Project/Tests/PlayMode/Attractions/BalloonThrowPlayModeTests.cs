@@ -2,6 +2,7 @@ using System.Collections;
 using Fairground.Core.Attractions;
 using Fairground.Model.Attractions.BalloonThrow;
 using Fairground.Tests.PlayMode.Support;
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.BalloonThrow;
 using Fairground.ViewModel.Attractions.BalloonThrow;
 using NUnit.Framework;
@@ -29,7 +30,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             Assert.Greater(vm.ThrowsRemaining, 0);
             Assert.Greater(vm.BalloonsRemaining, 0);
             Assert.IsNotNull(Object.FindAnyObjectByType<BallSpawnerView>());
-            Assert.IsNotNull(Object.FindAnyObjectByType<BalloonThrowHudView>());
+            Assert.IsNotNull(Object.FindAnyObjectByType<BoothHudView>());
             Assert.Greater(Object.FindObjectsByType<BalloonTargetView>().Length, 0);
         }
 

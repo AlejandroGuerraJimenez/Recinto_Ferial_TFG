@@ -23,6 +23,7 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             FerrisWheelRigView rig = CreateRide(georeference.transform);
             new FerrisWheelFactory().EnsureLighting();
             SeatOnPlatform(xrOrigin, rig.transform.parent);
+            FerrisWheelTicketBooth.Place(rig.transform.parent, rig, xrOrigin);
             RegisterHeadsetCamera(georeference, xrOrigin);
             return rig;
         }
@@ -240,7 +241,7 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             float floorY = -LondonEyeLayout.FootBelowHubMeters;
             Transform origin = xrOrigin.transform;
             origin.SetParent(axis, false);
-            origin.localPosition = new Vector3(0f, floorY, -(LondonEyeLayout.PlatformHalfAxleMeters - 8f));
+            origin.localPosition = new Vector3(0f, floorY, LondonEyeLayout.PlayerLocalZ);
             origin.localRotation = Quaternion.identity;
             origin.localScale = Vector3.one;
 

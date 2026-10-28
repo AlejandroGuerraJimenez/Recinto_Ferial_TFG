@@ -2,6 +2,7 @@ using System.Collections;
 using Fairground.Core.Attractions;
 using Fairground.Model.Attractions.PunchingBall;
 using Fairground.Tests.PlayMode.Support;
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.PunchingBall;
 using Fairground.ViewModel.Attractions.PunchingBall;
 using NUnit.Framework;
@@ -30,7 +31,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             Assert.AreEqual(0, vm.BestScore);
             Assert.IsNotNull(Object.FindAnyObjectByType<PunchPadView>());
             Assert.IsNotNull(Object.FindAnyObjectByType<PunchPowerMeterView>());
-            Assert.IsNotNull(Object.FindAnyObjectByType<PunchingBallHudView>());
+            Assert.IsNotNull(Object.FindAnyObjectByType<BoothHudView>());
         }
 
         [UnityTest]

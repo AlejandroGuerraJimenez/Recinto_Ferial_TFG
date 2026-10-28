@@ -2,6 +2,7 @@ using System.Collections;
 using Fairground.Core.Attractions;
 using Fairground.Model.Attractions.BasketballHoop;
 using Fairground.Tests.PlayMode.Support;
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.BasketballHoop;
 using Fairground.ViewModel.Attractions.BasketballHoop;
 using NUnit.Framework;
@@ -30,7 +31,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             Assert.AreEqual(0, vm.Score);
             Assert.IsTrue(vm.CanThrow);
             Assert.IsNotNull(Object.FindAnyObjectByType<BallSpawnerView>());
-            Assert.IsNotNull(Object.FindAnyObjectByType<BasketballHoopHudView>());
+            Assert.IsNotNull(Object.FindAnyObjectByType<BoothHudView>());
             Assert.IsNotNull(Object.FindAnyObjectByType<BasketDetectorView>());
         }
 

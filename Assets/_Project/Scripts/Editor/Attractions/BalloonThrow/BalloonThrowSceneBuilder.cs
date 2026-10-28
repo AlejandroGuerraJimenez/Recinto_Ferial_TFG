@@ -1,7 +1,7 @@
 using System.IO;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BalloonThrow;
-using Fairground.View.Attractions.BalloonThrow.Factories;
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.Rendering;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -99,7 +99,7 @@ namespace Fairground.Editor.Attractions.BalloonThrow
 
         static GameObject BakeBoothEnvironmentPrefab()
         {
-            var factory = new BoothPropFactory();
+            var factory = new BoothPropFactory(BalloonThrowBoothLayout.Props());
             var environment = factory.CreateEnvironment();
             ApplyBakedMaterials(environment);
 
@@ -153,7 +153,7 @@ namespace Fairground.Editor.Attractions.BalloonThrow
             var installer = go.AddComponent<BalloonThrowSceneInstaller>();
             ApplyInstallerDefaults(installer, xrOriginPrefab, boothPrefab, bakedRoot);
 
-            var lightFactory = new BoothPropFactory();
+            var lightFactory = new BoothPropFactory(BalloonThrowBoothLayout.Props());
             lightFactory.EnsureLighting();
         }
 

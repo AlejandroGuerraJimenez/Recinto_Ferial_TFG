@@ -17,20 +17,20 @@ namespace Fairground.View.Attractions.BasketballHoop
         [SerializeField] int winScoreThreshold = 5;
         [SerializeField] BasketDetectorView hoop;
         [SerializeField] BallSpawnerView ballSpawner;
-        [SerializeField] BasketballHoopHudView hud;
+        [SerializeField] BoothHudView hud;
 
         BasketballHoopViewModel _viewModel;
-        BasketballHoopInput _input;
+        AttractionInput _input;
         readonly HashSet<BasketballBallView> _liveBalls = new HashSet<BasketballBallView>();
 
         public AttractionId AttractionId => AttractionId.BasketballHoop;
         public BasketballHoopViewModel ViewModel => _viewModel;
-        public BasketballHoopInput Input => _input;
+        public AttractionInput Input => _input;
 
         public void Configure(
             BasketDetectorView hoopDetector,
             BallSpawnerView spawner,
-            BasketballHoopHudView hudView,
+            BoothHudView hudView,
             int points,
             int balls,
             int winThreshold)
@@ -45,7 +45,7 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         void Awake()
         {
-            _input = new BasketballHoopInput();
+            _input = new AttractionInput();
             _input.Enable();
         }
 
@@ -80,7 +80,10 @@ namespace Fairground.View.Attractions.BasketballHoop
         {
             ResolveHoop();
             _viewModel = CreateViewModel();
-            hud?.Bind(_viewModel);
+            hud?.Bind(
+                () => BasketballHoopBoothLayout.FormatHud(_viewModel),
+                handler => _viewModel.StateChanged += handler,
+                handler => _viewModel.StateChanged -= handler);
             Subscribe();
             _viewModel.StartGame();
             UpdateSpawnerAvailability();
