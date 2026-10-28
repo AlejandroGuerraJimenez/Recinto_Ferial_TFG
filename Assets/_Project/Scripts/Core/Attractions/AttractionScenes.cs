@@ -1,56 +1,34 @@
-using System;
-using System.Collections.Generic;
-
 namespace Fairground.Core.Attractions
 {
     /// <summary>
-    /// Catalog of attraction VR scene names/paths for future LoadScene wiring.
+    /// Scene folders and load paths. Attraction scene names come from <see cref="AttractionCatalog"/>.
     /// </summary>
     public static class AttractionScenes
     {
         public const string FairgroundSceneFolder = "Assets/_Project/Scenes";
         public const string Fairground = "Fairground";
         public const string AttractionsFolder = "Assets/_Project/Scenes/Attractions";
-        public const string BalloonThrow = "BalloonThrow";
-        public const string DuckFishing = "DuckFishing";
-        public const string PunchingBall = "PunchingBall";
-        public const string FerrisWheel = "FerrisWheel";
-        public const string BasketballHoop = "BasketballHoop";
-
-        static readonly Dictionary<AttractionId, string> NamesById = new Dictionary<AttractionId, string>
-        {
-            { AttractionId.BalloonThrow, BalloonThrow },
-            { AttractionId.DuckFishing, DuckFishing },
-            { AttractionId.PunchingBall, PunchingBall },
-            { AttractionId.FerrisWheel, FerrisWheel },
-            { AttractionId.BasketballHoop, BasketballHoop },
-        };
-
-        static readonly Dictionary<string, AttractionId> IdsByName = new Dictionary<string, AttractionId>
-        {
-            { BalloonThrow, AttractionId.BalloonThrow },
-            { DuckFishing, AttractionId.DuckFishing },
-            { PunchingBall, AttractionId.PunchingBall },
-            { FerrisWheel, AttractionId.FerrisWheel },
-            { BasketballHoop, AttractionId.BasketballHoop },
-        };
 
         public static string GetSceneName(AttractionId attractionId)
         {
-            if (NamesById.TryGetValue(attractionId, out string name))
-                return name;
-
-            throw new ArgumentOutOfRangeException(nameof(attractionId), attractionId, "Unknown attraction.");
+            return AttractionCatalog.GetSceneName(attractionId);
         }
 
         public static string GetScenePath(AttractionId attractionId)
         {
-            return $"{AttractionsFolder}/{GetSceneName(attractionId)}.unity";
+            return AttractionsFolder + "/" + GetSceneName(attractionId) + ".unity";
         }
 
         public static bool TryGetAttractionId(string sceneName, out AttractionId attractionId)
         {
-            return IdsByName.TryGetValue(sceneName, out attractionId);
+            if (!AttractionCatalog.TryGetBySceneName(sceneName, out var attraction))
+            {
+                attractionId = AttractionId.None;
+                return false;
+            }
+
+            attractionId = attraction.Id;
+            return true;
         }
     }
 }

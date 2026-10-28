@@ -9,28 +9,27 @@ namespace Fairground.View.Attractions.BalloonThrow
     public sealed class BalloonThrowSceneInstaller : BoothSceneInstaller
     {
         [SerializeField] int balloonCount = 6;
+        [SerializeField] int pointsPerBalloon = 10;
         [SerializeField] int startingThrows = 8;
 
-        protected override void Assemble()
+        protected override BoothBuilder CreateBuilder()
         {
-            var builder = new BalloonThrowBoothBuilder(XrOriginPrefab);
-            Transform baked = ResolveBakedEnvironment();
-            if (baked != null)
-                builder.UseBakedEnvironment(baked);
-            else
-                builder.BuildEnvironment(BoothEnvironmentPrefab);
+            return new BalloonThrowBoothBuilder(XrOriginPrefab, balloonCount);
+        }
 
-            builder.BuildXrRig().BuildGameplay(balloonCount);
-            AttractionPlacement.TryApplyFromSession(builder.BoothSpaceRoots());
-
+        protected override void WireGameplay(BoothBuilder builder)
+        {
+            var booth = (BalloonThrowBoothBuilder)builder;
             var go = new GameObject("BalloonThrowGame");
             var controller = go.AddComponent<BalloonThrowAttractionController>();
-            controller.Configure(builder.Balloons, builder.Spawner, builder.Hud, 10, startingThrows);
-            AttachPlaySupport(
-                builder.XrOrigin,
-                controller.Input,
-                BalloonThrowDesktopPlay.Profile(builder.Spawner));
-            builder.EnsureBallReady();
+            controller.Configure(
+                booth.Balloons,
+                booth.Spawner,
+                booth.Hud,
+                pointsPerBalloon,
+                startingThrows);
+            AttachPlaySupport(booth.XrOrigin, controller.Input, BalloonThrowDesktopPlay.Profile(booth.Spawner));
+            booth.EnsureBallReady();
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
         }
 
         public AttractionId AttractionId => AttractionId.BalloonThrow;
-        public string SceneName => AttractionScenes.BalloonThrow;
+        public string SceneName => AttractionCatalog.BalloonThrow.SceneName;
         public event Action StateChanged;
 
         public BalloonThrowPhase Phase => _session.Phase;

@@ -25,6 +25,10 @@ namespace Fairground.View.Attractions.DuckFishing
         {
             return new BoothLayout
             {
+                LogTag = LogTag,
+                Sky = Sky,
+                HudPosition = HudPosition,
+                HudLines = HudLines,
                 Lighting = new BoothLighting
                 {
                     Sky = new Color(0.55f, 0.65f, 0.75f, 1f),

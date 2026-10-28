@@ -16,7 +16,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         [UnityTest]
         public IEnumerator PunchingBallScene_LoadsAndStartsPlaying()
         {
-            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionScenes.PunchingBall);
+            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.PunchingBall.SceneName);
 
             var controller = AttractionSceneTestHelper.Require<PunchingBallAttractionController>();
             yield return AttractionSceneTestHelper.WaitUntil(
@@ -37,7 +37,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         [UnityTest]
         public IEnumerator PunchingBallScene_StrongPunch_WinsMatch()
         {
-            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionScenes.PunchingBall);
+            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.PunchingBall.SceneName);
 
             var controller = AttractionSceneTestHelper.Require<PunchingBallAttractionController>();
             yield return AttractionSceneTestHelper.WaitUntil(
@@ -64,7 +64,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         [UnityTest]
         public IEnumerator PunchingBallScene_WeakPunches_CanLoseAndRestart()
         {
-            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionScenes.PunchingBall);
+            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.PunchingBall.SceneName);
 
             var controller = AttractionSceneTestHelper.Require<PunchingBallAttractionController>();
             yield return AttractionSceneTestHelper.WaitUntil(

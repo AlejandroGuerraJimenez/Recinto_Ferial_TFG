@@ -12,32 +12,28 @@ namespace Fairground.View.Attractions.BasketballHoop
         [SerializeField] int startingBalls = 10;
         [SerializeField] int winScoreThreshold = 5;
 
-        protected override void Assemble()
+        protected override BoothBuilder CreateBuilder()
         {
-            var builder = new BasketballHoopBoothBuilder(XrOriginPrefab);
-            Transform baked = ResolveBakedEnvironment();
-            if (baked != null)
-                builder.UseBakedEnvironment(baked);
-            else
-                builder.BuildEnvironment(BoothEnvironmentPrefab);
+            return new BasketballHoopBoothBuilder(XrOriginPrefab);
+        }
 
-            builder.BuildXrRig().BuildGameplay();
-            AttractionPlacement.TryApplyFromSession(builder.BoothSpaceRoots());
-
+        protected override void WireGameplay(BoothBuilder builder)
+        {
+            var booth = (BasketballHoopBoothBuilder)builder;
             var go = new GameObject("BasketballHoopGame");
             var controller = go.AddComponent<BasketballHoopAttractionController>();
             controller.Configure(
-                builder.Hoop,
-                builder.Spawner,
-                builder.Hud,
+                booth.Hoop,
+                booth.Spawner,
+                booth.Hud,
                 pointsPerBasket,
                 startingBalls,
                 winScoreThreshold);
             AttachPlaySupport(
-                builder.XrOrigin,
+                booth.XrOrigin,
                 controller.Input,
-                BasketballHoopDesktopPlay.Profile(builder.Spawner));
-            builder.EnsureBallReady();
+                BasketballHoopDesktopPlay.Profile(booth.Spawner));
+            booth.EnsureBallReady();
         }
     }
 }

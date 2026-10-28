@@ -4,83 +4,47 @@ using UnityEngine;
 namespace Fairground.View.Attractions.BasketballHoop.Builders
 {
     /// <summary>
-    /// Assembles the hoop, the ball spawner, and the shared booth shell.
+    /// Hoop and ball spawner. The shared shell builds the booth around them.
     /// </summary>
-    public sealed class BasketballHoopBoothBuilder
+    public sealed class BasketballHoopBoothBuilder : BoothBuilder
     {
         readonly HoopFactory _hoopFactory = new HoopFactory();
         readonly BasketballBallFactory _ballFactory = new BasketballBallFactory();
         readonly BallSpawnerFactory _spawnerFactory = new BallSpawnerFactory();
-        readonly BoothHudFactory _hudFactory = new BoothHudFactory();
-        readonly BoothAssembly _shell;
 
-        BasketDetectorView _hoop;
-        BallSpawnerView _spawner;
-        BoothHudView _hud;
+        public BasketDetectorView Hoop { get; private set; }
+
+        public BallSpawnerView Spawner { get; private set; }
 
         public BasketballHoopBoothBuilder(GameObject xrOriginPrefab)
+            : base(BasketballHoopBoothLayout.Props(), xrOriginPrefab)
         {
-            _shell = new BoothAssembly(
-                BasketballHoopBoothLayout.Props(),
-                xrOriginPrefab,
-                BasketballHoopBoothLayout.LogTag,
-                BasketballHoopBoothLayout.Sky);
         }
 
-        public GameObject XrOrigin => _shell.XrOrigin;
-        public BasketDetectorView Hoop => _hoop;
-        public BallSpawnerView Spawner => _spawner;
-        public BoothHudView Hud => _hud;
-
-        public BasketballHoopBoothBuilder UseBakedEnvironment(Transform bakedRoot)
+        protected override void BuildGameplay()
         {
-            _shell.UseBakedEnvironment(bakedRoot);
-            return this;
-        }
+            Hoop = _hoopFactory.Create();
+            Track(Top(Hoop != null ? Hoop.transform : null));
 
-        public BasketballHoopBoothBuilder BuildEnvironment(GameObject boothEnvironmentPrefab)
-        {
-            _shell.BuildEnvironment(boothEnvironmentPrefab);
-            return this;
-        }
-
-        public BasketballHoopBoothBuilder BuildXrRig()
-        {
-            _shell.BuildXrRig();
-            return this;
-        }
-
-        public BasketballHoopBoothBuilder BuildGameplay()
-        {
-            _hoop = _hoopFactory.Create();
-            _spawner = _spawnerFactory.Create(_ballFactory.CreateTemplate());
-            _hud = _hudFactory.Create(BasketballHoopLayout.HudPosition, BasketballHoopBoothLayout.HudLines);
-            return this;
+            Spawner = _spawnerFactory.Create(_ballFactory.CreateTemplate());
+            Track(Spawner != null ? Spawner.transform : null);
         }
 
         public void EnsureBallReady()
         {
-            if (_spawner != null && _spawner.CurrentBall == null)
-                _spawner.TrySpawnImmediate();
+            if (Spawner != null && Spawner.CurrentBall == null)
+                Spawner.TrySpawnImmediate();
         }
 
-        public Transform[] BoothSpaceRoots()
+        static Transform Top(Transform node)
         {
-            Transform hoopRoot = null;
-            if (_hoop != null)
-            {
-                hoopRoot = _hoop.transform;
-                while (hoopRoot.parent != null)
-                    hoopRoot = hoopRoot.parent;
-            }
+            if (node == null)
+                return null;
 
-            return new[]
-            {
-                _shell.Environment != null ? _shell.Environment.transform : null,
-                hoopRoot,
-                _spawner != null ? _spawner.transform : null,
-                _hud != null ? _hud.transform : null,
-            };
+            while (node.parent != null)
+                node = node.parent;
+
+            return node;
         }
     }
 }

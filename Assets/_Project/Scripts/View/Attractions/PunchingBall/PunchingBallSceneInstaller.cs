@@ -13,32 +13,25 @@ namespace Fairground.View.Attractions.PunchingBall
         [SerializeField] int maxScore = 999;
         [SerializeField] float maxImpactSpeed = 8f;
 
-        protected override void Assemble()
+        protected override BoothBuilder CreateBuilder()
         {
-            var builder = new PunchingBallBoothBuilder(XrOriginPrefab);
-            Transform baked = ResolveBakedEnvironment();
-            if (baked != null)
-                builder.UseBakedEnvironment(baked);
-            else
-                builder.BuildEnvironment(BoothEnvironmentPrefab);
+            return new PunchingBallBoothBuilder(XrOriginPrefab);
+        }
 
-            builder.BuildXrRig().BuildGameplay();
-            AttractionPlacement.TryApplyFromSession(builder.BoothSpaceRoots());
-
+        protected override void WireGameplay(BoothBuilder builder)
+        {
+            var booth = (PunchingBallBoothBuilder)builder;
             var go = new GameObject("PunchingBallGame");
             var controller = go.AddComponent<PunchingBallAttractionController>();
             controller.Configure(
-                builder.Pad,
-                builder.Meter,
-                builder.Hud,
+                booth.Pad,
+                booth.Meter,
+                booth.Hud,
                 startingPunches,
                 winScoreThreshold,
                 maxScore,
                 maxImpactSpeed);
-            AttachPlaySupport(
-                builder.XrOrigin,
-                controller.Input,
-                PunchingBallDesktopPlay.Profile(builder.Pad));
+            AttachPlaySupport(booth.XrOrigin, controller.Input, PunchingBallDesktopPlay.Profile(booth.Pad));
         }
     }
 }

@@ -22,6 +22,10 @@ namespace Fairground.View.Attractions.BasketballHoop
         {
             return new BoothLayout
             {
+                LogTag = LogTag,
+                Sky = Sky,
+                HudPosition = BasketballHoopLayout.HudPosition,
+                HudLines = HudLines,
                 Pieces = new[]
                 {
                     BoothPiece.Plane(

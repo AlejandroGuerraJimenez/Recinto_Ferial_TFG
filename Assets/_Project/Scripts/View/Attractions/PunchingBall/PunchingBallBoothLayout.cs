@@ -24,6 +24,10 @@ namespace Fairground.View.Attractions.PunchingBall
         {
             return new BoothLayout
             {
+                LogTag = LogTag,
+                Sky = Sky,
+                HudPosition = HudPosition,
+                HudLines = HudLines,
                 Pieces = new[]
                 {
                     BoothPiece.Plane("Ground", new Vector3(2f, 1f, 2f), new Color(0.22f, 0.22f, 0.26f, 1f)),

@@ -30,7 +30,7 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
         }
 
         public AttractionId AttractionId => AttractionId.BasketballHoop;
-        public string SceneName => AttractionScenes.BasketballHoop;
+        public string SceneName => AttractionCatalog.BasketballHoop.SceneName;
         public event Action StateChanged;
 
         public BasketballHoopPhase Phase => _session.Phase;

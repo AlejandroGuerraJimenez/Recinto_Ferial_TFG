@@ -33,7 +33,7 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
         }
 
         public AttractionId AttractionId => AttractionId.PunchingBall;
-        public string SceneName => AttractionScenes.PunchingBall;
+        public string SceneName => AttractionCatalog.PunchingBall.SceneName;
         public event Action StateChanged;
 
         public PunchingBallPhase Phase => _session.Phase;

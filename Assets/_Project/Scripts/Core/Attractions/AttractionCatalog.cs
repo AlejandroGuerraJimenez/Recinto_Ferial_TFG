@@ -1,30 +1,77 @@
+using System;
+using System.Collections.Generic;
+
 namespace Fairground.Core.Attractions
 {
     /// <summary>
-    /// Playable attractions shown as parcels on the chosen flat surface.
+    /// Playable attractions. Each entry is one <see cref="AttractionDescriptor"/>
+    /// (id, visible name, scene). Lookups are indexed from that list.
     /// </summary>
     public static class AttractionCatalog
     {
-        public static readonly AttractionId[] Playable =
+        public static readonly AttractionDescriptor BalloonThrow =
+            new AttractionDescriptor(AttractionId.BalloonThrow, "Globos", "BalloonThrow");
+
+        public static readonly AttractionDescriptor DuckFishing =
+            new AttractionDescriptor(AttractionId.DuckFishing, "Patos", "DuckFishing");
+
+        public static readonly AttractionDescriptor PunchingBall =
+            new AttractionDescriptor(AttractionId.PunchingBall, "Punching", "PunchingBall");
+
+        public static readonly AttractionDescriptor FerrisWheel =
+            new AttractionDescriptor(AttractionId.FerrisWheel, "Noria", "FerrisWheel");
+
+        public static readonly AttractionDescriptor BasketballHoop =
+            new AttractionDescriptor(AttractionId.BasketballHoop, "Canasta", "BasketballHoop");
+
+        public static readonly AttractionDescriptor[] Playable =
         {
-            AttractionId.BalloonThrow,
-            AttractionId.DuckFishing,
-            AttractionId.PunchingBall,
-            AttractionId.FerrisWheel,
-            AttractionId.BasketballHoop,
+            BalloonThrow,
+            DuckFishing,
+            PunchingBall,
+            FerrisWheel,
+            BasketballHoop,
         };
+
+        static readonly Dictionary<AttractionId, AttractionDescriptor> ById;
+        static readonly Dictionary<string, AttractionDescriptor> BySceneName;
+
+        static AttractionCatalog()
+        {
+            ById = new Dictionary<AttractionId, AttractionDescriptor>(Playable.Length);
+            BySceneName = new Dictionary<string, AttractionDescriptor>(Playable.Length);
+            for (var i = 0; i < Playable.Length; i++)
+            {
+                var attraction = Playable[i];
+                ById.Add(attraction.Id, attraction);
+                BySceneName.Add(attraction.SceneName, attraction);
+            }
+        }
+
+        public static bool TryGet(AttractionId attractionId, out AttractionDescriptor attraction)
+        {
+            return ById.TryGetValue(attractionId, out attraction);
+        }
+
+        public static bool TryGetBySceneName(string sceneName, out AttractionDescriptor attraction)
+        {
+            return BySceneName.TryGetValue(sceneName, out attraction);
+        }
 
         public static string DisplayName(AttractionId attractionId)
         {
-            switch (attractionId)
-            {
-                case AttractionId.BalloonThrow: return "Globos";
-                case AttractionId.DuckFishing: return "Patos";
-                case AttractionId.PunchingBall: return "Punching";
-                case AttractionId.FerrisWheel: return "Noria";
-                case AttractionId.BasketballHoop: return "Canasta";
-                default: return "Parcela";
-            }
+            if (TryGet(attractionId, out var attraction))
+                return attraction.DisplayName;
+
+            return "Parcela";
+        }
+
+        public static string GetSceneName(AttractionId attractionId)
+        {
+            if (TryGet(attractionId, out var attraction))
+                return attraction.SceneName;
+
+            throw new ArgumentOutOfRangeException(nameof(attractionId), attractionId, "Unknown attraction.");
         }
     }
 }

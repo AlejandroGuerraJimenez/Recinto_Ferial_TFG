@@ -1,8 +1,8 @@
 namespace Fairground.Core.Attractions
 {
     /// <summary>
-    /// Stable identifiers for fairground attractions.
-    /// Used for future AR plot → scene loading wiring.
+    /// Stable id of an attraction. Values are serialized on the fairground flow.
+    /// Visible name and scene live on <see cref="AttractionDescriptor"/>.
     /// </summary>
     public enum AttractionId
     {

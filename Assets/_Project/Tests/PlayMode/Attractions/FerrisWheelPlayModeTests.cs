@@ -14,7 +14,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         [UnityTest]
         public IEnumerator FerrisWheelScene_SpinsAndKeepsCabinsUpright()
         {
-            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionScenes.FerrisWheel);
+            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.FerrisWheel.SceneName);
 
             var controller = AttractionSceneTestHelper.Require<FerrisWheelAttractionController>();
             yield return AttractionSceneTestHelper.WaitUntil(

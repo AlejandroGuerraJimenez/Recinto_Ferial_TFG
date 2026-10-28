@@ -31,7 +31,7 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
         }
 
         public AttractionId AttractionId => AttractionId.DuckFishing;
-        public string SceneName => AttractionScenes.DuckFishing;
+        public string SceneName => AttractionCatalog.DuckFishing.SceneName;
         public event Action StateChanged;
 
         public DuckFishingPhase Phase => _session.Phase;

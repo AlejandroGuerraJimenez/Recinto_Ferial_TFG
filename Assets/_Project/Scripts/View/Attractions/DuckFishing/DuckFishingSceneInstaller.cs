@@ -13,32 +13,25 @@ namespace Fairground.View.Attractions.DuckFishing
         [SerializeField] int startingAttempts = 8;
         [SerializeField] int pointsPerDuck = 10;
 
-        protected override void Assemble()
+        protected override BoothBuilder CreateBuilder()
         {
-            var builder = new DuckFishingBoothBuilder(XrOriginPrefab);
-            Transform baked = ResolveBakedEnvironment();
-            if (baked != null)
-                builder.UseBakedEnvironment(baked);
-            else
-                builder.BuildEnvironment(BoothEnvironmentPrefab);
+            return new DuckFishingBoothBuilder(XrOriginPrefab, duckCount);
+        }
 
-            builder.BuildXrRig().BuildGameplay(duckCount);
-            AttractionPlacement.TryApplyFromSession(builder.BoothSpaceRoots());
-
+        protected override void WireGameplay(BoothBuilder builder)
+        {
+            var booth = (DuckFishingBoothBuilder)builder;
             var go = new GameObject("DuckFishingGame");
             var controller = go.AddComponent<DuckFishingAttractionController>();
             controller.Configure(
-                builder.Ducks,
-                builder.Rod,
-                builder.Hud,
-                builder.Pond,
+                booth.Ducks,
+                booth.Rod,
+                booth.Hud,
+                booth.Pond,
                 pointsPerDuck,
                 startingAttempts,
                 ducksToWin);
-            AttachPlaySupport(
-                builder.XrOrigin,
-                controller.Input,
-                DuckFishingDesktopPlay.Profile(builder.Rod));
+            AttachPlaySupport(booth.XrOrigin, controller.Input, DuckFishingDesktopPlay.Profile(booth.Rod));
         }
     }
 }

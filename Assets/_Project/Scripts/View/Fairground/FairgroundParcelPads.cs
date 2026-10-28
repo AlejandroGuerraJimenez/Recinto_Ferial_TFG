@@ -96,14 +96,17 @@ namespace Fairground.View
             _root.SetParent(surface.transform, false);
             _root.localRotation = Quaternion.identity;
 
-            var count = AttractionCatalog.Playable.Length;
-            for (var i = 0; i < count; i++)
+            var attractions = AttractionCatalog.Playable;
+            for (var i = 0; i < attractions.Length; i++)
             {
-                var attraction = AttractionCatalog.Playable[i];
-                _pads.Add(ParcelPad.Create(_root, attraction, Colors[i % Colors.Length], surface.FillTemplate));
+                _pads.Add(ParcelPad.Create(
+                    _root,
+                    attractions[i],
+                    Colors[i % Colors.Length],
+                    surface.FillTemplate));
             }
 
-            Debug.Log("[Parcelas] " + count + " sobre " + _planeId);
+            Debug.Log("[Parcelas] " + attractions.Length + " sobre " + _planeId);
         }
 
         void Layout(PlaneSurfaceVisual surface, Ray? aim)
@@ -188,15 +191,15 @@ namespace Fairground.View
 
         public AttractionId AttractionId { get; private set; }
 
-        public static ParcelPad Create(Transform parent, AttractionId attractionId, Color color, Material template)
+        public static ParcelPad Create(Transform parent, AttractionDescriptor attraction, Color color, Material template)
         {
-            var root = new GameObject(AttractionCatalog.DisplayName(attractionId));
+            var root = new GameObject(attraction.DisplayName);
             root.transform.SetParent(parent, false);
 
             var pad = root.AddComponent<ParcelPad>();
-            pad.AttractionId = attractionId;
+            pad.AttractionId = attraction.Id;
             pad.BuildPlate(color, template);
-            pad.BuildLabel();
+            pad.BuildLabel(attraction.DisplayName);
             return pad;
         }
 
@@ -230,7 +233,7 @@ namespace Fairground.View
                 renderer.sharedMaterial = _material;
         }
 
-        void BuildLabel()
+        void BuildLabel(string displayName)
         {
             var label = new GameObject("Label");
             label.transform.SetParent(transform, false);
@@ -240,7 +243,7 @@ namespace Fairground.View
 
             var text = label.AddComponent<TextMeshPro>();
             text.font = TMP_Settings.defaultFontAsset;
-            text.text = AttractionCatalog.DisplayName(AttractionId);
+            text.text = displayName;
             text.fontSize = 4.5f;
             text.alignment = TextAlignmentOptions.Center;
             text.color = Color.white;

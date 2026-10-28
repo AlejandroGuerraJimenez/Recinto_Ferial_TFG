@@ -4,69 +4,35 @@ using UnityEngine;
 namespace Fairground.View.Attractions.PunchingBall.Builders
 {
     /// <summary>
-    /// Assembles the punch pad, the meter, and the shared booth shell.
+    /// Punch pad and power meter. The shared shell builds the booth around them.
     /// </summary>
-    public sealed class PunchingBallBoothBuilder
+    public sealed class PunchingBallBoothBuilder : BoothBuilder
     {
         readonly PunchPadFactory _padFactory = new PunchPadFactory();
         readonly PunchPowerMeterFactory _meterFactory = new PunchPowerMeterFactory();
         readonly ControllerFistFactory _fistFactory = new ControllerFistFactory();
-        readonly BoothHudFactory _hudFactory = new BoothHudFactory();
-        readonly BoothAssembly _shell;
 
-        PunchPadView _pad;
-        PunchPowerMeterView _meter;
-        BoothHudView _hud;
+        public PunchPadView Pad { get; private set; }
+
+        public PunchPowerMeterView Meter { get; private set; }
 
         public PunchingBallBoothBuilder(GameObject xrOriginPrefab)
+            : base(PunchingBallBoothLayout.Props(), xrOriginPrefab)
         {
-            _shell = new BoothAssembly(
-                PunchingBallBoothLayout.Props(),
-                xrOriginPrefab,
-                PunchingBallBoothLayout.LogTag,
-                PunchingBallBoothLayout.Sky);
         }
 
-        public GameObject XrOrigin => _shell.XrOrigin;
-        public PunchPadView Pad => _pad;
-        public PunchPowerMeterView Meter => _meter;
-        public BoothHudView Hud => _hud;
-
-        public PunchingBallBoothBuilder UseBakedEnvironment(Transform bakedRoot)
+        protected override void OnRigReady(GameObject xrOrigin)
         {
-            _shell.UseBakedEnvironment(bakedRoot);
-            return this;
+            _fistFactory.AttachFists(xrOrigin);
         }
 
-        public PunchingBallBoothBuilder BuildEnvironment(GameObject boothEnvironmentPrefab)
+        protected override void BuildGameplay()
         {
-            _shell.BuildEnvironment(boothEnvironmentPrefab);
-            return this;
-        }
+            Pad = _padFactory.Create();
+            Track(Pad != null ? Pad.transform.root : null);
 
-        public PunchingBallBoothBuilder BuildXrRig()
-        {
-            _shell.BuildXrRig(_fistFactory.AttachFists);
-            return this;
-        }
-
-        public PunchingBallBoothBuilder BuildGameplay()
-        {
-            _pad = _padFactory.Create();
-            _meter = _meterFactory.Create();
-            _hud = _hudFactory.Create(PunchingBallBoothLayout.HudPosition, PunchingBallBoothLayout.HudLines);
-            return this;
-        }
-
-        public Transform[] BoothSpaceRoots()
-        {
-            return new[]
-            {
-                _shell.Environment != null ? _shell.Environment.transform : null,
-                _pad != null ? _pad.transform.root : null,
-                _meter != null ? _meter.transform.root : null,
-                _hud != null ? _hud.transform : null,
-            };
+            Meter = _meterFactory.Create();
+            Track(Meter != null ? Meter.transform.root : null);
         }
     }
 }

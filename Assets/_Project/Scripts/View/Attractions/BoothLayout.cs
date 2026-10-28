@@ -94,10 +94,14 @@ namespace Fairground.View.Attractions
     }
 
     /// <summary>
-    /// Data for the shared booth prop factory: lighting plus the pieces that are unique to one attraction.
+    /// Everything the shared booth shell needs for one attraction: props, sky, and the HUD placeholder.
     /// </summary>
     public sealed class BoothLayout
     {
+        public string LogTag = "[Booth]";
+        public Color Sky = new Color(0.55f, 0.6f, 0.7f, 1f);
+        public Vector3 HudPosition = new Vector3(0f, 2.1f, 3.2f);
+        public string[] HudLines = Array.Empty<string>();
         public BoothLighting Lighting = new BoothLighting();
         public BoothPiece[] Pieces = Array.Empty<BoothPiece>();
     }

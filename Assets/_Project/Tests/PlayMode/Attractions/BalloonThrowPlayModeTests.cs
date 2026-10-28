@@ -16,7 +16,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         [UnityTest]
         public IEnumerator BalloonThrowScene_LoadsAndStartsPlaying()
         {
-            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionScenes.BalloonThrow);
+            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.BalloonThrow.SceneName);
 
             var controller = AttractionSceneTestHelper.Require<BalloonThrowAttractionController>();
             yield return AttractionSceneTestHelper.WaitUntil(
@@ -37,7 +37,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         [UnityTest]
         public IEnumerator BalloonThrowScene_ThrowRegistersAndCanPopBalloon()
         {
-            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionScenes.BalloonThrow);
+            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.BalloonThrow.SceneName);
 
             var controller = AttractionSceneTestHelper.Require<BalloonThrowAttractionController>();
             yield return AttractionSceneTestHelper.WaitUntil(
@@ -98,7 +98,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         [UnityTest]
         public IEnumerator BalloonThrowScene_RestartRestoresMatch()
         {
-            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionScenes.BalloonThrow);
+            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.BalloonThrow.SceneName);
 
             var controller = AttractionSceneTestHelper.Require<BalloonThrowAttractionController>();
             yield return AttractionSceneTestHelper.WaitUntil(

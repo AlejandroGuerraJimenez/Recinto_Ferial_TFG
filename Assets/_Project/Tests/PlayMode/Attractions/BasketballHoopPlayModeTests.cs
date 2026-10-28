@@ -16,7 +16,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         [UnityTest]
         public IEnumerator BasketballHoopScene_LoadsAndStartsPlaying()
         {
-            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionScenes.BasketballHoop);
+            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.BasketballHoop.SceneName);
 
             var controller = AttractionSceneTestHelper.Require<BasketballHoopAttractionController>();
             yield return AttractionSceneTestHelper.WaitUntil(
@@ -38,7 +38,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         [UnityTest]
         public IEnumerator BasketballHoopScene_ThrowRegistersAndCanScoreOnce()
         {
-            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionScenes.BasketballHoop);
+            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.BasketballHoop.SceneName);
 
             var controller = AttractionSceneTestHelper.Require<BasketballHoopAttractionController>();
             yield return AttractionSceneTestHelper.WaitUntil(
@@ -97,7 +97,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         [UnityTest]
         public IEnumerator BasketballHoopScene_RestartRestoresMatch()
         {
-            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionScenes.BasketballHoop);
+            yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.BasketballHoop.SceneName);
 
             var controller = AttractionSceneTestHelper.Require<BasketballHoopAttractionController>();
             yield return AttractionSceneTestHelper.WaitUntil(
