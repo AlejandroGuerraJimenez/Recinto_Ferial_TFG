@@ -1,4 +1,5 @@
 using System;
+using Fairground.Model.Attractions;
 
 namespace Fairground.Model.Attractions.DuckFishing
 {
@@ -30,21 +31,18 @@ namespace Fairground.Model.Attractions.DuckFishing
             StartingAttempts = startingAttempts;
             DuckCount = duckCount;
             DucksToWin = ducksToWin;
+            Attempt = AttemptMatchRules.BySuccessCount(
+                pointsPerDuck,
+                startingAttempts,
+                duckCount,
+                ducksToWin);
         }
 
         public int PointsPerDuck { get; }
         public int StartingAttempts { get; }
         public int DuckCount { get; }
         public int DucksToWin { get; }
-
-        public int ScoreForCatch() => PointsPerDuck;
-
-        public bool IsWin(int ducksCaught) => ducksCaught >= DucksToWin;
-
-        public bool IsLose(int attemptsRemaining, int ducksCaught, int dipsInFlight)
-        {
-            return attemptsRemaining <= 0 && ducksCaught < DucksToWin && dipsInFlight <= 0;
-        }
+        public AttemptMatchRules Attempt { get; }
 
         static void GuardNonNegative(int value, string name)
         {

@@ -1,4 +1,5 @@
 using System;
+using Fairground.Model.Attractions;
 
 namespace Fairground.Model.Attractions.BalloonThrow
 {
@@ -22,20 +23,17 @@ namespace Fairground.Model.Attractions.BalloonThrow
             PointsPerBalloon = pointsPerBalloon;
             StartingThrows = startingThrows;
             BalloonCount = balloonCount;
+            Attempt = AttemptMatchRules.BySuccessCount(
+                pointsPerBalloon,
+                startingThrows,
+                balloonCount,
+                balloonCount);
         }
 
         public int PointsPerBalloon { get; }
         public int StartingThrows { get; }
         public int BalloonCount { get; }
-
-        public int ScoreForHit() => PointsPerBalloon;
-
-        public bool IsWin(int balloonsPopped) => balloonsPopped >= BalloonCount;
-
-        public bool IsLose(int throwsRemaining, int balloonsRemaining, int throwsInFlight)
-        {
-            return throwsRemaining <= 0 && balloonsRemaining > 0 && throwsInFlight <= 0;
-        }
+        public AttemptMatchRules Attempt { get; }
 
         static void GuardNonNegative(int value, string name)
         {

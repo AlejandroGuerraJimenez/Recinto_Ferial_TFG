@@ -6,15 +6,17 @@ using Fairground.ViewModel.Attractions;
 namespace Fairground.ViewModel.Attractions.BalloonThrow
 {
     /// <summary>
-    /// Publishes balloon-match state. The session owns the counters.
+    /// Publishes balloon-match state. The match owns the counters.
     /// </summary>
     public sealed class BalloonThrowViewModel : BoothMatchViewModel
     {
-        readonly BalloonThrowSession _session;
+        readonly BalloonThrowRules _rules;
+        readonly AttemptMatch _match;
 
         public BalloonThrowViewModel(BalloonThrowRules rules = null)
         {
-            _session = new BalloonThrowSession(rules ?? new BalloonThrowRules());
+            _rules = rules ?? new BalloonThrowRules();
+            _match = new AttemptMatch(_rules.Attempt);
             PublishState();
         }
 
@@ -26,12 +28,12 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
         public AttractionId AttractionId => AttractionId.BalloonThrow;
         public string SceneName => AttractionCatalog.BalloonThrow.SceneName;
 
-        public MatchPhase Phase => _session.Phase;
-        public int Score => _session.Score;
-        public int ThrowsRemaining => _session.ThrowsRemaining;
-        public int BalloonsRemaining => _session.BalloonsRemaining;
-        public int BalloonsPopped => _session.BalloonsPopped;
-        public int BalloonCount => _session.Rules.BalloonCount;
+        public MatchPhase Phase => _match.Phase;
+        public int Score => _match.Score;
+        public int ThrowsRemaining => _match.AttemptsRemaining;
+        public int BalloonsRemaining => _match.TargetsRemaining;
+        public int BalloonsPopped => _match.Successes;
+        public int BalloonCount => _rules.BalloonCount;
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanSpawnBall => IsPlaying && ThrowsRemaining > 0;
         public string StatusText => Describe(Phase);
@@ -39,19 +41,19 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
 
         public override void StartGame()
         {
-            _session.Start();
+            _match.Start();
             Notify();
         }
 
-        public bool NotifyBallThrown() => Apply(_session.TryRegisterThrow);
+        public bool NotifyBallThrown() => Apply(_match.TrySpendAttempt);
 
-        public bool NotifyBalloonHit() => Apply(_session.TryRegisterBalloonHit);
+        public bool NotifyBalloonHit() => Apply(_match.TryRegisterSuccess);
 
-        public bool NotifyThrowResolved() => Apply(_session.ResolveThrow);
+        public bool NotifyThrowResolved() => Apply(_match.ResolveAttempt);
 
         public override void Restart()
         {
-            _session.Restart();
+            _match.Restart();
             Notify();
         }
 

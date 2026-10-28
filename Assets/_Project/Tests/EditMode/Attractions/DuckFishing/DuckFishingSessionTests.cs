@@ -27,7 +27,7 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.AreEqual(0, session.Score);
             Assert.AreEqual(8, session.AttemptsRemaining);
-            Assert.AreEqual(6, session.DucksRemaining);
+            Assert.AreEqual(6, session.TargetsRemaining);
         }
 
         [Test]
@@ -35,14 +35,14 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         {
             var session = CreateSession(10, 2, 6, 4);
             session.Start();
-            Assert.IsTrue(session.TryRegisterDip());
+            Assert.IsTrue(session.TrySpendAttempt());
             session.Start();
             Assert.AreEqual(1, session.AttemptsRemaining);
             session.Restart();
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.AreEqual(0, session.Score);
             Assert.AreEqual(2, session.AttemptsRemaining);
-            Assert.AreEqual(0, session.DipsInFlight);
+            Assert.AreEqual(0, session.InFlight);
         }
 
         [Test]
@@ -50,9 +50,9 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         {
             var session = CreateSession(10, 8, 6, 2);
             session.Start();
-            Assert.IsTrue(session.TryRegisterCatch());
+            Assert.IsTrue(session.TryRegisterSuccess());
             Assert.AreEqual(10, session.Score);
-            Assert.IsTrue(session.TryRegisterCatch());
+            Assert.IsTrue(session.TryRegisterSuccess());
             Assert.AreEqual(MatchPhase.Won, session.Phase);
         }
 
@@ -61,13 +61,13 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         {
             var session = CreateSession(10, 2, 6, 3);
             session.Start();
-            Assert.IsTrue(session.TryRegisterDip());
-            Assert.IsTrue(session.TryRegisterDip());
+            Assert.IsTrue(session.TrySpendAttempt());
+            Assert.IsTrue(session.TrySpendAttempt());
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsTrue(session.ResolveDip());
-            Assert.IsTrue(session.ResolveDip());
+            Assert.IsTrue(session.ResolveAttempt());
+            Assert.IsTrue(session.ResolveAttempt());
             Assert.AreEqual(MatchPhase.Lost, session.Phase);
-            Assert.IsFalse(session.TryRegisterDip());
+            Assert.IsFalse(session.TrySpendAttempt());
         }
 
         [Test]
@@ -75,12 +75,27 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         {
             var session = CreateSession(10, 1, 6, 1);
             session.Start();
-            Assert.IsTrue(session.TryRegisterDip());
+            Assert.IsTrue(session.TrySpendAttempt());
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsTrue(session.TryRegisterCatch());
+            Assert.IsTrue(session.TryRegisterSuccess());
             Assert.AreEqual(MatchPhase.Won, session.Phase);
-            Assert.IsTrue(session.ResolveDip());
+            Assert.IsTrue(session.ResolveAttempt());
             Assert.AreEqual(MatchPhase.Won, session.Phase);
+        }
+
+        [Test]
+        public void Session_FourCatchesOfSix_WinsWithDucksLeft()
+        {
+            var session = CreateSession(10, 8, 6, 4);
+            session.Start();
+            Assert.IsTrue(session.TryRegisterSuccess());
+            Assert.IsTrue(session.TryRegisterSuccess());
+            Assert.IsTrue(session.TryRegisterSuccess());
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
+            Assert.AreEqual(3, session.TargetsRemaining);
+            Assert.IsTrue(session.TryRegisterSuccess());
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
+            Assert.AreEqual(2, session.TargetsRemaining);
         }
 
         [Test]
@@ -112,9 +127,9 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
             Assert.AreEqual(0, vm.Score);
         }
 
-        static DuckFishingSession CreateSession(int points, int attempts, int ducks, int toWin)
+        static AttemptMatch CreateSession(int points, int attempts, int ducks, int toWin)
         {
-            return new DuckFishingSession(new DuckFishingRules(points, attempts, ducks, toWin));
+            return new AttemptMatch(new DuckFishingRules(points, attempts, ducks, toWin).Attempt);
         }
     }
 }

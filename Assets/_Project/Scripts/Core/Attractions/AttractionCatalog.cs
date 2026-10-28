@@ -6,6 +6,11 @@ namespace Fairground.Core.Attractions
     /// <summary>
     /// Playable attractions. Each entry is one <see cref="AttractionDescriptor"/>
     /// (id, visible name, scene). Lookups are indexed from that list.
+    /// The id list stays closed because each scene is fixed in the player build.
+    /// A new scoring booth adds an <see cref="AttractionId"/>, a row in <see cref="Playable"/>,
+    /// rules that build an attempt match, a view model that names those counters,
+    /// and the view of its props. It does not add a session type.
+    /// Punch and the wheel keep their own model.
     /// </summary>
     public static class AttractionCatalog
     {

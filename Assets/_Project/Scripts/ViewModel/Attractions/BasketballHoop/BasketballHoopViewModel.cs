@@ -6,15 +6,15 @@ using Fairground.ViewModel.Attractions;
 namespace Fairground.ViewModel.Attractions.BasketballHoop
 {
     /// <summary>
-    /// Publishes hoop-match state. The session owns the counters.
+    /// Publishes hoop-match state. The match owns the counters.
     /// </summary>
     public sealed class BasketballHoopViewModel : BoothMatchViewModel
     {
-        readonly BasketballHoopSession _session;
+        readonly AttemptMatch _match;
 
         public BasketballHoopViewModel(BasketballHoopRules rules = null)
         {
-            _session = new BasketballHoopSession(rules ?? new BasketballHoopRules());
+            _match = new AttemptMatch((rules ?? new BasketballHoopRules()).Attempt);
             PublishState();
         }
 
@@ -26,9 +26,9 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
         public AttractionId AttractionId => AttractionId.BasketballHoop;
         public string SceneName => AttractionCatalog.BasketballHoop.SceneName;
 
-        public MatchPhase Phase => _session.Phase;
-        public int Score => _session.Score;
-        public int BallsRemaining => _session.BallsRemaining;
+        public MatchPhase Phase => _match.Phase;
+        public int Score => _match.Score;
+        public int BallsRemaining => _match.AttemptsRemaining;
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanThrow => IsPlaying && BallsRemaining > 0;
         public string StatusText => Describe(Phase);
@@ -36,19 +36,19 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
 
         public override void StartGame()
         {
-            _session.Start();
+            _match.Start();
             Notify();
         }
 
-        public bool NotifyBallThrown() => Apply(_session.TryRegisterThrow);
+        public bool NotifyBallThrown() => Apply(_match.TrySpendAttempt);
 
-        public bool NotifyBasket() => Apply(_session.TryRegisterBasket);
+        public bool NotifyBasket() => Apply(_match.TryRegisterSuccess);
 
-        public bool NotifyThrowResolved() => Apply(_session.ResolveThrow);
+        public bool NotifyThrowResolved() => Apply(_match.ResolveAttempt);
 
         public override void Restart()
         {
-            _session.Restart();
+            _match.Restart();
             Notify();
         }
 

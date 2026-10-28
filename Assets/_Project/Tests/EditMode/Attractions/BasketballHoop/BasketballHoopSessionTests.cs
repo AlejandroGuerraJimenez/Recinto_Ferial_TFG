@@ -27,8 +27,8 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
             session.Start();
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.AreEqual(0, session.Score);
-            Assert.AreEqual(10, session.BallsRemaining);
-            Assert.AreEqual(0, session.BallsInFlight);
+            Assert.AreEqual(10, session.AttemptsRemaining);
+            Assert.AreEqual(0, session.InFlight);
         }
 
         [Test]
@@ -36,14 +36,14 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
         {
             var session = CreateSession(2, 2, 5);
             session.Start();
-            Assert.IsTrue(session.TryRegisterThrow());
+            Assert.IsTrue(session.TrySpendAttempt());
             session.Start();
-            Assert.AreEqual(1, session.BallsRemaining);
+            Assert.AreEqual(1, session.AttemptsRemaining);
             session.Restart();
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.AreEqual(0, session.Score);
-            Assert.AreEqual(2, session.BallsRemaining);
-            Assert.AreEqual(0, session.BallsInFlight);
+            Assert.AreEqual(2, session.AttemptsRemaining);
+            Assert.AreEqual(0, session.InFlight);
         }
 
         [Test]
@@ -51,13 +51,13 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
         {
             var session = CreateSession(2, 10, 4);
             session.Start();
-            Assert.IsTrue(session.TryRegisterBasket());
+            Assert.IsTrue(session.TryRegisterSuccess());
             Assert.AreEqual(2, session.Score);
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsTrue(session.TryRegisterBasket());
+            Assert.IsTrue(session.TryRegisterSuccess());
             Assert.AreEqual(4, session.Score);
             Assert.AreEqual(MatchPhase.Won, session.Phase);
-            Assert.IsFalse(session.TryRegisterBasket());
+            Assert.IsFalse(session.TryRegisterSuccess());
         }
 
         [Test]
@@ -65,14 +65,14 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
         {
             var session = CreateSession(1, 2, 5);
             session.Start();
-            Assert.IsTrue(session.TryRegisterThrow());
-            Assert.IsTrue(session.TryRegisterThrow());
+            Assert.IsTrue(session.TrySpendAttempt());
+            Assert.IsTrue(session.TrySpendAttempt());
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsTrue(session.ResolveThrow());
-            Assert.IsTrue(session.ResolveThrow());
+            Assert.IsTrue(session.ResolveAttempt());
+            Assert.IsTrue(session.ResolveAttempt());
             Assert.AreEqual(MatchPhase.Lost, session.Phase);
-            Assert.IsFalse(session.TryRegisterThrow());
-            Assert.IsFalse(session.TryRegisterBasket());
+            Assert.IsFalse(session.TrySpendAttempt());
+            Assert.IsFalse(session.TryRegisterSuccess());
         }
 
         [Test]
@@ -80,11 +80,11 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
         {
             var session = CreateSession(5, 1, 5);
             session.Start();
-            Assert.IsTrue(session.TryRegisterThrow());
+            Assert.IsTrue(session.TrySpendAttempt());
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsTrue(session.TryRegisterBasket());
+            Assert.IsTrue(session.TryRegisterSuccess());
             Assert.AreEqual(MatchPhase.Won, session.Phase);
-            Assert.IsTrue(session.ResolveThrow());
+            Assert.IsTrue(session.ResolveAttempt());
             Assert.AreEqual(MatchPhase.Won, session.Phase);
         }
 
@@ -93,12 +93,12 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
         {
             var session = CreateSession(2, 1, 5);
             session.Start();
-            Assert.IsTrue(session.TryRegisterThrow());
-            Assert.AreEqual(0, session.BallsRemaining);
-            Assert.AreEqual(1, session.BallsInFlight);
+            Assert.IsTrue(session.TrySpendAttempt());
+            Assert.AreEqual(0, session.AttemptsRemaining);
+            Assert.AreEqual(1, session.InFlight);
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsFalse(session.TryRegisterThrow());
-            Assert.IsTrue(session.ResolveThrow());
+            Assert.IsFalse(session.TrySpendAttempt());
+            Assert.IsTrue(session.ResolveAttempt());
             Assert.AreEqual(MatchPhase.Lost, session.Phase);
         }
 
@@ -152,9 +152,9 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
             Assert.IsFalse(vm.NotifyBasket());
         }
 
-        static BasketballHoopSession CreateSession(int points, int balls, int winScore)
+        static AttemptMatch CreateSession(int points, int balls, int winScore)
         {
-            return new BasketballHoopSession(new BasketballHoopRules(points, balls, winScore));
+            return new AttemptMatch(new BasketballHoopRules(points, balls, winScore).Attempt);
         }
     }
 }

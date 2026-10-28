@@ -6,15 +6,17 @@ using Fairground.ViewModel.Attractions;
 namespace Fairground.ViewModel.Attractions.DuckFishing
 {
     /// <summary>
-    /// Publishes duck-match state. The session owns the counters.
+    /// Publishes duck-match state. The match owns the counters.
     /// </summary>
     public sealed class DuckFishingViewModel : BoothMatchViewModel
     {
-        readonly DuckFishingSession _session;
+        readonly DuckFishingRules _rules;
+        readonly AttemptMatch _match;
 
         public DuckFishingViewModel(DuckFishingRules rules = null)
         {
-            _session = new DuckFishingSession(rules ?? new DuckFishingRules());
+            _rules = rules ?? new DuckFishingRules();
+            _match = new AttemptMatch(_rules.Attempt);
             PublishState();
         }
 
@@ -26,13 +28,13 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
         public AttractionId AttractionId => AttractionId.DuckFishing;
         public string SceneName => AttractionCatalog.DuckFishing.SceneName;
 
-        public MatchPhase Phase => _session.Phase;
-        public int Score => _session.Score;
-        public int AttemptsRemaining => _session.AttemptsRemaining;
-        public int DucksRemaining => _session.DucksRemaining;
-        public int DucksCaught => _session.DucksCaught;
-        public int DuckCount => _session.Rules.DuckCount;
-        public int DucksToWin => _session.Rules.DucksToWin;
+        public MatchPhase Phase => _match.Phase;
+        public int Score => _match.Score;
+        public int AttemptsRemaining => _match.AttemptsRemaining;
+        public int DucksRemaining => _match.TargetsRemaining;
+        public int DucksCaught => _match.Successes;
+        public int DuckCount => _rules.DuckCount;
+        public int DucksToWin => _rules.DucksToWin;
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanDip => IsPlaying && AttemptsRemaining > 0;
         public string StatusText => Describe(Phase);
@@ -40,19 +42,19 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
 
         public override void StartGame()
         {
-            _session.Start();
+            _match.Start();
             Notify();
         }
 
-        public bool NotifyDipStarted() => Apply(_session.TryRegisterDip);
+        public bool NotifyDipStarted() => Apply(_match.TrySpendAttempt);
 
-        public bool NotifyDuckCaught() => Apply(_session.TryRegisterCatch);
+        public bool NotifyDuckCaught() => Apply(_match.TryRegisterSuccess);
 
-        public bool NotifyDipResolved() => Apply(_session.ResolveDip);
+        public bool NotifyDipResolved() => Apply(_match.ResolveAttempt);
 
         public override void Restart()
         {
-            _session.Restart();
+            _match.Restart();
             Notify();
         }
 
