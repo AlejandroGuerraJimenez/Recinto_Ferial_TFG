@@ -20,6 +20,7 @@ namespace Fairground.View
 
         readonly FairgroundParcelPads _parcels = new FairgroundParcelPads();
         DetectedPlane? _locked;
+        FairgroundSession _session;
 
         void OnEnable()
         {
@@ -62,7 +63,7 @@ namespace Fairground.View
             _locked = plane;
             _parcels.PinTo(planeSelection.LockedSurface != null ? planeSelection.LockedSurface : planeSelection.Proposal);
             RememberViewpoint();
-            FairgroundSession.Remember(plane);
+            CurrentSession().Remember(plane);
         }
 
         void HandleEnter()
@@ -72,16 +73,19 @@ namespace Fairground.View
 
             var chosen = AimedParcel();
             RememberViewpoint();
-            FairgroundSession.Remember(_locked.Value, chosen);
+            var session = CurrentSession();
+            session.Remember(_locked.Value, chosen);
+            FairgroundVisit.Deliver(session);
             SceneManager.LoadScene(AttractionScenes.GetSceneName(chosen));
         }
 
         void RestoreParcelMenu()
         {
-            if (!FairgroundSession.SelectedPlane.HasValue)
+            if (!FairgroundVisit.TryReceive(out var session) || !session.SelectedPlane.HasValue)
                 return;
 
-            planeSelection.TryRestore(FairgroundSession.SelectedPlane.Value);
+            _session = session;
+            planeSelection.TryRestore(session.SelectedPlane.Value);
         }
 
         void HandleRestarted()
@@ -96,6 +100,15 @@ namespace Fairground.View
                 return aimed;
 
             return attractionId;
+        }
+
+        FairgroundSession CurrentSession()
+        {
+            if (_session == null && !FairgroundVisit.TryReceive(out _session))
+                _session = new FairgroundSession();
+
+            FairgroundVisit.Deliver(_session);
+            return _session;
         }
 
         static void RememberViewpoint()

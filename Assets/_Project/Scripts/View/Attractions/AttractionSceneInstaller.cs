@@ -1,4 +1,5 @@
 using Fairground.View.Attractions.Rendering;
+using Fairground.ViewModel;
 using UnityEngine;
 
 namespace Fairground.View.Attractions
@@ -16,10 +17,23 @@ namespace Fairground.View.Attractions
 
         protected GameObject XrOriginPrefab => xrOriginPrefab;
 
+        protected FairgroundSession Session { get; private set; }
+
         void Awake()
         {
+            if (FairgroundVisit.TryReceive(out var session))
+                Receive(session);
+
             if (buildOnAwake)
                 Build();
+        }
+
+        /// <summary>
+        /// Takes the visit the fairground delivered before this scene loaded.
+        /// </summary>
+        public void Receive(FairgroundSession session)
+        {
+            Session = session;
         }
 
         public void Build()

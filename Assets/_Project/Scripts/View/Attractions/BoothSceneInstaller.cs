@@ -30,7 +30,7 @@ namespace Fairground.View.Attractions
         {
             BoothBuilder builder = CreateBuilder();
             builder.BuildShell(ResolveBakedEnvironment(), BoothEnvironmentPrefab);
-            AttractionPlacement.TryApplyFromSession(builder.BoothSpaceRoots());
+            AttractionPlacement.TryApply(Session, builder.BoothSpaceRoots());
             WireGameplay(builder);
         }
 

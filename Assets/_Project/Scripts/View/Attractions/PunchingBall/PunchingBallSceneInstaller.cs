@@ -31,6 +31,7 @@ namespace Fairground.View.Attractions.PunchingBall
                 winScoreThreshold,
                 maxScore,
                 maxImpactSpeed);
+            controller.Receive(Session);
             AttachPlaySupport(booth.XrOrigin, controller.Input, PunchingBallDesktopPlay.Profile(booth.Pad));
         }
     }

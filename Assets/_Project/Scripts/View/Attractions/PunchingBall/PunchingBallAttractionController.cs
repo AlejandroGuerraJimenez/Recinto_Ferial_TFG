@@ -21,6 +21,7 @@ namespace Fairground.View.Attractions.PunchingBall
 
         PunchingBallViewModel _viewModel;
         AttractionInput _input;
+        FairgroundSession _session;
 
         public AttractionId AttractionId => AttractionId.PunchingBall;
         public PunchingBallViewModel ViewModel => _viewModel;
@@ -43,6 +44,8 @@ namespace Fairground.View.Attractions.PunchingBall
             maxScore = scoreCap;
             maxImpactSpeed = impactCap;
         }
+
+        public void Receive(FairgroundSession session) => _session = session;
 
         void Awake()
         {
@@ -150,7 +153,7 @@ namespace Fairground.View.Attractions.PunchingBall
 
         public void ReturnToFairground()
         {
-            FairgroundSession.LeaveAttraction();
+            _session?.LeaveAttraction();
             SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }

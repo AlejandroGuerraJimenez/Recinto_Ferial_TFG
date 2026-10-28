@@ -29,6 +29,7 @@ namespace Fairground.View.Attractions.BasketballHoop
                 pointsPerBasket,
                 startingBalls,
                 winScoreThreshold);
+            controller.Receive(Session);
             AttachPlaySupport(
                 booth.XrOrigin,
                 controller.Input,

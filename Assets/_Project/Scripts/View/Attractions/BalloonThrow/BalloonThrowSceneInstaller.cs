@@ -28,6 +28,7 @@ namespace Fairground.View.Attractions.BalloonThrow
                 booth.Hud,
                 pointsPerBalloon,
                 startingThrows);
+            controller.Receive(Session);
             AttachPlaySupport(booth.XrOrigin, controller.Input, BalloonThrowDesktopPlay.Profile(booth.Spawner));
             booth.EnsureBallReady();
         }

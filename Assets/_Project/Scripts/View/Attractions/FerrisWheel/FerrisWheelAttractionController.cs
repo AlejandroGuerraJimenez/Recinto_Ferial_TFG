@@ -18,6 +18,7 @@ namespace Fairground.View.Attractions.FerrisWheel
 
         FerrisWheelViewModel _viewModel;
         AttractionInput _input;
+        FairgroundSession _session;
 
         public AttractionId AttractionId => AttractionId.FerrisWheel;
         public FerrisWheelViewModel ViewModel => _viewModel;
@@ -29,6 +30,8 @@ namespace Fairground.View.Attractions.FerrisWheel
             degreesPerSecond = speed;
             cabinCount = cabins;
         }
+
+        public void Receive(FairgroundSession session) => _session = session;
 
         void Awake()
         {
@@ -74,7 +77,7 @@ namespace Fairground.View.Attractions.FerrisWheel
 
         public void ReturnToFairground()
         {
-            FairgroundSession.LeaveAttraction();
+            _session?.LeaveAttraction();
             SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }

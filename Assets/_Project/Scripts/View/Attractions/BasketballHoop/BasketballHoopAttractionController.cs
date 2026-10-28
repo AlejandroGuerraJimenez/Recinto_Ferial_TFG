@@ -21,6 +21,7 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         BasketballHoopViewModel _viewModel;
         AttractionInput _input;
+        FairgroundSession _session;
         readonly HashSet<BasketballBallView> _liveBalls = new HashSet<BasketballBallView>();
 
         public AttractionId AttractionId => AttractionId.BasketballHoop;
@@ -42,6 +43,8 @@ namespace Fairground.View.Attractions.BasketballHoop
             startingBalls = balls;
             winScoreThreshold = winThreshold;
         }
+
+        public void Receive(FairgroundSession session) => _session = session;
 
         void Awake()
         {
@@ -246,7 +249,7 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         public void ReturnToFairground()
         {
-            FairgroundSession.LeaveAttraction();
+            _session?.LeaveAttraction();
             SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }

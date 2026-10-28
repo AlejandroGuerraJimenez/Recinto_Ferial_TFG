@@ -22,6 +22,7 @@ namespace Fairground.View.Attractions.DuckFishing
 
         DuckFishingViewModel _viewModel;
         AttractionInput _input;
+        FairgroundSession _session;
         readonly DuckTargetFactory _duckFactory = new DuckTargetFactory();
         Transform _duckRoot;
 
@@ -46,6 +47,8 @@ namespace Fairground.View.Attractions.DuckFishing
             startingAttempts = attempts;
             ducksToWin = winCount;
         }
+
+        public void Receive(FairgroundSession session) => _session = session;
 
         void Awake()
         {
@@ -195,7 +198,7 @@ namespace Fairground.View.Attractions.DuckFishing
 
         public void ReturnToFairground()
         {
-            FairgroundSession.LeaveAttraction();
+            _session?.LeaveAttraction();
             SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }

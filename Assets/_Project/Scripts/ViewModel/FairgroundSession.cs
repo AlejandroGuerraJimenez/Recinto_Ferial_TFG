@@ -4,17 +4,18 @@ using Fairground.Model;
 namespace Fairground.ViewModel
 {
     /// <summary>
-    /// Presentation session shared across scenes. Fairground writes; attractions read.
+    /// One visit: the floor the player confirmed and the attraction they are entering.
+    /// The fairground creates it and the attraction installer receives that same instance.
     /// </summary>
-    public static class FairgroundSession
+    public sealed class FairgroundSession
     {
-        public static DetectedPlane? SelectedPlane { get; private set; }
+        public DetectedPlane? SelectedPlane { get; private set; }
 
-        public static AttractionId PendingAttraction { get; private set; } = AttractionId.None;
+        public AttractionId PendingAttraction { get; private set; } = AttractionId.None;
 
-        public static void Remember(DetectedPlane plane) => Remember(plane, AttractionId.None);
+        public void Remember(DetectedPlane plane) => Remember(plane, AttractionId.None);
 
-        public static void Remember(DetectedPlane plane, AttractionId attractionId)
+        public void Remember(DetectedPlane plane, AttractionId attractionId)
         {
             SelectedPlane = plane;
             PendingAttraction = attractionId;
@@ -24,9 +25,9 @@ namespace Fairground.ViewModel
         /// Drops the attraction that was entered and keeps the chosen floor,
         /// so the fairground can show the parcel menu again.
         /// </summary>
-        public static void LeaveAttraction() => PendingAttraction = AttractionId.None;
+        public void LeaveAttraction() => PendingAttraction = AttractionId.None;
 
-        public static void Clear()
+        public void Clear()
         {
             SelectedPlane = null;
             PendingAttraction = AttractionId.None;

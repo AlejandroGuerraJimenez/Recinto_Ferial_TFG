@@ -24,6 +24,7 @@ namespace Fairground.View.Attractions.BalloonThrow
         readonly BalloonTargetFactory _balloonFactory = new BalloonTargetFactory();
         readonly HashSet<ThrowableBallView> _liveBalls = new HashSet<ThrowableBallView>();
         Transform _balloonRoot;
+        FairgroundSession _session;
 
         public AttractionId AttractionId => AttractionId.BalloonThrow;
         public BalloonThrowViewModel ViewModel => _viewModel;
@@ -42,6 +43,8 @@ namespace Fairground.View.Attractions.BalloonThrow
             pointsPerBalloon = points;
             startingThrows = throws;
         }
+
+        public void Receive(FairgroundSession session) => _session = session;
 
         void Awake()
         {
@@ -264,7 +267,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
             balloons = _balloonFactory.CreateRow(_viewModel.BalloonCount);
             RememberBalloonRoot();
-            global::Fairground.View.Attractions.AttractionPlacement.TryApplyFromSession(_balloonRoot);
+            AttractionPlacement.TryApply(_session, _balloonRoot);
         }
 
         void RememberBalloonRoot()
@@ -277,7 +280,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         public void ReturnToFairground()
         {
-            FairgroundSession.LeaveAttraction();
+            _session?.LeaveAttraction();
             SceneManager.LoadScene(AttractionScenes.Fairground);
         }
     }

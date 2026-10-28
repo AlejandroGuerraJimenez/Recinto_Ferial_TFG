@@ -11,15 +11,15 @@ namespace Fairground.View.Attractions
     public static class AttractionPlacement
     {
         /// <summary>
-        /// Applies <see cref="FairgroundSession.SelectedPlane"/> when present.
-        /// No-op (returns false) when missing — Editor / PlayMode keep identity booth.
+        /// Applies <see cref="FairgroundSession.SelectedPlane"/> when the installer received a visit.
+        /// No-op (returns false) when missing — Editor / PlayMode keep the authored booth.
         /// </summary>
-        public static bool TryApplyFromSession(params Transform[] boothSpaceRoots)
+        public static bool TryApply(FairgroundSession session, params Transform[] boothSpaceRoots)
         {
-            if (!FairgroundSession.SelectedPlane.HasValue)
+            if (session == null || !session.SelectedPlane.HasValue)
                 return false;
 
-            Apply(FairgroundSession.SelectedPlane.Value, boothSpaceRoots);
+            Apply(session.SelectedPlane.Value, boothSpaceRoots);
             return true;
         }
 

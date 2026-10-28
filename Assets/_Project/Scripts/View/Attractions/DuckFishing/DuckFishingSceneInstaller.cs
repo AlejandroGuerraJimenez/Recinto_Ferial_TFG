@@ -31,6 +31,7 @@ namespace Fairground.View.Attractions.DuckFishing
                 pointsPerDuck,
                 startingAttempts,
                 ducksToWin);
+            controller.Receive(Session);
             AttachPlaySupport(booth.XrOrigin, controller.Input, DuckFishingDesktopPlay.Profile(booth.Rod));
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Fairground.View;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,6 +15,9 @@ namespace Fairground.Tests.PlayMode.Support
         public static IEnumerator LoadAttractionScene(string sceneName)
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(sceneName), "Scene name is required.");
+
+            // A visit left by another scene would move this booth. A direct load keeps the authored pose.
+            FairgroundVisit.Close();
 
             var load = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
             Assert.IsNotNull(load, $"Scene '{sceneName}' is missing from Build Settings.");
