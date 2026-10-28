@@ -114,7 +114,7 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
             Assert.AreEqual(3, events);
             Assert.AreEqual(2, vm.Score);
             Assert.AreEqual(9, vm.BallsRemaining);
-            Assert.AreEqual("¡A la canasta!", vm.StatusText);
+            Assert.AreEqual("¡A la canasta!", BasketballHoopHud.Status(vm));
             Assert.AreEqual(AttractionId.BasketballHoop, vm.AttractionId);
             Assert.AreEqual("BasketballHoop", AttractionCatalog.GetSceneName(vm.AttractionId));
         }
@@ -131,7 +131,7 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
             Assert.AreEqual(0, vm.BallsRemaining);
             vm.TryResolveThrow();
             Assert.AreEqual(MatchPhase.Lost, vm.Phase);
-            Assert.AreEqual("¡Sin balones!", vm.StatusText);
+            Assert.AreEqual("¡Sin balones!", BasketballHoopHud.Status(vm));
             vm.Restart();
             Assert.IsTrue(vm.CanThrow);
             Assert.AreEqual(1, vm.BallsRemaining);
@@ -146,7 +146,7 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
             vm.StartGame();
             Assert.IsTrue(vm.TryRegisterBasket());
             Assert.AreEqual(MatchPhase.Won, vm.Phase);
-            Assert.AreEqual("¡Ganaste!", vm.StatusText);
+            Assert.AreEqual("¡Ganaste!", BasketballHoopHud.Status(vm));
             Assert.IsFalse(vm.CanThrow);
             Assert.IsFalse(vm.TryRegisterThrow());
             Assert.IsFalse(vm.TryRegisterBasket());

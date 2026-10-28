@@ -12,14 +12,9 @@ namespace Fairground.ViewModel.Attractions.FerrisWheel
     {
         readonly FerrisWheelSession _session;
 
-        public FerrisWheelViewModel(FerrisWheelRules rules = null)
+        public FerrisWheelViewModel(float degreesPerSecond = FerrisWheelBalance.DegreesPerSecond)
         {
-            _session = new FerrisWheelSession(rules ?? new FerrisWheelRules());
-        }
-
-        public FerrisWheelViewModel(float degreesPerSecond)
-            : this(new FerrisWheelRules(degreesPerSecond))
-        {
+            _session = new FerrisWheelSession(new FerrisWheelRules(degreesPerSecond));
         }
 
         public AttractionId AttractionId => AttractionId.FerrisWheel;

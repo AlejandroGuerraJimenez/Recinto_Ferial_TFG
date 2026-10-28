@@ -20,10 +20,10 @@ namespace Fairground.Model.Attractions.DuckFishing
             int duckCount = DefaultDuckCount,
             int ducksToWin = DefaultDucksToWin)
         {
-            GuardNonNegative(pointsPerDuck, nameof(pointsPerDuck));
-            GuardPositive(startingAttempts, nameof(startingAttempts));
-            GuardPositive(duckCount, nameof(duckCount));
-            GuardPositive(ducksToWin, nameof(ducksToWin));
+            RuleGuard.NonNegative(pointsPerDuck, nameof(pointsPerDuck));
+            RuleGuard.Positive(startingAttempts, nameof(startingAttempts));
+            RuleGuard.Positive(duckCount, nameof(duckCount));
+            RuleGuard.Positive(ducksToWin, nameof(ducksToWin));
 
             if (ducksToWin > duckCount)
                 throw new ArgumentOutOfRangeException(nameof(ducksToWin));
@@ -44,17 +44,5 @@ namespace Fairground.Model.Attractions.DuckFishing
         public int DuckCount { get; }
         public int DucksToWin { get; }
         public AttemptMatchRules Attempt { get; }
-
-        static void GuardNonNegative(int value, string name)
-        {
-            if (value < 0)
-                throw new ArgumentOutOfRangeException(name);
-        }
-
-        static void GuardPositive(int value, string name)
-        {
-            if (value < 1)
-                throw new ArgumentOutOfRangeException(name);
-        }
     }
 }

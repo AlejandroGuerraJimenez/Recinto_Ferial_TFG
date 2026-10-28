@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BalloonThrow.Factories;
 using Fairground.ViewModel;
@@ -8,7 +7,7 @@ using UnityEngine;
 namespace Fairground.View.Attractions.BalloonThrow
 {
     /// <summary>
-    /// View Facade: owns ViewModel and observes ball/balloon events.
+    /// Hosts the balloon match: targets, the shared throw tracker, and the HUD.
     /// </summary>
     public sealed class BalloonThrowAttractionController : MonoBehaviour
     {
@@ -17,15 +16,15 @@ namespace Fairground.View.Attractions.BalloonThrow
         [SerializeField] BoothHudView hud;
 
         BalloonThrowViewModel _viewModel;
-        AttractionInput _input;
+        AttractionMatchControls _controls;
+        readonly ThrownPropTracker _props = new ThrownPropTracker();
         readonly BalloonTargetFactory _balloonFactory = new BalloonTargetFactory();
-        readonly HashSet<ThrowableBallView> _liveBalls = new HashSet<ThrowableBallView>();
         Transform _balloonRoot;
         FairgroundSession _session;
 
         public AttractionId AttractionId => AttractionId.BalloonThrow;
         public BalloonThrowViewModel ViewModel => _viewModel;
-        public AttractionInput Input => _input;
+        public AttractionInput Input => _controls != null ? _controls.Input : null;
 
         public void Configure(
             BalloonTargetView[] balloonTargets,
@@ -40,31 +39,26 @@ namespace Fairground.View.Attractions.BalloonThrow
             OpenMatch();
         }
 
-        public void Receive(FairgroundSession session) => _session = session;
+        public void Receive(FairgroundSession session)
+        {
+            _session = session;
+            _controls?.Use(session);
+        }
 
         void Awake()
         {
-            _input = new AttractionInput();
-            _input.Enable();
+            _controls = new AttractionMatchControls(RestartMatch);
+            _props.Thrown += OnPropThrown;
+            _props.Resolved += OnPropResolved;
         }
 
-        void Update()
-        {
-            if (_input == null)
-                return;
-
-            if (_input.RestartPressed)
-                RestartMatch();
-
-            if (_input.ReturnToFairgroundPressed)
-                AttractionExit.ReturnToFairground(_session);
-        }
+        void Update() => _controls?.Tick();
 
         void OnDestroy()
         {
             Unsubscribe();
-            _input?.Dispose();
-            _input = null;
+            _controls?.Dispose();
+            _controls = null;
         }
 
         void OpenMatch()
@@ -73,7 +67,7 @@ namespace Fairground.View.Attractions.BalloonThrow
                 return;
 
             ResolveBalloons();
-            BoothHudBinding.Attach(hud, _viewModel);
+            BoothHudBinding.Attach(hud, _viewModel, () => BalloonThrowHud.Lines(_viewModel));
             Subscribe();
             _viewModel.StartGame();
             UpdateSpawnerAvailability();
@@ -90,7 +84,7 @@ namespace Fairground.View.Attractions.BalloonThrow
         void Subscribe()
         {
             SubscribeBalloons();
-            SubscribeSpawner();
+            _props.Attach(ballSpawner);
         }
 
         void SubscribeBalloons()
@@ -103,60 +97,10 @@ namespace Fairground.View.Attractions.BalloonThrow
                     balloon.Popped += OnBalloonPopped;
         }
 
-        void SubscribeSpawner()
-        {
-            if (ballSpawner == null)
-                return;
-
-            ballSpawner.BallSpawned += OnBallSpawned;
-            if (ballSpawner.CurrentBall != null)
-                OnBallSpawned(ballSpawner.CurrentBall);
-        }
-
-        void OnBallSpawned(ThrowableBallView ball)
-        {
-            if (ball == null)
-                return;
-
-            RegisterBall(ball);
-            ball.Thrown -= OnBallThrown;
-            ball.Thrown += OnBallThrown;
-            ball.Resolved -= OnBallResolved;
-            ball.Resolved += OnBallResolved;
-        }
-
-        void RegisterBall(ThrowableBallView ball)
-        {
-            if (!_liveBalls.Add(ball))
-                return;
-
-            ball.Destroyed += OnBallDestroyed;
-        }
-
-        void OnBallDestroyed(ThrowableBallView ball)
-        {
-            UnregisterBall(ball);
-        }
-
-        void UnregisterBall(ThrowableBallView ball)
-        {
-            if (ball != null)
-            {
-                ball.Thrown -= OnBallThrown;
-                ball.Resolved -= OnBallResolved;
-                ball.Destroyed -= OnBallDestroyed;
-            }
-
-            _liveBalls.Remove(ball);
-        }
-
         void Unsubscribe()
         {
-            if (ballSpawner != null)
-                ballSpawner.BallSpawned -= OnBallSpawned;
-
             UnsubscribeBalloons();
-            UnsubscribeBalls();
+            _props.Detach();
         }
 
         void UnsubscribeBalloons()
@@ -169,23 +113,9 @@ namespace Fairground.View.Attractions.BalloonThrow
                     balloon.Popped -= OnBalloonPopped;
         }
 
-        void UnsubscribeBalls()
-        {
-            if (_liveBalls.Count == 0)
-                return;
+        void OnPropThrown() => Forward(_viewModel.TryRegisterThrow);
 
-            var snapshot = new List<ThrowableBallView>(_liveBalls);
-            foreach (var ball in snapshot)
-                UnregisterBall(ball);
-        }
-
-        void OnBallThrown(ThrowableBallView ball) => Forward(_viewModel.TryRegisterThrow);
-
-        void OnBallResolved(ThrowableBallView ball)
-        {
-            Forward(_viewModel.TryResolveThrow);
-            UnregisterBall(ball);
-        }
+        void OnPropResolved() => Forward(_viewModel.TryResolveThrow);
 
         void OnBalloonPopped(BalloonTargetView balloon) => Forward(_viewModel.TryRegisterHit);
 
@@ -212,33 +142,12 @@ namespace Fairground.View.Attractions.BalloonThrow
                 return;
 
             Unsubscribe();
-            ClearBalls();
+            _props.DestroyAll(ballSpawner);
             _viewModel.Restart();
             RebuildBalloons();
             Subscribe();
             UpdateSpawnerAvailability();
             ballSpawner?.TrySpawnImmediate();
-        }
-
-        void ClearBalls()
-        {
-            ballSpawner?.Reset();
-
-            if (_liveBalls.Count == 0)
-                return;
-
-            var snapshot = new List<ThrowableBallView>(_liveBalls);
-            _liveBalls.Clear();
-            foreach (var ball in snapshot)
-            {
-                if (ball == null)
-                    continue;
-
-                ball.Thrown -= OnBallThrown;
-                ball.Resolved -= OnBallResolved;
-                ball.Destroyed -= OnBallDestroyed;
-                Destroy(ball.gameObject);
-            }
         }
 
         void RebuildBalloons()

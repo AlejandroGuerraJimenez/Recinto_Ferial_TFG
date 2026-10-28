@@ -1,4 +1,3 @@
-using System;
 using Fairground.Core.Attractions;
 using Fairground.Model.Attractions;
 
@@ -18,9 +17,9 @@ namespace Fairground.Model.Attractions.BalloonThrow
             int startingThrows = DefaultStartingThrows,
             int balloonCount = DefaultBalloonCount)
         {
-            GuardNonNegative(pointsPerBalloon, nameof(pointsPerBalloon));
-            GuardPositive(startingThrows, nameof(startingThrows));
-            GuardPositive(balloonCount, nameof(balloonCount));
+            RuleGuard.NonNegative(pointsPerBalloon, nameof(pointsPerBalloon));
+            RuleGuard.Positive(startingThrows, nameof(startingThrows));
+            RuleGuard.Positive(balloonCount, nameof(balloonCount));
             PointsPerBalloon = pointsPerBalloon;
             StartingThrows = startingThrows;
             BalloonCount = balloonCount;
@@ -35,17 +34,5 @@ namespace Fairground.Model.Attractions.BalloonThrow
         public int StartingThrows { get; }
         public int BalloonCount { get; }
         public AttemptMatchRules Attempt { get; }
-
-        static void GuardNonNegative(int value, string name)
-        {
-            if (value < 0)
-                throw new ArgumentOutOfRangeException(name);
-        }
-
-        static void GuardPositive(int value, string name)
-        {
-            if (value < 1)
-                throw new ArgumentOutOfRangeException(name);
-        }
     }
 }

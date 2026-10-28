@@ -104,9 +104,9 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             Assert.IsTrue(vm.TryRegisterThrow());
             Assert.IsTrue(vm.TryRegisterHit());
             Assert.AreEqual(3, events);
-            Assert.AreEqual("¡Explota los globos!", vm.StatusText);
-            Assert.AreEqual("Puntos: 10", vm.HudLines[0]);
-            Assert.AreEqual("¡Explota los globos!", vm.HudLines[3]);
+            Assert.AreEqual("¡Explota los globos!", BalloonThrowHud.Status(vm));
+            Assert.AreEqual("Puntos: 10", BalloonThrowHud.Lines(vm)[0]);
+            Assert.AreEqual("¡Explota los globos!", BalloonThrowHud.Lines(vm)[3]);
             Assert.AreEqual(AttractionId.BalloonThrow, vm.AttractionId);
         }
 

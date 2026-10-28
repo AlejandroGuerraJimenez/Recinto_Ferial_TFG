@@ -98,7 +98,7 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
             vm.StartGame();
             Assert.IsTrue(vm.TryRegisterPunch(4f));
             Assert.AreEqual(2, events);
-            Assert.AreEqual("¡Supera 700!", vm.StatusText);
+            Assert.AreEqual("¡Supera 700!", PunchingBallHud.Status(vm));
             Assert.AreEqual(AttractionId.PunchingBall, vm.AttractionId);
         }
 

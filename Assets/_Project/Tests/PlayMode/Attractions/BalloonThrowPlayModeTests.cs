@@ -57,7 +57,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             int balloonsBefore = vm.BalloonsRemaining;
             var balloon = AttractionSceneTestHelper.Require<BalloonTargetView>();
 
-            ThrowableBallView ball = spawner.CurrentBall;
+            ThrowableBallView ball = (ThrowableBallView)spawner.CurrentBall;
             Vector3 target = balloon.transform.position;
             ball.transform.position = target + Vector3.back * 0.8f;
             Vector3 toTarget = (target - ball.transform.position).normalized;

@@ -17,14 +17,13 @@ namespace Fairground.View.Attractions.DuckFishing
         [SerializeField] Transform pond;
 
         DuckFishingViewModel _viewModel;
-        AttractionInput _input;
-        FairgroundSession _session;
+        AttractionMatchControls _controls;
         readonly DuckTargetFactory _duckFactory = new DuckTargetFactory();
         Transform _duckRoot;
 
         public AttractionId AttractionId => AttractionId.DuckFishing;
         public DuckFishingViewModel ViewModel => _viewModel;
-        public AttractionInput Input => _input;
+        public AttractionInput Input => _controls != null ? _controls.Input : null;
 
         public void Configure(
             DuckTargetView[] duckTargets,
@@ -41,34 +40,25 @@ namespace Fairground.View.Attractions.DuckFishing
             OpenMatch();
         }
 
-        public void Receive(FairgroundSession session) => _session = session;
+        public void Receive(FairgroundSession session) => _controls?.Use(session);
 
-        void Awake()
-        {
-            _input = new AttractionInput(headsetTriggers: true);
-            _input.Enable();
-        }
+        void Awake() => _controls = new AttractionMatchControls(RestartMatch, headsetTriggers: true);
 
         void Update()
         {
-            if (_input == null)
+            if (_controls == null)
                 return;
 
-            if (_input.RestartPressed)
-                RestartMatch();
-
-            if (_input.ReturnToFairgroundPressed)
-                AttractionExit.ReturnToFairground(_session);
-
-            if (_input.PlayPressed)
+            _controls.Tick();
+            if (_controls.Input.PlayPressed)
                 rod?.Hook?.TryStartDip();
         }
 
         void OnDestroy()
         {
             Unsubscribe();
-            _input?.Dispose();
-            _input = null;
+            _controls?.Dispose();
+            _controls = null;
         }
 
         void OpenMatch()
@@ -77,7 +67,7 @@ namespace Fairground.View.Attractions.DuckFishing
                 return;
 
             ResolveRefs();
-            BoothHudBinding.Attach(hud, _viewModel);
+            BoothHudBinding.Attach(hud, _viewModel, () => DuckFishingHud.Lines(_viewModel));
             Subscribe();
             _viewModel.StartGame();
             UpdateHookAvailability();

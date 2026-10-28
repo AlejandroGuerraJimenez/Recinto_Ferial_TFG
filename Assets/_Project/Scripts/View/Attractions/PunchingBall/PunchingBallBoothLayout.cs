@@ -1,4 +1,4 @@
-using Fairground.Core.Attractions;
+using Fairground.ViewModel.Attractions.PunchingBall;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.PunchingBall
@@ -12,13 +12,6 @@ namespace Fairground.View.Attractions.PunchingBall
 
         public static readonly Color Sky = new Color(0.28f, 0.32f, 0.45f, 1f);
         public static readonly Vector3 HudPosition = new Vector3(-1.6f, 2.1f, 3.2f);
-        public static readonly string[] HudLines =
-        {
-            "Mejor: 0",
-            "Golpes: " + PunchingBallBalance.StartingPunches,
-            "Último: 0",
-            "¡Supera " + PunchingBallBalance.WinScoreThreshold + "!",
-        };
 
         public static BoothLayout Props()
         {
@@ -27,7 +20,7 @@ namespace Fairground.View.Attractions.PunchingBall
                 LogTag = LogTag,
                 Sky = Sky,
                 HudPosition = HudPosition,
-                HudLines = HudLines,
+                HudLines = PunchingBallHud.Opening(),
                 Pieces = new[]
                 {
                     BoothPiece.Plane("Ground", new Vector3(2f, 1f, 2f), new Color(0.22f, 0.22f, 0.26f, 1f)),

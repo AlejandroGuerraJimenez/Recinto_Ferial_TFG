@@ -1,4 +1,3 @@
-using System;
 using Fairground.Core.Attractions;
 using Fairground.Model.Attractions;
 
@@ -18,9 +17,9 @@ namespace Fairground.Model.Attractions.BasketballHoop
             int startingBalls = DefaultStartingBalls,
             int winScoreThreshold = DefaultWinScoreThreshold)
         {
-            GuardPositive(pointsPerBasket, nameof(pointsPerBasket));
-            GuardPositive(startingBalls, nameof(startingBalls));
-            GuardPositive(winScoreThreshold, nameof(winScoreThreshold));
+            RuleGuard.Positive(pointsPerBasket, nameof(pointsPerBasket));
+            RuleGuard.Positive(startingBalls, nameof(startingBalls));
+            RuleGuard.Positive(winScoreThreshold, nameof(winScoreThreshold));
             PointsPerBasket = pointsPerBasket;
             StartingBalls = startingBalls;
             WinScoreThreshold = winScoreThreshold;
@@ -31,11 +30,5 @@ namespace Fairground.Model.Attractions.BasketballHoop
         public int StartingBalls { get; }
         public int WinScoreThreshold { get; }
         public AttemptMatchRules Attempt { get; }
-
-        static void GuardPositive(int value, string name)
-        {
-            if (value < 1)
-                throw new ArgumentOutOfRangeException(name);
-        }
     }
 }

@@ -1,3 +1,4 @@
+using Fairground.Core.Attractions;
 using Fairground.View.Attractions.FerrisWheel.Factories;
 using Fairground.ViewModel.Attractions.FerrisWheel;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace Fairground.View.Attractions.FerrisWheel
     /// </summary>
     public sealed class FerrisWheelSceneInstaller : AttractionSceneInstaller
     {
-        [SerializeField] float degreesPerSecond = LondonEyeLayout.DegreesPerSecond;
+        [SerializeField] float degreesPerSecond = FerrisWheelBalance.DegreesPerSecond;
         [SerializeField] int cabinCount = LondonEyeLayout.CabinCount;
 
         protected override void Assemble()

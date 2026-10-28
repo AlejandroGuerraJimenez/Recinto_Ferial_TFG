@@ -4,8 +4,10 @@ namespace Fairground.View.Attractions
 {
     /// <summary>
     /// Booth scenes add a baked environment and the shared play support on top of <see cref="AttractionSceneInstaller"/>.
+    /// The builder type is the one the subclass wires. No downcast.
     /// </summary>
-    public abstract class BoothSceneInstaller : AttractionSceneInstaller
+    public abstract class BoothSceneInstaller<TBuilder> : AttractionSceneInstaller
+        where TBuilder : BoothBuilder
     {
         [SerializeField] GameObject boothEnvironmentPrefab;
         [SerializeField] Transform bakedBoothEnvironment;
@@ -28,14 +30,14 @@ namespace Fairground.View.Attractions
         /// </summary>
         protected override void Assemble()
         {
-            BoothBuilder builder = CreateBuilder();
+            TBuilder builder = CreateBuilder();
             builder.BuildShell(ResolveBakedEnvironment(), BoothEnvironmentPrefab);
             AttractionPlacement.TryApply(Session, builder.BoothSpaceRoots());
             WireGameplay(builder);
         }
 
-        protected abstract BoothBuilder CreateBuilder();
+        protected abstract TBuilder CreateBuilder();
 
-        protected abstract void WireGameplay(BoothBuilder builder);
+        protected abstract void WireGameplay(TBuilder builder);
     }
 }

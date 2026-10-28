@@ -1,4 +1,4 @@
-using Fairground.Core.Attractions;
+using Fairground.ViewModel.Attractions.DuckFishing;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.DuckFishing
@@ -13,13 +13,6 @@ namespace Fairground.View.Attractions.DuckFishing
 
         public static readonly Color Sky = new Color(0.4f, 0.65f, 0.85f, 1f);
         public static readonly Vector3 HudPosition = new Vector3(0f, 2.2f, 3.6f);
-        public static readonly string[] HudLines =
-        {
-            "Puntos: 0",
-            "Intentos: " + DuckFishingBalance.StartingAttempts,
-            "Patos: 0/" + DuckFishingBalance.DucksToWin,
-            "¡Atrapa " + DuckFishingBalance.DucksToWin + " patos!",
-        };
 
         public static BoothLayout Props()
         {
@@ -28,7 +21,7 @@ namespace Fairground.View.Attractions.DuckFishing
                 LogTag = LogTag,
                 Sky = Sky,
                 HudPosition = HudPosition,
-                HudLines = HudLines,
+                HudLines = DuckFishingHud.Opening(),
                 Lighting = new BoothLighting
                 {
                     Sky = new Color(0.55f, 0.65f, 0.75f, 1f),

@@ -8,20 +8,19 @@ namespace Fairground.View.Attractions.BasketballHoop
     /// <summary>
     /// Wires the hoop and shot rules onto the shared booth shell.
     /// </summary>
-    public sealed class BasketballHoopSceneInstaller : BoothSceneInstaller
+    public sealed class BasketballHoopSceneInstaller : BoothSceneInstaller<BasketballHoopBoothBuilder>
     {
         [SerializeField] int pointsPerBasket = BasketballHoopBalance.PointsPerBasket;
         [SerializeField] int startingBalls = BasketballHoopBalance.StartingBalls;
         [SerializeField] int winScoreThreshold = BasketballHoopBalance.WinScoreThreshold;
 
-        protected override BoothBuilder CreateBuilder()
+        protected override BasketballHoopBoothBuilder CreateBuilder()
         {
             return new BasketballHoopBoothBuilder(XrOriginPrefab);
         }
 
-        protected override void WireGameplay(BoothBuilder builder)
+        protected override void WireGameplay(BasketballHoopBoothBuilder booth)
         {
-            var booth = (BasketballHoopBoothBuilder)builder;
             var go = new GameObject("BasketballHoopGame");
             var match = new BasketballHoopViewModel(pointsPerBasket, startingBalls, winScoreThreshold);
             var controller = go.AddComponent<BasketballHoopAttractionController>();

@@ -1,4 +1,4 @@
-using Fairground.Core.Attractions;
+using Fairground.ViewModel.Attractions.BasketballHoop;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.BasketballHoop
@@ -11,12 +11,6 @@ namespace Fairground.View.Attractions.BasketballHoop
         public const string LogTag = "[BasketballHoop]";
 
         public static readonly Color Sky = new Color(0.35f, 0.55f, 0.75f, 1f);
-        public static readonly string[] HudLines =
-        {
-            "Puntos: 0",
-            "Balones: " + BasketballHoopBalance.StartingBalls,
-            "¡A la canasta!",
-        };
 
         public static BoothLayout Props()
         {
@@ -25,7 +19,7 @@ namespace Fairground.View.Attractions.BasketballHoop
                 LogTag = LogTag,
                 Sky = Sky,
                 HudPosition = BasketballHoopLayout.HudPosition,
-                HudLines = HudLines,
+                HudLines = BasketballHoopHud.Opening(),
                 Pieces = new[]
                 {
                     BoothPiece.Plane(

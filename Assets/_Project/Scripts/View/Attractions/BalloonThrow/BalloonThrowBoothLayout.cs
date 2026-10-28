@@ -1,4 +1,4 @@
-using Fairground.Core.Attractions;
+using Fairground.ViewModel.Attractions.BalloonThrow;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.BalloonThrow
@@ -12,13 +12,6 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         public static readonly Color Sky = new Color(0.35f, 0.55f, 0.75f, 1f);
         public static readonly Vector3 HudPosition = new Vector3(0f, 2.1f, 3.2f);
-        public static readonly string[] HudLines =
-        {
-            "Puntos: 0",
-            "Lanzamientos: " + BalloonThrowBalance.StartingThrows,
-            "Globos: " + BalloonThrowBalance.BalloonCount,
-            "¡Explota los globos!",
-        };
 
         public static BoothLayout Props()
         {
@@ -27,7 +20,7 @@ namespace Fairground.View.Attractions.BalloonThrow
                 LogTag = LogTag,
                 Sky = Sky,
                 HudPosition = HudPosition,
-                HudLines = HudLines,
+                HudLines = BalloonThrowHud.Opening(),
                 Pieces = new[]
                 {
                     BoothPiece.Plane("Ground", new Vector3(2f, 1f, 2f), new Color(0.25f, 0.45f, 0.28f, 1f)),

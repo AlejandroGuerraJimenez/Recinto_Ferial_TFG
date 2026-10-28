@@ -48,9 +48,6 @@ namespace Fairground.View.Attractions.FerrisWheel
         /// </summary>
         public const float AxisYawDegrees = -82.7f;
 
-        /// <summary>One turn per minute. The model default stays at 16.</summary>
-        public const float DegreesPerSecond = 6f;
-
         public const int CabinCount = 1;
 
         public const long GooglePhotorealisticAssetId = 2275207;

@@ -19,10 +19,10 @@ namespace Fairground.Model.Attractions.PunchingBall
             int maxScore = DefaultMaxScore,
             float maxImpactSpeed = DefaultMaxImpactSpeed)
         {
-            GuardPositive(startingPunches, nameof(startingPunches));
-            GuardPositive(winScoreThreshold, nameof(winScoreThreshold));
-            GuardPositive(maxScore, nameof(maxScore));
-            GuardPositive(maxImpactSpeed, nameof(maxImpactSpeed));
+            RuleGuard.Positive(startingPunches, nameof(startingPunches));
+            RuleGuard.Positive(winScoreThreshold, nameof(winScoreThreshold));
+            RuleGuard.Positive(maxScore, nameof(maxScore));
+            RuleGuard.Positive(maxImpactSpeed, nameof(maxImpactSpeed));
 
             if (winScoreThreshold > maxScore)
                 throw new ArgumentOutOfRangeException(nameof(winScoreThreshold));
@@ -55,18 +55,6 @@ namespace Fairground.Model.Attractions.PunchingBall
         public bool IsLose(int punchesRemaining, int bestScore)
         {
             return punchesRemaining <= 0 && bestScore < WinScoreThreshold;
-        }
-
-        static void GuardPositive(int value, string name)
-        {
-            if (value < 1)
-                throw new ArgumentOutOfRangeException(name);
-        }
-
-        static void GuardPositive(float value, string name)
-        {
-            if (value <= 0f)
-                throw new ArgumentOutOfRangeException(name);
         }
     }
 }

@@ -108,7 +108,7 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
             Assert.IsTrue(vm.TryRegisterDip());
             Assert.IsTrue(vm.TryRegisterCatch());
             Assert.AreEqual(3, events);
-            Assert.AreEqual("¡Atrapa 2 patos!", vm.StatusText);
+            Assert.AreEqual("¡Atrapa 2 patos!", DuckFishingHud.Status(vm));
             Assert.AreEqual(AttractionId.DuckFishing, vm.AttractionId);
         }
 

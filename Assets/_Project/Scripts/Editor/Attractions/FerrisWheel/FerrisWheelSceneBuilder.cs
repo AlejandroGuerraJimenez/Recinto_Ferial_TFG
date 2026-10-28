@@ -74,7 +74,7 @@ namespace Fairground.Editor.Attractions.FerrisWheel
             var so = new SerializedObject(installer);
             so.FindProperty("xrOriginPrefab").objectReferenceValue = xrOriginPrefab;
             so.FindProperty("primitiveLitTemplate").objectReferenceValue = primitiveTemplate;
-            so.FindProperty("degreesPerSecond").floatValue = LondonEyeLayout.DegreesPerSecond;
+            so.FindProperty("degreesPerSecond").floatValue = FerrisWheelBalance.DegreesPerSecond;
             so.FindProperty("cabinCount").intValue = LondonEyeLayout.CabinCount;
             so.FindProperty("buildOnAwake").boolValue = true;
             so.ApplyModifiedPropertiesWithoutUndo();

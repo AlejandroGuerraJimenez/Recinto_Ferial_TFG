@@ -8,21 +8,20 @@ namespace Fairground.View.Attractions.PunchingBall
     /// <summary>
     /// Wires the punch pad and score rules onto the shared booth shell.
     /// </summary>
-    public sealed class PunchingBallSceneInstaller : BoothSceneInstaller
+    public sealed class PunchingBallSceneInstaller : BoothSceneInstaller<PunchingBallBoothBuilder>
     {
         [SerializeField] int startingPunches = PunchingBallBalance.StartingPunches;
         [SerializeField] int winScoreThreshold = PunchingBallBalance.WinScoreThreshold;
         [SerializeField] int maxScore = PunchingBallBalance.MaxScore;
         [SerializeField] float maxImpactSpeed = PunchingBallBalance.MaxImpactSpeed;
 
-        protected override BoothBuilder CreateBuilder()
+        protected override PunchingBallBoothBuilder CreateBuilder()
         {
             return new PunchingBallBoothBuilder(XrOriginPrefab);
         }
 
-        protected override void WireGameplay(BoothBuilder builder)
+        protected override void WireGameplay(PunchingBallBoothBuilder booth)
         {
-            var booth = (PunchingBallBoothBuilder)builder;
             var go = new GameObject("PunchingBallGame");
             var match = new PunchingBallViewModel(startingPunches, winScoreThreshold, maxScore, maxImpactSpeed);
             var controller = go.AddComponent<PunchingBallAttractionController>();

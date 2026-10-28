@@ -8,21 +8,20 @@ namespace Fairground.View.Attractions.DuckFishing
     /// <summary>
     /// Wires ducks, the rod, and catch rules onto the shared booth shell.
     /// </summary>
-    public sealed class DuckFishingSceneInstaller : BoothSceneInstaller
+    public sealed class DuckFishingSceneInstaller : BoothSceneInstaller<DuckFishingBoothBuilder>
     {
         [SerializeField] int duckCount = DuckFishingBalance.DuckCount;
         [SerializeField] int ducksToWin = DuckFishingBalance.DucksToWin;
         [SerializeField] int startingAttempts = DuckFishingBalance.StartingAttempts;
         [SerializeField] int pointsPerDuck = DuckFishingBalance.PointsPerDuck;
 
-        protected override BoothBuilder CreateBuilder()
+        protected override DuckFishingBoothBuilder CreateBuilder()
         {
             return new DuckFishingBoothBuilder(XrOriginPrefab, duckCount);
         }
 
-        protected override void WireGameplay(BoothBuilder builder)
+        protected override void WireGameplay(DuckFishingBoothBuilder booth)
         {
-            var booth = (DuckFishingBoothBuilder)builder;
             var go = new GameObject("DuckFishingGame");
             int count = booth.Ducks != null ? Mathf.Max(1, booth.Ducks.Length) : 1;
             int win = Mathf.Clamp(ducksToWin, 1, count);

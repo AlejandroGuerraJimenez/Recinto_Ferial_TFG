@@ -25,7 +25,7 @@ namespace Fairground.View.Attractions.BasketballHoop
             if (camera == null || input == null || !input.PlayPressed)
                 return;
 
-            BasketballBallView ball = spawner != null ? spawner.CurrentBall : null;
+            BasketballBallView ball = spawner != null ? spawner.CurrentBall as BasketballBallView : null;
             if (ball != null)
             {
                 Vector3 origin = camera.position + camera.forward * 0.45f;

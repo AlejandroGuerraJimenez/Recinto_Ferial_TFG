@@ -15,12 +15,11 @@ namespace Fairground.View.Attractions.PunchingBall
         [SerializeField] BoothHudView hud;
 
         PunchingBallViewModel _viewModel;
-        AttractionInput _input;
-        FairgroundSession _session;
+        AttractionMatchControls _controls;
 
         public AttractionId AttractionId => AttractionId.PunchingBall;
         public PunchingBallViewModel ViewModel => _viewModel;
-        public AttractionInput Input => _input;
+        public AttractionInput Input => _controls != null ? _controls.Input : null;
 
         public void Configure(
             PunchPadView pad,
@@ -35,31 +34,17 @@ namespace Fairground.View.Attractions.PunchingBall
             OpenMatch();
         }
 
-        public void Receive(FairgroundSession session) => _session = session;
+        public void Receive(FairgroundSession session) => _controls?.Use(session);
 
-        void Awake()
-        {
-            _input = new AttractionInput();
-            _input.Enable();
-        }
+        void Awake() => _controls = new AttractionMatchControls(RestartMatch);
 
-        void Update()
-        {
-            if (_input == null)
-                return;
-
-            if (_input.RestartPressed)
-                RestartMatch();
-
-            if (_input.ReturnToFairgroundPressed)
-                AttractionExit.ReturnToFairground(_session);
-        }
+        void Update() => _controls?.Tick();
 
         void OnDestroy()
         {
             Unsubscribe();
-            _input?.Dispose();
-            _input = null;
+            _controls?.Dispose();
+            _controls = null;
         }
 
         void OpenMatch()
@@ -68,7 +53,7 @@ namespace Fairground.View.Attractions.PunchingBall
                 return;
 
             ResolvePad();
-            BoothHudBinding.Attach(hud, _viewModel);
+            BoothHudBinding.Attach(hud, _viewModel, () => PunchingBallHud.Lines(_viewModel));
             Subscribe();
             _viewModel.StartGame();
             UpdatePadAvailability();

@@ -15,7 +15,6 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
         public PunchingBallViewModel(PunchingBallRules rules = null)
         {
             _session = new PunchingBallSession(rules ?? new PunchingBallRules());
-            PublishState();
         }
 
         public PunchingBallViewModel(
@@ -38,8 +37,6 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
         public int MaxScore => _session.Rules.MaxScore;
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanPunch => IsPlaying && PunchesRemaining > 0;
-        public string StatusText => Describe(Phase);
-        public override string[] HudLines { get; protected set; }
 
         public override void StartGame()
         {
@@ -53,28 +50,6 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
         {
             _session.Restart();
             Notify();
-        }
-
-        protected override void PublishState()
-        {
-            HudLines = new[]
-            {
-                $"Mejor: {BestScore}",
-                $"Golpes: {PunchesRemaining}",
-                $"Último: {LastPunchPower}",
-                StatusText,
-            };
-        }
-
-        string Describe(MatchPhase phase)
-        {
-            switch (phase)
-            {
-                case MatchPhase.Playing: return $"¡Supera {WinScoreThreshold}!";
-                case MatchPhase.Won: return "¡Fuerza!";
-                case MatchPhase.Lost: return "¡Muy flojo!";
-                default: return "Listo";
-            }
         }
     }
 }

@@ -3,30 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
-namespace Fairground.View.Attractions.BasketballHoop
+namespace Fairground.View.Attractions
 {
     /// <summary>
-    /// Spawns throwable basketballs. Observer: <see cref="BallSpawned"/>.
+    /// Spawns the current throwable and replaces it after a throw. Balloon and basketball booths both use this.
     /// </summary>
     public sealed class BallSpawnerView : MonoBehaviour
     {
-        [SerializeField] BasketballBallView ballPrefab;
+        [SerializeField] ThrownPropView ballPrefab;
         [SerializeField] Transform spawnPoint;
         [SerializeField] float respawnDelay = 0.35f;
 
-        readonly HashSet<BasketballBallView> _liveBalls = new HashSet<BasketballBallView>();
-        BasketballBallView _currentBall;
+        readonly HashSet<ThrownPropView> _live = new HashSet<ThrownPropView>();
+        ThrownPropView _current;
         float _respawnAt = -1f;
         bool _spawningEnabled = true;
 
-        public event Action<BasketballBallView> BallSpawned;
-        public BasketballBallView CurrentBall => _currentBall;
+        public event Action<IThrownProp> BallSpawned;
+        public ThrownPropView CurrentBall => _current;
 
-        public void Configure(BasketballBallView prefab, Transform point)
+        public void Configure(ThrownPropView prefab, Transform point)
         {
             ballPrefab = prefab;
             spawnPoint = point != null ? point : transform;
-            if (isActiveAndEnabled && _currentBall == null)
+            if (isActiveAndEnabled && _current == null)
                 TrySpawnImmediate();
         }
 
@@ -45,73 +45,72 @@ namespace Fairground.View.Attractions.BasketballHoop
                 TrySpawnImmediate();
         }
 
-        public BasketballBallView TrySpawnImmediate()
+        public ThrownPropView TrySpawnImmediate()
         {
             if (!CanSpawn())
-                return _currentBall;
+                return _current;
 
-            _currentBall = CreateBall();
-            BallSpawned?.Invoke(_currentBall);
-            return _currentBall;
+            _current = CreateBall();
+            BallSpawned?.Invoke(_current);
+            return _current;
         }
 
         public void LaunchCurrentBall(Vector3 velocity)
         {
-            if (_currentBall == null)
+            if (_current == null)
                 TrySpawnImmediate();
 
-            if (_currentBall == null)
+            if (_current == null)
                 return;
 
-            DisableGrab(_currentBall);
-            _currentBall.Launch(velocity);
+            DisableGrab(_current);
+            _current.Launch(velocity);
         }
 
         bool ShouldRespawn()
         {
             return _spawningEnabled
                    && ballPrefab != null
-                   && _currentBall == null
+                   && _current == null
                    && _respawnAt > 0f
                    && Time.time >= _respawnAt;
         }
 
-        bool CanSpawn() => _spawningEnabled && ballPrefab != null && _currentBall == null;
+        bool CanSpawn() => _spawningEnabled && ballPrefab != null && _current == null;
 
-        BasketballBallView CreateBall()
+        ThrownPropView CreateBall()
         {
             Transform point = spawnPoint != null ? spawnPoint : transform;
-            var ball = Instantiate(ballPrefab, point.position, point.rotation);
+            ThrownPropView ball = Instantiate(ballPrefab, point.position, point.rotation);
             ball.gameObject.SetActive(true);
-            RegisterBall(ball);
-            ball.Thrown += OnBallThrown;
+            Register(ball);
+            ball.Thrown += OnThrown;
             ResetPhysics(ball);
             return ball;
         }
 
-        void RegisterBall(BasketballBallView ball)
+        void Register(ThrownPropView ball)
         {
-            if (ball == null || !_liveBalls.Add(ball))
+            if (ball == null || !_live.Add(ball))
                 return;
 
-            ball.Destroyed += OnBallDestroyed;
+            ball.Destroyed += OnDestroyed;
         }
 
-        void OnBallDestroyed(BasketballBallView ball)
+        void OnDestroyed(IThrownProp ball)
         {
             if (ball != null)
             {
-                ball.Thrown -= OnBallThrown;
-                ball.Destroyed -= OnBallDestroyed;
+                ball.Thrown -= OnThrown;
+                ball.Destroyed -= OnDestroyed;
             }
 
-            _liveBalls.Remove(ball);
-
-            if (_currentBall == ball)
-                _currentBall = null;
+            _live.Remove(ball as ThrownPropView);
+            if (ReferenceEquals(_current, ball))
+                _current = null;
         }
 
-        static void ResetPhysics(BasketballBallView ball)
+        static void ResetPhysics(ThrownPropView ball)
         {
             var body = ball.GetComponent<Rigidbody>();
             if (body == null)
@@ -121,13 +120,13 @@ namespace Fairground.View.Attractions.BasketballHoop
             body.angularVelocity = Vector3.zero;
         }
 
-        void OnBallThrown(BasketballBallView ball)
+        void OnThrown(IThrownProp ball)
         {
             if (ball != null)
-                ball.Thrown -= OnBallThrown;
+                ball.Thrown -= OnThrown;
 
-            if (_currentBall == ball)
-                _currentBall = null;
+            if (ReferenceEquals(_current, ball))
+                _current = null;
 
             _respawnAt = Time.time + respawnDelay;
         }
@@ -136,36 +135,36 @@ namespace Fairground.View.Attractions.BasketballHoop
         {
             _respawnAt = -1f;
             _spawningEnabled = true;
-            _currentBall = null;
+            _current = null;
 
-            if (_liveBalls.Count == 0)
+            if (_live.Count == 0)
                 return;
 
-            var snapshot = new List<BasketballBallView>(_liveBalls);
+            var snapshot = new List<ThrownPropView>(_live);
             foreach (var ball in snapshot)
             {
                 if (ball == null)
                     continue;
 
-                ball.Thrown -= OnBallThrown;
-                ball.Destroyed -= OnBallDestroyed;
+                ball.Thrown -= OnThrown;
+                ball.Destroyed -= OnDestroyed;
                 Destroy(ball.gameObject);
             }
 
-            _liveBalls.Clear();
+            _live.Clear();
         }
 
         void ClearIdleBall()
         {
-            if (_currentBall == null || _currentBall.IsThrown)
+            if (_current == null || _current.IsThrown)
                 return;
 
-            var ball = _currentBall;
-            _currentBall = null;
+            var ball = _current;
+            _current = null;
             Destroy(ball.gameObject);
         }
 
-        static void DisableGrab(BasketballBallView ball)
+        static void DisableGrab(ThrownPropView ball)
         {
             var grab = ball.GetComponent<XRGrabInteractable>();
             if (grab != null)

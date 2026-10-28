@@ -8,20 +8,19 @@ namespace Fairground.View.Attractions.BalloonThrow
     /// <summary>
     /// Wires balloon targets and throw rules onto the shared booth shell.
     /// </summary>
-    public sealed class BalloonThrowSceneInstaller : BoothSceneInstaller
+    public sealed class BalloonThrowSceneInstaller : BoothSceneInstaller<BalloonThrowBoothBuilder>
     {
         [SerializeField] int balloonCount = BalloonThrowBalance.BalloonCount;
         [SerializeField] int pointsPerBalloon = BalloonThrowBalance.PointsPerBalloon;
         [SerializeField] int startingThrows = BalloonThrowBalance.StartingThrows;
 
-        protected override BoothBuilder CreateBuilder()
+        protected override BalloonThrowBoothBuilder CreateBuilder()
         {
             return new BalloonThrowBoothBuilder(XrOriginPrefab, balloonCount);
         }
 
-        protected override void WireGameplay(BoothBuilder builder)
+        protected override void WireGameplay(BalloonThrowBoothBuilder booth)
         {
-            var booth = (BalloonThrowBoothBuilder)builder;
             var go = new GameObject("BalloonThrowGame");
             int count = booth.Balloons != null ? Mathf.Max(1, booth.Balloons.Length) : 1;
             var match = new BalloonThrowViewModel(pointsPerBalloon, startingThrows, count);

@@ -56,7 +56,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             BasketballHoopViewModel vm = controller.ViewModel;
             int ballsBefore = vm.BallsRemaining;
             var detector = AttractionSceneTestHelper.Require<BasketDetectorView>();
-            BasketballBallView ball = spawner.CurrentBall;
+            BasketballBallView ball = (BasketballBallView)spawner.CurrentBall;
 
             Vector3 aboveRim = detector.transform.position + Vector3.up * 0.35f;
             ball.transform.position = aboveRim;

@@ -1,5 +1,4 @@
 using Fairground.Core.Attractions;
-using System.Collections.Generic;
 using Fairground.ViewModel;
 using Fairground.ViewModel.Attractions.BasketballHoop;
 using UnityEngine;
@@ -7,7 +6,7 @@ using UnityEngine;
 namespace Fairground.View.Attractions.BasketballHoop
 {
     /// <summary>
-    /// View Facade: owns ViewModel and observes ball/hoop events.
+    /// Hosts the hoop match: the rim, the shared throw tracker, and the HUD.
     /// </summary>
     public sealed class BasketballHoopAttractionController : MonoBehaviour
     {
@@ -16,13 +15,12 @@ namespace Fairground.View.Attractions.BasketballHoop
         [SerializeField] BoothHudView hud;
 
         BasketballHoopViewModel _viewModel;
-        AttractionInput _input;
-        FairgroundSession _session;
-        readonly HashSet<BasketballBallView> _liveBalls = new HashSet<BasketballBallView>();
+        AttractionMatchControls _controls;
+        readonly ThrownPropTracker _props = new ThrownPropTracker();
 
         public AttractionId AttractionId => AttractionId.BasketballHoop;
         public BasketballHoopViewModel ViewModel => _viewModel;
-        public AttractionInput Input => _input;
+        public AttractionInput Input => _controls != null ? _controls.Input : null;
 
         public void Configure(
             BasketDetectorView hoopDetector,
@@ -37,31 +35,22 @@ namespace Fairground.View.Attractions.BasketballHoop
             OpenMatch();
         }
 
-        public void Receive(FairgroundSession session) => _session = session;
+        public void Receive(FairgroundSession session) => _controls?.Use(session);
 
         void Awake()
         {
-            _input = new AttractionInput();
-            _input.Enable();
+            _controls = new AttractionMatchControls(RestartMatch);
+            _props.Thrown += OnPropThrown;
+            _props.Resolved += OnPropResolved;
         }
 
-        void Update()
-        {
-            if (_input == null)
-                return;
-
-            if (_input.RestartPressed)
-                RestartMatch();
-
-            if (_input.ReturnToFairgroundPressed)
-                AttractionExit.ReturnToFairground(_session);
-        }
+        void Update() => _controls?.Tick();
 
         void OnDestroy()
         {
             Unsubscribe();
-            _input?.Dispose();
-            _input = null;
+            _controls?.Dispose();
+            _controls = null;
         }
 
         void OpenMatch()
@@ -70,7 +59,7 @@ namespace Fairground.View.Attractions.BasketballHoop
                 return;
 
             ResolveHoop();
-            BoothHudBinding.Attach(hud, _viewModel);
+            BoothHudBinding.Attach(hud, _viewModel, () => BasketballHoopHud.Lines(_viewModel));
             Subscribe();
             _viewModel.StartGame();
             UpdateSpawnerAvailability();
@@ -87,61 +76,10 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         void Subscribe()
         {
-            SubscribeHoop();
-            SubscribeSpawner();
-        }
-
-        void SubscribeHoop()
-        {
             if (hoop != null)
                 hoop.Scored += OnBasket;
-        }
 
-        void SubscribeSpawner()
-        {
-            if (ballSpawner == null)
-                return;
-
-            ballSpawner.BallSpawned += OnBallSpawned;
-            if (ballSpawner.CurrentBall != null)
-                OnBallSpawned(ballSpawner.CurrentBall);
-        }
-
-        void OnBallSpawned(BasketballBallView ball)
-        {
-            if (ball == null)
-                return;
-
-            RegisterBall(ball);
-            ball.Thrown -= OnBallThrown;
-            ball.Thrown += OnBallThrown;
-            ball.Resolved -= OnBallResolved;
-            ball.Resolved += OnBallResolved;
-        }
-
-        void RegisterBall(BasketballBallView ball)
-        {
-            if (!_liveBalls.Add(ball))
-                return;
-
-            ball.Destroyed += OnBallDestroyed;
-        }
-
-        void OnBallDestroyed(BasketballBallView ball)
-        {
-            UnregisterBall(ball);
-        }
-
-        void UnregisterBall(BasketballBallView ball)
-        {
-            if (ball != null)
-            {
-                ball.Thrown -= OnBallThrown;
-                ball.Resolved -= OnBallResolved;
-                ball.Destroyed -= OnBallDestroyed;
-            }
-
-            _liveBalls.Remove(ball);
+            _props.Attach(ballSpawner);
         }
 
         void Unsubscribe()
@@ -149,29 +87,12 @@ namespace Fairground.View.Attractions.BasketballHoop
             if (hoop != null)
                 hoop.Scored -= OnBasket;
 
-            if (ballSpawner != null)
-                ballSpawner.BallSpawned -= OnBallSpawned;
-
-            UnsubscribeBalls();
+            _props.Detach();
         }
 
-        void UnsubscribeBalls()
-        {
-            if (_liveBalls.Count == 0)
-                return;
+        void OnPropThrown() => Forward(_viewModel.TryRegisterThrow);
 
-            var snapshot = new List<BasketballBallView>(_liveBalls);
-            foreach (var ball in snapshot)
-                UnregisterBall(ball);
-        }
-
-        void OnBallThrown(BasketballBallView ball) => Forward(_viewModel.TryRegisterThrow);
-
-        void OnBallResolved(BasketballBallView ball)
-        {
-            Forward(_viewModel.TryResolveThrow);
-            UnregisterBall(ball);
-        }
+        void OnPropResolved() => Forward(_viewModel.TryResolveThrow);
 
         void OnBasket(BasketballBallView ball) => Forward(_viewModel.TryRegisterBasket);
 
@@ -198,32 +119,11 @@ namespace Fairground.View.Attractions.BasketballHoop
                 return;
 
             Unsubscribe();
-            ClearBalls();
+            _props.DestroyAll(ballSpawner);
             _viewModel.Restart();
             Subscribe();
             UpdateSpawnerAvailability();
             ballSpawner?.TrySpawnImmediate();
-        }
-
-        void ClearBalls()
-        {
-            ballSpawner?.Reset();
-
-            if (_liveBalls.Count == 0)
-                return;
-
-            var snapshot = new List<BasketballBallView>(_liveBalls);
-            _liveBalls.Clear();
-            foreach (var ball in snapshot)
-            {
-                if (ball == null)
-                    continue;
-
-                ball.Thrown -= OnBallThrown;
-                ball.Resolved -= OnBallResolved;
-                ball.Destroyed -= OnBallDestroyed;
-                Destroy(ball.gameObject);
-            }
         }
     }
 }

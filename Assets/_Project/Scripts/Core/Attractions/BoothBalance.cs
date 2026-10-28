@@ -35,6 +35,6 @@ namespace Fairground.Core.Attractions
 
     public static class FerrisWheelBalance
     {
-        public const float DegreesPerSecond = 16f;
+        public const float DegreesPerSecond = 6f;
     }
 }
