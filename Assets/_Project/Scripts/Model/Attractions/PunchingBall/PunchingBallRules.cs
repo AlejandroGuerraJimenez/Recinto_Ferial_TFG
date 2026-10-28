@@ -3,15 +3,20 @@ using System;
 namespace Fairground.Model.Attractions.PunchingBall
 {
     /// <summary>
-    /// Immutable scoring and win/lose policy (Strategy data for the session).
+    /// Immutable scoring and win/lose policy.
     /// </summary>
     public sealed class PunchingBallRules
     {
+        public const int DefaultStartingPunches = 5;
+        public const int DefaultWinScoreThreshold = 700;
+        public const int DefaultMaxScore = 999;
+        public const float DefaultMaxImpactSpeed = 8f;
+
         public PunchingBallRules(
-            int startingPunches = 5,
-            int winScoreThreshold = 700,
-            int maxScore = 999,
-            float maxImpactSpeed = 8f)
+            int startingPunches = DefaultStartingPunches,
+            int winScoreThreshold = DefaultWinScoreThreshold,
+            int maxScore = DefaultMaxScore,
+            float maxImpactSpeed = DefaultMaxImpactSpeed)
         {
             GuardPositive(startingPunches, nameof(startingPunches));
             GuardPositive(winScoreThreshold, nameof(winScoreThreshold));

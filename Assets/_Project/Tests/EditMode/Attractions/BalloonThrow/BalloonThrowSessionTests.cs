@@ -95,15 +95,6 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         }
 
         [Test]
-        public void EndCondition_Strategy_CanForceWin()
-        {
-            var session = new BalloonThrowSession(new BalloonThrowRules(10, 8, 6), new AlwaysWinEndCondition());
-            session.Start();
-            session.TryRegisterThrow();
-            Assert.AreEqual(MatchPhase.Won, session.Phase);
-        }
-
-        [Test]
         public void ViewModel_NotifiesStateChanges()
         {
             var vm = new BalloonThrowViewModel(new BalloonThrowRules(10, 3, 2));
@@ -137,19 +128,6 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         static BalloonThrowSession CreateSession(int points, int throws, int balloons)
         {
             return new BalloonThrowSession(new BalloonThrowRules(points, throws, balloons));
-        }
-
-        sealed class AlwaysWinEndCondition : IBalloonThrowEndCondition
-        {
-            public MatchPhase Evaluate(
-                BalloonThrowRules rules,
-                int balloonsPopped,
-                int throwsRemaining,
-                int balloonsRemaining,
-                int throwsInFlight)
-            {
-                return MatchPhase.Won;
-            }
         }
     }
 }

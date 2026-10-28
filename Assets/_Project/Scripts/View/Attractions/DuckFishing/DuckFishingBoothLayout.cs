@@ -1,4 +1,4 @@
-using Fairground.ViewModel.Attractions.DuckFishing;
+using Fairground.Model.Attractions.DuckFishing;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.DuckFishing
@@ -16,9 +16,9 @@ namespace Fairground.View.Attractions.DuckFishing
         public static readonly string[] HudLines =
         {
             "Score: 0",
-            "Hooks: 8",
-            "Caught: 0/4",
-            "Catch 4 ducks!",
+            "Hooks: " + DuckFishingRules.DefaultStartingAttempts,
+            "Caught: 0/" + DuckFishingRules.DefaultDucksToWin,
+            "Catch " + DuckFishingRules.DefaultDucksToWin + " ducks!",
         };
 
         public static BoothLayout Props()
@@ -59,11 +59,6 @@ namespace Fairground.View.Attractions.DuckFishing
                         new Color(0.2f, 0.55f, 0.75f, 1f)),
                 },
             };
-        }
-
-        public static string[] FormatHud(DuckFishingViewModel viewModel)
-        {
-            return viewModel.HudLines;
         }
     }
 }

@@ -11,23 +11,15 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
     public sealed class BalloonThrowViewModel : BoothMatchViewModel
     {
         readonly BalloonThrowSession _session;
-        readonly IBalloonThrowStatusPresenter _statusPresenter;
 
-        public BalloonThrowViewModel(
-            BalloonThrowRules rules = null,
-            IBalloonThrowStatusPresenter statusPresenter = null)
+        public BalloonThrowViewModel(BalloonThrowRules rules = null)
         {
             _session = new BalloonThrowSession(rules ?? new BalloonThrowRules());
-            _statusPresenter = statusPresenter ?? new DefaultBalloonThrowStatusPresenter();
             PublishState();
         }
 
-        public BalloonThrowViewModel(
-            int pointsPerBalloon,
-            int startingThrows,
-            int balloonCount,
-            IBalloonThrowStatusPresenter statusPresenter = null)
-            : this(new BalloonThrowRules(pointsPerBalloon, startingThrows, balloonCount), statusPresenter)
+        public BalloonThrowViewModel(int pointsPerBalloon, int startingThrows, int balloonCount)
+            : this(new BalloonThrowRules(pointsPerBalloon, startingThrows, balloonCount))
         {
         }
 
@@ -42,7 +34,7 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
         public int BalloonCount => _session.Rules.BalloonCount;
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanSpawnBall => IsPlaying && ThrowsRemaining > 0;
-        public string StatusText => _statusPresenter.Present(Phase);
+        public string StatusText => Describe(Phase);
         public string[] HudLines { get; private set; }
 
         public override void StartGame()
@@ -72,6 +64,17 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
                 $"Balloons: {BalloonsRemaining}",
                 StatusText,
             };
+        }
+
+        static string Describe(MatchPhase phase)
+        {
+            switch (phase)
+            {
+                case MatchPhase.Playing: return "Pop the balloons!";
+                case MatchPhase.Won: return "You win!";
+                case MatchPhase.Lost: return "Out of throws!";
+                default: return "Ready";
+            }
         }
     }
 }

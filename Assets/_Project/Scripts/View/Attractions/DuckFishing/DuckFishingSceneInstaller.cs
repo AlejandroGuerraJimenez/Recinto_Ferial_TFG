@@ -1,3 +1,4 @@
+using Fairground.Model.Attractions.DuckFishing;
 using Fairground.View.Attractions.DuckFishing.Builders;
 using UnityEngine;
 
@@ -8,10 +9,10 @@ namespace Fairground.View.Attractions.DuckFishing
     /// </summary>
     public sealed class DuckFishingSceneInstaller : BoothSceneInstaller
     {
-        [SerializeField] int duckCount = 6;
-        [SerializeField] int ducksToWin = 4;
-        [SerializeField] int startingAttempts = 8;
-        [SerializeField] int pointsPerDuck = 10;
+        [SerializeField] int duckCount = DuckFishingRules.DefaultDuckCount;
+        [SerializeField] int ducksToWin = DuckFishingRules.DefaultDucksToWin;
+        [SerializeField] int startingAttempts = DuckFishingRules.DefaultStartingAttempts;
+        [SerializeField] int pointsPerDuck = DuckFishingRules.DefaultPointsPerDuck;
 
         protected override BoothBuilder CreateBuilder()
         {

@@ -3,15 +3,20 @@ using System;
 namespace Fairground.Model.Attractions.DuckFishing
 {
     /// <summary>
-    /// Immutable scoring and win/lose policy (Strategy data for the session).
+    /// Immutable scoring and win/lose policy.
     /// </summary>
     public sealed class DuckFishingRules
     {
+        public const int DefaultPointsPerDuck = 10;
+        public const int DefaultStartingAttempts = 8;
+        public const int DefaultDuckCount = 6;
+        public const int DefaultDucksToWin = 4;
+
         public DuckFishingRules(
-            int pointsPerDuck = 10,
-            int startingAttempts = 8,
-            int duckCount = 6,
-            int ducksToWin = 4)
+            int pointsPerDuck = DefaultPointsPerDuck,
+            int startingAttempts = DefaultStartingAttempts,
+            int duckCount = DefaultDuckCount,
+            int ducksToWin = DefaultDucksToWin)
         {
             GuardNonNegative(pointsPerDuck, nameof(pointsPerDuck));
             GuardPositive(startingAttempts, nameof(startingAttempts));

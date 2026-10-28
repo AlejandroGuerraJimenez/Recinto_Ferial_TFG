@@ -3,11 +3,18 @@ using System;
 namespace Fairground.Model.Attractions.BasketballHoop
 {
     /// <summary>
-    /// Immutable scoring and win/lose policy (Strategy data for the session).
+    /// Immutable scoring and win/lose policy.
     /// </summary>
     public sealed class BasketballHoopRules
     {
-        public BasketballHoopRules(int pointsPerBasket = 2, int startingBalls = 10, int winScoreThreshold = 5)
+        public const int DefaultPointsPerBasket = 2;
+        public const int DefaultStartingBalls = 10;
+        public const int DefaultWinScoreThreshold = 5;
+
+        public BasketballHoopRules(
+            int pointsPerBasket = DefaultPointsPerBasket,
+            int startingBalls = DefaultStartingBalls,
+            int winScoreThreshold = DefaultWinScoreThreshold)
         {
             GuardPositive(pointsPerBasket, nameof(pointsPerBasket));
             GuardPositive(startingBalls, nameof(startingBalls));

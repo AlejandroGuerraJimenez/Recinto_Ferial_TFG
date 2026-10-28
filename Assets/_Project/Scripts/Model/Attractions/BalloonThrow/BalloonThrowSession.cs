@@ -4,17 +4,15 @@ using Fairground.Model.Attractions;
 namespace Fairground.Model.Attractions.BalloonThrow
 {
     /// <summary>
-    /// Mutable match state. Applies rules through an end-condition Strategy.
+    /// Mutable match state. The rules decide win and loss.
     /// </summary>
     public sealed class BalloonThrowSession
     {
         readonly BalloonThrowRules _rules;
-        readonly IBalloonThrowEndCondition _endCondition;
 
-        public BalloonThrowSession(BalloonThrowRules rules, IBalloonThrowEndCondition endCondition = null)
+        public BalloonThrowSession(BalloonThrowRules rules)
         {
             _rules = rules ?? throw new ArgumentNullException(nameof(rules));
-            _endCondition = endCondition ?? new DefaultBalloonThrowEndCondition();
         }
 
         public BalloonThrowRules Rules => _rules;
@@ -82,12 +80,12 @@ namespace Fairground.Model.Attractions.BalloonThrow
 
         void RefreshPhase()
         {
-            Phase = _endCondition.Evaluate(
-                _rules,
-                BalloonsPopped,
-                ThrowsRemaining,
-                BalloonsRemaining,
-                ThrowsInFlight);
+            if (_rules.IsWin(BalloonsPopped))
+                Phase = MatchPhase.Won;
+            else if (_rules.IsLose(ThrowsRemaining, BalloonsRemaining, ThrowsInFlight))
+                Phase = MatchPhase.Lost;
+            else
+                Phase = MatchPhase.Playing;
         }
     }
 }

@@ -1,3 +1,4 @@
+using Fairground.Model.Attractions.BasketballHoop;
 using Fairground.View.Attractions.BasketballHoop.Builders;
 using UnityEngine;
 
@@ -8,9 +9,9 @@ namespace Fairground.View.Attractions.BasketballHoop
     /// </summary>
     public sealed class BasketballHoopSceneInstaller : BoothSceneInstaller
     {
-        [SerializeField] int pointsPerBasket = 2;
-        [SerializeField] int startingBalls = 10;
-        [SerializeField] int winScoreThreshold = 5;
+        [SerializeField] int pointsPerBasket = BasketballHoopRules.DefaultPointsPerBasket;
+        [SerializeField] int startingBalls = BasketballHoopRules.DefaultStartingBalls;
+        [SerializeField] int winScoreThreshold = BasketballHoopRules.DefaultWinScoreThreshold;
 
         protected override BoothBuilder CreateBuilder()
         {

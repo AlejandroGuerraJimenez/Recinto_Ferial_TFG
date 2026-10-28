@@ -1,4 +1,4 @@
-using Fairground.ViewModel.Attractions.BasketballHoop;
+using Fairground.Model.Attractions.BasketballHoop;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.BasketballHoop
@@ -14,7 +14,7 @@ namespace Fairground.View.Attractions.BasketballHoop
         public static readonly string[] HudLines =
         {
             "Score: 0",
-            "Balls: 10",
+            "Balls: " + BasketballHoopRules.DefaultStartingBalls,
             "Shoot the hoop!",
         };
 
@@ -62,11 +62,6 @@ namespace Fairground.View.Attractions.BasketballHoop
                         removeCollider: true),
                 },
             };
-        }
-
-        public static string[] FormatHud(BasketballHoopViewModel viewModel)
-        {
-            return viewModel.HudLines;
         }
 
         static void MarkOutOfPlay(GameObject target)

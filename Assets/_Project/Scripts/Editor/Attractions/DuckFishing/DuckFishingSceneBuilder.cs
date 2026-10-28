@@ -1,3 +1,4 @@
+using Fairground.Model.Attractions.DuckFishing;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.DuckFishing;
 using UnityEditor;
@@ -24,10 +25,10 @@ namespace Fairground.Editor.Attractions.DuckFishing
             InstallerType = typeof(DuckFishingSceneInstaller),
             WriteMatchDefaults = so =>
             {
-                so.FindProperty("duckCount").intValue = 6;
-                so.FindProperty("ducksToWin").intValue = 4;
-                so.FindProperty("startingAttempts").intValue = 8;
-                so.FindProperty("pointsPerDuck").intValue = 10;
+                so.FindProperty("duckCount").intValue = DuckFishingRules.DefaultDuckCount;
+                so.FindProperty("ducksToWin").intValue = DuckFishingRules.DefaultDucksToWin;
+                so.FindProperty("startingAttempts").intValue = DuckFishingRules.DefaultStartingAttempts;
+                so.FindProperty("pointsPerDuck").intValue = DuckFishingRules.DefaultPointsPerDuck;
             },
         };
 

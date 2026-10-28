@@ -1,3 +1,4 @@
+using Fairground.Model.Attractions.PunchingBall;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.PunchingBall;
 using UnityEditor;
@@ -22,10 +23,10 @@ namespace Fairground.Editor.Attractions.PunchingBall
             InstallerType = typeof(PunchingBallSceneInstaller),
             WriteMatchDefaults = so =>
             {
-                so.FindProperty("startingPunches").intValue = 5;
-                so.FindProperty("winScoreThreshold").intValue = 700;
-                so.FindProperty("maxScore").intValue = 999;
-                so.FindProperty("maxImpactSpeed").floatValue = 8f;
+                so.FindProperty("startingPunches").intValue = PunchingBallRules.DefaultStartingPunches;
+                so.FindProperty("winScoreThreshold").intValue = PunchingBallRules.DefaultWinScoreThreshold;
+                so.FindProperty("maxScore").intValue = PunchingBallRules.DefaultMaxScore;
+                so.FindProperty("maxImpactSpeed").floatValue = PunchingBallRules.DefaultMaxImpactSpeed;
             },
         };
 

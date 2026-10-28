@@ -84,15 +84,6 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         }
 
         [Test]
-        public void EndCondition_Strategy_CanForceWin()
-        {
-            var session = new DuckFishingSession(new DuckFishingRules(10, 8, 6, 4), new AlwaysWinEndCondition());
-            session.Start();
-            session.TryRegisterDip();
-            Assert.AreEqual(MatchPhase.Won, session.Phase);
-        }
-
-        [Test]
         public void ViewModel_NotifiesStateChanges()
         {
             var vm = new DuckFishingViewModel(new DuckFishingRules(10, 3, 6, 2));
@@ -124,18 +115,6 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         static DuckFishingSession CreateSession(int points, int attempts, int ducks, int toWin)
         {
             return new DuckFishingSession(new DuckFishingRules(points, attempts, ducks, toWin));
-        }
-
-        sealed class AlwaysWinEndCondition : IDuckFishingEndCondition
-        {
-            public MatchPhase Evaluate(
-                DuckFishingRules rules,
-                int ducksCaught,
-                int attemptsRemaining,
-                int dipsInFlight)
-            {
-                return MatchPhase.Won;
-            }
         }
     }
 }

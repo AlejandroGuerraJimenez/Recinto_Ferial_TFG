@@ -1,3 +1,4 @@
+using Fairground.Model.Attractions.PunchingBall;
 using Fairground.View.Attractions.PunchingBall.Builders;
 using UnityEngine;
 
@@ -8,10 +9,10 @@ namespace Fairground.View.Attractions.PunchingBall
     /// </summary>
     public sealed class PunchingBallSceneInstaller : BoothSceneInstaller
     {
-        [SerializeField] int startingPunches = 5;
-        [SerializeField] int winScoreThreshold = 700;
-        [SerializeField] int maxScore = 999;
-        [SerializeField] float maxImpactSpeed = 8f;
+        [SerializeField] int startingPunches = PunchingBallRules.DefaultStartingPunches;
+        [SerializeField] int winScoreThreshold = PunchingBallRules.DefaultWinScoreThreshold;
+        [SerializeField] int maxScore = PunchingBallRules.DefaultMaxScore;
+        [SerializeField] float maxImpactSpeed = PunchingBallRules.DefaultMaxImpactSpeed;
 
         protected override BoothBuilder CreateBuilder()
         {

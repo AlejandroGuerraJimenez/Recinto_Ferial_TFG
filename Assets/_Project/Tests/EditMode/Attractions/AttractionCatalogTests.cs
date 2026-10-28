@@ -35,7 +35,7 @@ namespace Fairground.Tests.EditMode.Attractions
         {
             AssertDescriptor(AttractionCatalog.BalloonThrow, AttractionId.BalloonThrow, "Globos", "BalloonThrow");
             AssertDescriptor(AttractionCatalog.DuckFishing, AttractionId.DuckFishing, "Patos", "DuckFishing");
-            AssertDescriptor(AttractionCatalog.PunchingBall, AttractionId.PunchingBall, "Punching", "PunchingBall");
+            AssertDescriptor(AttractionCatalog.PunchingBall, AttractionId.PunchingBall, "Puñetazo", "PunchingBall");
             AssertDescriptor(AttractionCatalog.FerrisWheel, AttractionId.FerrisWheel, "Noria", "FerrisWheel");
             AssertDescriptor(AttractionCatalog.BasketballHoop, AttractionId.BasketballHoop, "Canasta", "BasketballHoop");
         }

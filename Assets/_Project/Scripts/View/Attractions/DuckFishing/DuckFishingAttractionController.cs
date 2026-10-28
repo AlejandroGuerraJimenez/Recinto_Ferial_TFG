@@ -1,3 +1,4 @@
+using Fairground.Model.Attractions.DuckFishing;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.DuckFishing.Factories;
 using Fairground.ViewModel;
@@ -12,9 +13,9 @@ namespace Fairground.View.Attractions.DuckFishing
     /// </summary>
     public sealed class DuckFishingAttractionController : MonoBehaviour
     {
-        [SerializeField] int pointsPerDuck = 10;
-        [SerializeField] int startingAttempts = 8;
-        [SerializeField] int ducksToWin = 4;
+        [SerializeField] int pointsPerDuck = DuckFishingRules.DefaultPointsPerDuck;
+        [SerializeField] int startingAttempts = DuckFishingRules.DefaultStartingAttempts;
+        [SerializeField] int ducksToWin = DuckFishingRules.DefaultDucksToWin;
         [SerializeField] DuckTargetView[] ducks;
         [SerializeField] FishingRodView rod;
         [SerializeField] BoothHudView hud;
@@ -91,7 +92,7 @@ namespace Fairground.View.Attractions.DuckFishing
             ResolveRefs();
             _viewModel = CreateViewModel();
             hud?.Bind(
-                () => DuckFishingBoothLayout.FormatHud(_viewModel),
+                () => _viewModel.HudLines,
                 handler => _viewModel.StateChanged += handler,
                 handler => _viewModel.StateChanged -= handler);
             Subscribe();

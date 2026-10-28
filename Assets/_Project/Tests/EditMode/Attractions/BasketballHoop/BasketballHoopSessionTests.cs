@@ -103,15 +103,6 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
         }
 
         [Test]
-        public void EndCondition_Strategy_CanForceWin()
-        {
-            var session = new BasketballHoopSession(new BasketballHoopRules(2, 10, 5), new AlwaysWinEndCondition());
-            session.Start();
-            session.TryRegisterThrow();
-            Assert.AreEqual(MatchPhase.Won, session.Phase);
-        }
-
-        [Test]
         public void ViewModel_NotifiesStateChanges()
         {
             var vm = new BasketballHoopViewModel(new BasketballHoopRules(2, 10, 5));
@@ -164,18 +155,6 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
         static BasketballHoopSession CreateSession(int points, int balls, int winScore)
         {
             return new BasketballHoopSession(new BasketballHoopRules(points, balls, winScore));
-        }
-
-        sealed class AlwaysWinEndCondition : IBasketballHoopEndCondition
-        {
-            public MatchPhase Evaluate(
-                BasketballHoopRules rules,
-                int score,
-                int ballsRemaining,
-                int ballsInFlight)
-            {
-                return MatchPhase.Won;
-            }
         }
     }
 }

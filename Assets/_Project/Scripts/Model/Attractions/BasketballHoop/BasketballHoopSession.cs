@@ -4,17 +4,15 @@ using Fairground.Model.Attractions;
 namespace Fairground.Model.Attractions.BasketballHoop
 {
     /// <summary>
-    /// Mutable match state. Applies rules through an end-condition Strategy.
+    /// Mutable match state. The rules decide win and loss.
     /// </summary>
     public sealed class BasketballHoopSession
     {
         readonly BasketballHoopRules _rules;
-        readonly IBasketballHoopEndCondition _endCondition;
 
-        public BasketballHoopSession(BasketballHoopRules rules, IBasketballHoopEndCondition endCondition = null)
+        public BasketballHoopSession(BasketballHoopRules rules)
         {
             _rules = rules ?? throw new ArgumentNullException(nameof(rules));
-            _endCondition = endCondition ?? new DefaultBasketballHoopEndCondition();
         }
 
         public BasketballHoopRules Rules => _rules;
@@ -78,7 +76,12 @@ namespace Fairground.Model.Attractions.BasketballHoop
 
         void RefreshPhase()
         {
-            Phase = _endCondition.Evaluate(_rules, Score, BallsRemaining, BallsInFlight);
+            if (_rules.IsWin(Score))
+                Phase = MatchPhase.Won;
+            else if (_rules.IsLose(BallsRemaining, BallsInFlight, Score))
+                Phase = MatchPhase.Lost;
+            else
+                Phase = MatchPhase.Playing;
         }
     }
 }

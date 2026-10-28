@@ -90,15 +90,6 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
         }
 
         [Test]
-        public void EndCondition_Strategy_CanForceWin()
-        {
-            var session = new PunchingBallSession(new PunchingBallRules(5, 700, 999, 8f), new AlwaysWinEndCondition());
-            session.Start();
-            session.TryRegisterPunch(1f);
-            Assert.AreEqual(MatchPhase.Won, session.Phase);
-        }
-
-        [Test]
         public void ViewModel_NotifiesStateChanges()
         {
             var vm = new PunchingBallViewModel(new PunchingBallRules(3, 700, 999, 8f));
@@ -128,14 +119,6 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
         static PunchingBallSession CreateSession(int punches, int winThreshold, int maxScore, float maxImpact)
         {
             return new PunchingBallSession(new PunchingBallRules(punches, winThreshold, maxScore, maxImpact));
-        }
-
-        sealed class AlwaysWinEndCondition : IPunchingBallEndCondition
-        {
-            public MatchPhase Evaluate(PunchingBallRules rules, int bestScore, int punchesRemaining)
-            {
-                return MatchPhase.Won;
-            }
         }
     }
 }

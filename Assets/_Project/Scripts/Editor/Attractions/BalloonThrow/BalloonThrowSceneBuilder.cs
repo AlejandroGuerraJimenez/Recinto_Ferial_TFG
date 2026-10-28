@@ -1,3 +1,4 @@
+using Fairground.Model.Attractions.BalloonThrow;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BalloonThrow;
 using UnityEditor;
@@ -22,9 +23,9 @@ namespace Fairground.Editor.Attractions.BalloonThrow
             InstallerType = typeof(BalloonThrowSceneInstaller),
             WriteMatchDefaults = so =>
             {
-                so.FindProperty("balloonCount").intValue = 6;
-                so.FindProperty("pointsPerBalloon").intValue = 10;
-                so.FindProperty("startingThrows").intValue = 8;
+                so.FindProperty("balloonCount").intValue = BalloonThrowRules.DefaultBalloonCount;
+                so.FindProperty("pointsPerBalloon").intValue = BalloonThrowRules.DefaultPointsPerBalloon;
+                so.FindProperty("startingThrows").intValue = BalloonThrowRules.DefaultStartingThrows;
             },
         };
 

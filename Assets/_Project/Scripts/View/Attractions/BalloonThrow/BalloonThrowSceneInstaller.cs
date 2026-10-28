@@ -1,3 +1,4 @@
+using Fairground.Model.Attractions.BalloonThrow;
 using Fairground.View.Attractions.BalloonThrow.Builders;
 using UnityEngine;
 
@@ -8,9 +9,9 @@ namespace Fairground.View.Attractions.BalloonThrow
     /// </summary>
     public sealed class BalloonThrowSceneInstaller : BoothSceneInstaller
     {
-        [SerializeField] int balloonCount = 6;
-        [SerializeField] int pointsPerBalloon = 10;
-        [SerializeField] int startingThrows = 8;
+        [SerializeField] int balloonCount = BalloonThrowRules.DefaultBalloonCount;
+        [SerializeField] int pointsPerBalloon = BalloonThrowRules.DefaultPointsPerBalloon;
+        [SerializeField] int startingThrows = BalloonThrowRules.DefaultStartingThrows;
 
         protected override BoothBuilder CreateBuilder()
         {

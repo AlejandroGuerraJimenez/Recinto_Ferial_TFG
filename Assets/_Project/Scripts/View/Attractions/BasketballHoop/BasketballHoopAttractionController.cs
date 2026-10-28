@@ -1,3 +1,4 @@
+using Fairground.Model.Attractions.BasketballHoop;
 using System.Collections.Generic;
 using Fairground.Core.Attractions;
 using Fairground.ViewModel;
@@ -12,9 +13,9 @@ namespace Fairground.View.Attractions.BasketballHoop
     /// </summary>
     public sealed class BasketballHoopAttractionController : MonoBehaviour
     {
-        [SerializeField] int pointsPerBasket = 2;
-        [SerializeField] int startingBalls = 10;
-        [SerializeField] int winScoreThreshold = 5;
+        [SerializeField] int pointsPerBasket = BasketballHoopRules.DefaultPointsPerBasket;
+        [SerializeField] int startingBalls = BasketballHoopRules.DefaultStartingBalls;
+        [SerializeField] int winScoreThreshold = BasketballHoopRules.DefaultWinScoreThreshold;
         [SerializeField] BasketDetectorView hoop;
         [SerializeField] BallSpawnerView ballSpawner;
         [SerializeField] BoothHudView hud;
@@ -84,7 +85,7 @@ namespace Fairground.View.Attractions.BasketballHoop
             ResolveHoop();
             _viewModel = CreateViewModel();
             hud?.Bind(
-                () => BasketballHoopBoothLayout.FormatHud(_viewModel),
+                () => _viewModel.HudLines,
                 handler => _viewModel.StateChanged += handler,
                 handler => _viewModel.StateChanged -= handler);
             Subscribe();

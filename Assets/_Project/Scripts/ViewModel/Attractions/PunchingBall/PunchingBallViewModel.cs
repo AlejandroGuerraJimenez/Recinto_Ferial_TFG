@@ -11,14 +11,10 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
     public sealed class PunchingBallViewModel : BoothMatchViewModel
     {
         readonly PunchingBallSession _session;
-        readonly IPunchingBallStatusPresenter _statusPresenter;
 
-        public PunchingBallViewModel(
-            PunchingBallRules rules = null,
-            IPunchingBallStatusPresenter statusPresenter = null)
+        public PunchingBallViewModel(PunchingBallRules rules = null)
         {
             _session = new PunchingBallSession(rules ?? new PunchingBallRules());
-            _statusPresenter = statusPresenter ?? new DefaultPunchingBallStatusPresenter();
             PublishState();
         }
 
@@ -26,11 +22,8 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
             int startingPunches,
             int winScoreThreshold,
             int maxScore,
-            float maxImpactSpeed,
-            IPunchingBallStatusPresenter statusPresenter = null)
-            : this(
-                new PunchingBallRules(startingPunches, winScoreThreshold, maxScore, maxImpactSpeed),
-                statusPresenter)
+            float maxImpactSpeed)
+            : this(new PunchingBallRules(startingPunches, winScoreThreshold, maxScore, maxImpactSpeed))
         {
         }
 
@@ -46,7 +39,7 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
         public int MaxScore => _session.Rules.MaxScore;
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanPunch => IsPlaying && PunchesRemaining > 0;
-        public string StatusText => _statusPresenter.Present(Phase, WinScoreThreshold);
+        public string StatusText => Describe(Phase);
         public string[] HudLines { get; private set; }
 
         public override void StartGame()
@@ -72,6 +65,17 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
                 $"Last: {LastPunchPower}",
                 StatusText,
             };
+        }
+
+        string Describe(MatchPhase phase)
+        {
+            switch (phase)
+            {
+                case MatchPhase.Playing: return $"Hit {WinScoreThreshold}+ to win!";
+                case MatchPhase.Won: return "Strongman!";
+                case MatchPhase.Lost: return "Too weak!";
+                default: return "Ready";
+            }
         }
     }
 }

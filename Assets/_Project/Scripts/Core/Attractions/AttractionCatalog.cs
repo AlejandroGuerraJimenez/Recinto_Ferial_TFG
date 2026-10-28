@@ -16,7 +16,7 @@ namespace Fairground.Core.Attractions
             new AttractionDescriptor(AttractionId.DuckFishing, "Patos", "DuckFishing");
 
         public static readonly AttractionDescriptor PunchingBall =
-            new AttractionDescriptor(AttractionId.PunchingBall, "Punching", "PunchingBall");
+            new AttractionDescriptor(AttractionId.PunchingBall, "Puñetazo", "PunchingBall");
 
         public static readonly AttractionDescriptor FerrisWheel =
             new AttractionDescriptor(AttractionId.FerrisWheel, "Noria", "FerrisWheel");

@@ -11,23 +11,15 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
     public sealed class BasketballHoopViewModel : BoothMatchViewModel
     {
         readonly BasketballHoopSession _session;
-        readonly IBasketballHoopStatusPresenter _statusPresenter;
 
-        public BasketballHoopViewModel(
-            BasketballHoopRules rules = null,
-            IBasketballHoopStatusPresenter statusPresenter = null)
+        public BasketballHoopViewModel(BasketballHoopRules rules = null)
         {
             _session = new BasketballHoopSession(rules ?? new BasketballHoopRules());
-            _statusPresenter = statusPresenter ?? new DefaultBasketballHoopStatusPresenter();
             PublishState();
         }
 
-        public BasketballHoopViewModel(
-            int pointsPerBasket,
-            int startingBalls,
-            int winScoreThreshold,
-            IBasketballHoopStatusPresenter statusPresenter = null)
-            : this(new BasketballHoopRules(pointsPerBasket, startingBalls, winScoreThreshold), statusPresenter)
+        public BasketballHoopViewModel(int pointsPerBasket, int startingBalls, int winScoreThreshold)
+            : this(new BasketballHoopRules(pointsPerBasket, startingBalls, winScoreThreshold))
         {
         }
 
@@ -39,7 +31,7 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
         public int BallsRemaining => _session.BallsRemaining;
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanThrow => IsPlaying && BallsRemaining > 0;
-        public string StatusText => _statusPresenter.Present(Phase);
+        public string StatusText => Describe(Phase);
         public string[] HudLines { get; private set; }
 
         public override void StartGame()
@@ -68,6 +60,17 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
                 $"Balls: {BallsRemaining}",
                 StatusText,
             };
+        }
+
+        static string Describe(MatchPhase phase)
+        {
+            switch (phase)
+            {
+                case MatchPhase.Playing: return "Shoot the hoop!";
+                case MatchPhase.Won: return "You win!";
+                case MatchPhase.Lost: return "Out of balls!";
+                default: return "Ready";
+            }
         }
     }
 }

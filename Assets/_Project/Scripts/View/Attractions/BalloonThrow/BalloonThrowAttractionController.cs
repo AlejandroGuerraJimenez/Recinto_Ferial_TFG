@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Fairground.Model.Attractions.BalloonThrow;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BalloonThrow.Factories;
 using Fairground.ViewModel;
@@ -13,8 +14,8 @@ namespace Fairground.View.Attractions.BalloonThrow
     /// </summary>
     public sealed class BalloonThrowAttractionController : MonoBehaviour
     {
-        [SerializeField] int pointsPerBalloon = 10;
-        [SerializeField] int startingThrows = 8;
+        [SerializeField] int pointsPerBalloon = BalloonThrowRules.DefaultPointsPerBalloon;
+        [SerializeField] int startingThrows = BalloonThrowRules.DefaultStartingThrows;
         [SerializeField] BalloonTargetView[] balloons;
         [SerializeField] BallSpawnerView ballSpawner;
         [SerializeField] BoothHudView hud;
@@ -84,7 +85,7 @@ namespace Fairground.View.Attractions.BalloonThrow
             ResolveBalloons();
             _viewModel = CreateViewModel();
             hud?.Bind(
-                () => BalloonThrowBoothLayout.FormatHud(_viewModel),
+                () => _viewModel.HudLines,
                 handler => _viewModel.StateChanged += handler,
                 handler => _viewModel.StateChanged -= handler);
             Subscribe();

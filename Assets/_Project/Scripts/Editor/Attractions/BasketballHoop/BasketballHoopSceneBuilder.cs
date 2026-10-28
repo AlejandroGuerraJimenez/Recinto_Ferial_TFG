@@ -1,3 +1,4 @@
+using Fairground.Model.Attractions.BasketballHoop;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BasketballHoop;
 using UnityEditor;
@@ -26,9 +27,9 @@ namespace Fairground.Editor.Attractions.BasketballHoop
             InstallerType = typeof(BasketballHoopSceneInstaller),
             WriteMatchDefaults = so =>
             {
-                so.FindProperty("pointsPerBasket").intValue = 2;
-                so.FindProperty("startingBalls").intValue = 10;
-                so.FindProperty("winScoreThreshold").intValue = 5;
+                so.FindProperty("pointsPerBasket").intValue = BasketballHoopRules.DefaultPointsPerBasket;
+                so.FindProperty("startingBalls").intValue = BasketballHoopRules.DefaultStartingBalls;
+                so.FindProperty("winScoreThreshold").intValue = BasketballHoopRules.DefaultWinScoreThreshold;
             },
         };
 

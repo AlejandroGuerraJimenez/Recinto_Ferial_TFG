@@ -4,17 +4,15 @@ using Fairground.Model.Attractions;
 namespace Fairground.Model.Attractions.DuckFishing
 {
     /// <summary>
-    /// Mutable match state. Applies rules through an end-condition Strategy.
+    /// Mutable match state. The rules decide win and loss.
     /// </summary>
     public sealed class DuckFishingSession
     {
         readonly DuckFishingRules _rules;
-        readonly IDuckFishingEndCondition _endCondition;
 
-        public DuckFishingSession(DuckFishingRules rules, IDuckFishingEndCondition endCondition = null)
+        public DuckFishingSession(DuckFishingRules rules)
         {
             _rules = rules ?? throw new ArgumentNullException(nameof(rules));
-            _endCondition = endCondition ?? new DefaultDuckFishingEndCondition();
         }
 
         public DuckFishingRules Rules => _rules;
@@ -82,7 +80,12 @@ namespace Fairground.Model.Attractions.DuckFishing
 
         void RefreshPhase()
         {
-            Phase = _endCondition.Evaluate(_rules, DucksCaught, AttemptsRemaining, DipsInFlight);
+            if (_rules.IsWin(DucksCaught))
+                Phase = MatchPhase.Won;
+            else if (_rules.IsLose(AttemptsRemaining, DucksCaught, DipsInFlight))
+                Phase = MatchPhase.Lost;
+            else
+                Phase = MatchPhase.Playing;
         }
     }
 }

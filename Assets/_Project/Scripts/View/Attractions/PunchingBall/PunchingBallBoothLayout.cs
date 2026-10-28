@@ -1,4 +1,4 @@
-using Fairground.ViewModel.Attractions.PunchingBall;
+using Fairground.Model.Attractions.PunchingBall;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.PunchingBall
@@ -15,9 +15,9 @@ namespace Fairground.View.Attractions.PunchingBall
         public static readonly string[] HudLines =
         {
             "Best: 0",
-            "Punches: 5",
+            "Punches: " + PunchingBallRules.DefaultStartingPunches,
             "Last: 0",
-            "Hit 700+ to win!",
+            "Hit " + PunchingBallRules.DefaultWinScoreThreshold + "+ to win!",
         };
 
         public static BoothLayout Props()
@@ -39,11 +39,6 @@ namespace Fairground.View.Attractions.PunchingBall
                         removeCollider: true),
                 },
             };
-        }
-
-        public static string[] FormatHud(PunchingBallViewModel viewModel)
-        {
-            return viewModel.HudLines;
         }
     }
 }

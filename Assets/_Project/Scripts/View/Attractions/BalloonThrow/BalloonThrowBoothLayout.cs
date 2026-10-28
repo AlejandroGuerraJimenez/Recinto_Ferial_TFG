@@ -1,4 +1,4 @@
-using Fairground.ViewModel.Attractions.BalloonThrow;
+using Fairground.Model.Attractions.BalloonThrow;
 using UnityEngine;
 
 namespace Fairground.View.Attractions.BalloonThrow
@@ -15,8 +15,8 @@ namespace Fairground.View.Attractions.BalloonThrow
         public static readonly string[] HudLines =
         {
             "Score: 0",
-            "Throws: 8",
-            "Balloons: 6",
+            "Throws: " + BalloonThrowRules.DefaultStartingThrows,
+            "Balloons: " + BalloonThrowRules.DefaultBalloonCount,
             "Pop the balloons!",
         };
 
@@ -39,11 +39,6 @@ namespace Fairground.View.Attractions.BalloonThrow
                         removeCollider: true),
                 },
             };
-        }
-
-        public static string[] FormatHud(BalloonThrowViewModel viewModel)
-        {
-            return viewModel.HudLines;
         }
     }
 }

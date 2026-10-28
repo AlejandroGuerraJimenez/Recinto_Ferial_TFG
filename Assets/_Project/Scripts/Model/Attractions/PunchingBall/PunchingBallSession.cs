@@ -4,17 +4,15 @@ using Fairground.Model.Attractions;
 namespace Fairground.Model.Attractions.PunchingBall
 {
     /// <summary>
-    /// Mutable match state. Applies rules through an end-condition Strategy.
+    /// Mutable match state. The rules decide win and loss.
     /// </summary>
     public sealed class PunchingBallSession
     {
         readonly PunchingBallRules _rules;
-        readonly IPunchingBallEndCondition _endCondition;
 
-        public PunchingBallSession(PunchingBallRules rules, IPunchingBallEndCondition endCondition = null)
+        public PunchingBallSession(PunchingBallRules rules)
         {
             _rules = rules ?? throw new ArgumentNullException(nameof(rules));
-            _endCondition = endCondition ?? new DefaultPunchingBallEndCondition();
         }
 
         public PunchingBallRules Rules => _rules;
@@ -62,7 +60,12 @@ namespace Fairground.Model.Attractions.PunchingBall
 
         void RefreshPhase()
         {
-            Phase = _endCondition.Evaluate(_rules, BestScore, PunchesRemaining);
+            if (_rules.IsWin(BestScore))
+                Phase = MatchPhase.Won;
+            else if (_rules.IsLose(PunchesRemaining, BestScore))
+                Phase = MatchPhase.Lost;
+            else
+                Phase = MatchPhase.Playing;
         }
     }
 }

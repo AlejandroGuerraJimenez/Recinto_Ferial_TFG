@@ -3,11 +3,18 @@ using System;
 namespace Fairground.Model.Attractions.BalloonThrow
 {
     /// <summary>
-    /// Immutable scoring and win/lose policy (Strategy data for the session).
+    /// Immutable scoring and win/lose policy.
     /// </summary>
     public sealed class BalloonThrowRules
     {
-        public BalloonThrowRules(int pointsPerBalloon = 10, int startingThrows = 8, int balloonCount = 6)
+        public const int DefaultPointsPerBalloon = 10;
+        public const int DefaultStartingThrows = 8;
+        public const int DefaultBalloonCount = 6;
+
+        public BalloonThrowRules(
+            int pointsPerBalloon = DefaultPointsPerBalloon,
+            int startingThrows = DefaultStartingThrows,
+            int balloonCount = DefaultBalloonCount)
         {
             GuardNonNegative(pointsPerBalloon, nameof(pointsPerBalloon));
             GuardPositive(startingThrows, nameof(startingThrows));

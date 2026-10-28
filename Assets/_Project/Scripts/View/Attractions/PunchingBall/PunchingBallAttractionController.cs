@@ -1,3 +1,4 @@
+using Fairground.Model.Attractions.PunchingBall;
 using Fairground.Core.Attractions;
 using Fairground.ViewModel;
 using Fairground.ViewModel.Attractions.PunchingBall;
@@ -11,10 +12,10 @@ namespace Fairground.View.Attractions.PunchingBall
     /// </summary>
     public sealed class PunchingBallAttractionController : MonoBehaviour
     {
-        [SerializeField] int startingPunches = 5;
-        [SerializeField] int winScoreThreshold = 700;
-        [SerializeField] int maxScore = 999;
-        [SerializeField] float maxImpactSpeed = 8f;
+        [SerializeField] int startingPunches = PunchingBallRules.DefaultStartingPunches;
+        [SerializeField] int winScoreThreshold = PunchingBallRules.DefaultWinScoreThreshold;
+        [SerializeField] int maxScore = PunchingBallRules.DefaultMaxScore;
+        [SerializeField] float maxImpactSpeed = PunchingBallRules.DefaultMaxImpactSpeed;
         [SerializeField] PunchPadView punchPad;
         [SerializeField] PunchPowerMeterView powerMeter;
         [SerializeField] BoothHudView hud;
@@ -85,7 +86,7 @@ namespace Fairground.View.Attractions.PunchingBall
             ResolvePad();
             _viewModel = CreateViewModel();
             hud?.Bind(
-                () => PunchingBallBoothLayout.FormatHud(_viewModel),
+                () => _viewModel.HudLines,
                 handler => _viewModel.StateChanged += handler,
                 handler => _viewModel.StateChanged -= handler);
             Subscribe();
