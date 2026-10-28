@@ -17,12 +17,12 @@ namespace Fairground.View.Attractions
 
         protected GameObject XrOriginPrefab => xrOriginPrefab;
 
-        protected FairgroundSession Session { get; private set; }
+        protected FairgroundVisitState Visit { get; private set; }
 
         void Awake()
         {
-            if (FairgroundVisit.TryReceive(out var session))
-                Receive(session);
+            if (FairgroundVisit.TryReceive(out var visit))
+                Receive(visit);
 
             if (buildOnAwake)
                 Build();
@@ -31,9 +31,9 @@ namespace Fairground.View.Attractions
         /// <summary>
         /// Takes the visit the fairground delivered before this scene loaded.
         /// </summary>
-        public void Receive(FairgroundSession session)
+        public void Receive(FairgroundVisitState visit)
         {
-            Session = session;
+            Visit = visit;
         }
 
         public void Build()

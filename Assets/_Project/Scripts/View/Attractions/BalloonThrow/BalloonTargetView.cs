@@ -33,7 +33,7 @@ namespace Fairground.View.Attractions.BalloonThrow
         /// <summary>
         /// Registers a hit from an already-thrown ball (PlayMode/tests and forced contacts).
         /// </summary>
-        public bool TryRegisterHitFrom(ThrowableBallView ball)
+        public bool TryRegisterPopFrom(ThrowableBallView ball)
         {
             if (_popped || ball == null || !ball.IsThrown)
                 return false;

@@ -10,7 +10,7 @@ namespace Fairground.View.Attractions
     {
         readonly AttractionInput _input;
         readonly Action _restart;
-        FairgroundSession _session;
+        FairgroundVisitState _visit;
 
         public AttractionMatchControls(Action restart, bool headsetTriggers = false)
         {
@@ -21,7 +21,7 @@ namespace Fairground.View.Attractions
 
         public AttractionInput Input => _input;
 
-        public void Use(FairgroundSession session) => _session = session;
+        public void Use(FairgroundVisitState session) => _visit = session;
 
         public void Tick()
         {
@@ -29,7 +29,7 @@ namespace Fairground.View.Attractions
                 _restart();
 
             if (_input.ReturnToFairgroundPressed)
-                AttractionExit.ReturnToFairground(_session);
+                AttractionExit.ReturnToFairground(_visit);
         }
 
         public void Dispose() => _input.Dispose();

@@ -11,7 +11,7 @@ namespace Fairground.View.Attractions
     {
         static bool _loading;
 
-        public static void ReturnToFairground(FairgroundSession session)
+        public static void ReturnToFairground(FairgroundVisitState session)
         {
             if (_loading)
                 return;

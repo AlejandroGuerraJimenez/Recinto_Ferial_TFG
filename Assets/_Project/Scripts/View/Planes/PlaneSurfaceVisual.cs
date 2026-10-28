@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Fairground.Core.Planes;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.XR.ARFoundation;
 
 namespace Fairground.View
@@ -22,8 +23,8 @@ namespace Fairground.View
     [DefaultExecutionOrder(100)]
     public sealed class PlaneSurfaceVisual : MonoBehaviour
     {
-        [SerializeField] Material m_FillMaterial;
-        [SerializeField] Material m_BorderMaterial;
+        [SerializeField, FormerlySerializedAs("m_FillMaterial")] Material fillMaterial;
+        [SerializeField, FormerlySerializedAs("m_BorderMaterial")] Material borderMaterial;
 
         MeshRenderer _meshRenderer;
         MeshFilter _meshFilter;
@@ -44,9 +45,9 @@ namespace Fairground.View
 
         public PlaneRank Rank { get; private set; }
 
-        public Material FillTemplate => m_FillMaterial;
+        public Material FillTemplate => fillMaterial;
 
-        public Material BorderTemplate => m_BorderMaterial;
+        public Material BorderTemplate => borderMaterial;
 
         public ARPlane Trackable => _arPlane;
 
@@ -74,8 +75,8 @@ namespace Fairground.View
 
         public void SetMaterialTemplates(Material fill, Material border)
         {
-            m_FillMaterial = fill;
-            m_BorderMaterial = border;
+            fillMaterial = fill;
+            borderMaterial = border;
             RebuildMaterialInstances();
         }
 
@@ -262,8 +263,8 @@ namespace Fairground.View
         void RebuildMaterialInstances()
         {
             ReleaseMaterials();
-            _fillInstance = PlaneMaterialFactory.Create(m_FillMaterial, PlaneVisualPalette.IdleFill);
-            _borderInstance = PlaneMaterialFactory.Create(m_BorderMaterial, PlaneVisualPalette.IdleBorder);
+            _fillInstance = PlaneMaterialFactory.Create(fillMaterial, PlaneVisualPalette.IdleFill);
+            _borderInstance = PlaneMaterialFactory.Create(borderMaterial, PlaneVisualPalette.IdleBorder);
             AssignFill();
             AssignBorder();
         }

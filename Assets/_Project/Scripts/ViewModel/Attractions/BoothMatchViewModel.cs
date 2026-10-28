@@ -10,7 +10,7 @@ namespace Fairground.ViewModel.Attractions
     {
         public event Action StateChanged;
 
-        public abstract void StartGame();
+        public abstract void StartMatch();
 
         public abstract void Restart();
 

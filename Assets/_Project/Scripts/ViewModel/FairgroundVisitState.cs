@@ -7,7 +7,7 @@ namespace Fairground.ViewModel
     /// One visit: the floor the player confirmed and the attraction they are entering.
     /// The fairground creates it and the attraction installer receives that same instance.
     /// </summary>
-    public sealed class FairgroundSession
+    public sealed class FairgroundVisitState
     {
         public DetectedPlane? SelectedPlane { get; private set; }
 

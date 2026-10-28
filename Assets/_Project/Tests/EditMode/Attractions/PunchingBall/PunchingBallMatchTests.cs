@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace Fairground.Tests.EditMode.Attractions.PunchingBall
 {
-    public sealed class PunchingBallSessionTests
+    public sealed class PunchingBallMatchTests
     {
         [Test]
         public void AttractionScenes_MapsPunchingBallId()
@@ -20,35 +20,35 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
         }
 
         [Test]
-        public void Session_Start_InitializesCounters()
+        public void Match_Start_InitializesCounters()
         {
-            var session = CreateSession(5, 700, 999, 8f);
+            var session = CreateMatch(5, 700, 999, 8f);
             session.Start();
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.AreEqual(0, session.Score);
+            Assert.AreEqual(0, session.BestScore);
             Assert.AreEqual(0, session.BestScore);
             Assert.AreEqual(5, session.PunchesRemaining);
         }
 
         [Test]
-        public void Session_Start_DoesNotReset_RestartDoes()
+        public void Match_Start_DoesNotReset_RestartDoes()
         {
-            var session = CreateSession(2, 700, 999, 8f);
+            var session = CreateMatch(2, 700, 999, 8f);
             session.Start();
             Assert.IsTrue(session.TryRegisterPunch(2f));
             session.Start();
             Assert.AreEqual(1, session.PunchesRemaining);
             session.Restart();
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.AreEqual(0, session.Score);
+            Assert.AreEqual(0, session.BestScore);
             Assert.AreEqual(0, session.BestScore);
             Assert.AreEqual(2, session.PunchesRemaining);
         }
 
         [Test]
-        public void Session_StrongPunch_CanWin()
+        public void Match_StrongPunch_CanWin()
         {
-            var session = CreateSession(3, 500, 999, 8f);
+            var session = CreateMatch(3, 500, 999, 8f);
             session.Start();
             Assert.IsTrue(session.TryRegisterPunch(8f));
             Assert.AreEqual(999, session.LastPunchPower);
@@ -56,9 +56,9 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
         }
 
         [Test]
-        public void Session_WeakPunchesExhausted_Loses()
+        public void Match_WeakPunchesExhausted_Loses()
         {
-            var session = CreateSession(2, 700, 999, 8f);
+            var session = CreateMatch(2, 700, 999, 8f);
             session.Start();
             Assert.IsTrue(session.TryRegisterPunch(2f));
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
@@ -68,25 +68,24 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
         }
 
         [Test]
-        public void Session_KeepsBestScoreAcrossPunches()
+        public void Match_KeepsBestScoreAcrossPunches()
         {
-            var session = CreateSession(3, 950, 999, 8f);
+            var session = CreateMatch(3, 950, 999, 8f);
             session.Start();
             Assert.IsTrue(session.TryRegisterPunch(4f));
             int first = session.BestScore;
             Assert.IsTrue(session.TryRegisterPunch(2f));
             Assert.AreEqual(first, session.BestScore);
-            Assert.AreEqual(first, session.Score);
             Assert.Less(session.LastPunchPower, session.BestScore);
         }
 
         [Test]
-        public void Rules_ScoreForImpact_ClampsToMax()
+        public void Rules_ScoreForSpeed_ClampsToMax()
         {
             var rules = new PunchingBallRules(5, 700, 999, 8f);
-            Assert.AreEqual(0, rules.ScoreForImpact(0f));
-            Assert.AreEqual(999, rules.ScoreForImpact(20f));
-            Assert.AreEqual(500, rules.ScoreForImpact(4f));
+            Assert.AreEqual(0, rules.ScoreForSpeed(0f));
+            Assert.AreEqual(999, rules.ScoreForSpeed(20f));
+            Assert.AreEqual(500, rules.ScoreForSpeed(4f));
         }
 
         [Test]
@@ -95,7 +94,7 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
             var vm = new PunchingBallViewModel(new PunchingBallRules(3, 700, 999, 8f));
             int events = 0;
             vm.StateChanged += () => events++;
-            vm.StartGame();
+            vm.StartMatch();
             Assert.IsTrue(vm.TryRegisterPunch(4f));
             Assert.AreEqual(2, events);
             Assert.AreEqual("¡Supera 700!", PunchingBallHud.Status(vm));
@@ -106,19 +105,19 @@ namespace Fairground.Tests.EditMode.Attractions.PunchingBall
         public void ViewModel_Restart_ResetsMatch()
         {
             var vm = new PunchingBallViewModel(2, 700, 999, 8f);
-            vm.StartGame();
+            vm.StartMatch();
             Assert.IsTrue(vm.TryRegisterPunch(3f));
             Assert.IsTrue(vm.CanPunch);
             Assert.AreEqual(1, vm.PunchesRemaining);
             vm.Restart();
             Assert.IsTrue(vm.CanPunch);
             Assert.AreEqual(2, vm.PunchesRemaining);
-            Assert.AreEqual(0, vm.Score);
+            Assert.AreEqual(0, vm.BestScore);
         }
 
-        static PunchingBallSession CreateSession(int punches, int winThreshold, int maxScore, float maxImpact)
+        static PunchingBallMatch CreateMatch(int punches, int winThreshold, int maxScore, float maxImpact)
         {
-            return new PunchingBallSession(new PunchingBallRules(punches, winThreshold, maxScore, maxImpact));
+            return new PunchingBallMatch(new PunchingBallRules(punches, winThreshold, maxScore, maxImpact));
         }
     }
 }

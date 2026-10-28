@@ -15,7 +15,7 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
 
         public static string[] Lines(BasketballHoopViewModel match)
         {
-            return Lines(match.Score, match.BallsRemaining, match.Phase);
+            return Lines(match.Score, match.AttemptsRemaining, match.Phase);
         }
 
         public static string Status(BasketballHoopViewModel match)

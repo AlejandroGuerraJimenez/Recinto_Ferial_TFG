@@ -8,7 +8,7 @@ namespace Fairground.View.Attractions.BasketballHoop
     /// <summary>
     /// Hosts the hoop match: the rim, the shared throw tracker, and the HUD.
     /// </summary>
-    public sealed class BasketballHoopAttractionController : MonoBehaviour
+    public sealed class BasketballHoopAttractionHost : MonoBehaviour
     {
         [SerializeField] BasketDetectorView hoop;
         [SerializeField] BallSpawnerView ballSpawner;
@@ -28,14 +28,14 @@ namespace Fairground.View.Attractions.BasketballHoop
             BoothHudView hudView,
             BasketballHoopViewModel match)
         {
-            hoop = hoopDetector;
-            ballSpawner = spawner;
-            hud = hudView;
-            _viewModel = match;
+            hoop = BoothWiring.Require(hoopDetector, "Basketball hoop", "a hoop");
+            ballSpawner = BoothWiring.Require(spawner, "Basketball hoop", "a ball spawner");
+            hud = BoothWiring.Require(hudView, "Basketball hoop", "a HUD");
+            _viewModel = BoothWiring.Require(match, "Basketball hoop", "a match");
             OpenMatch();
         }
 
-        public void Receive(FairgroundSession session) => _controls?.Use(session);
+        public void Receive(FairgroundVisitState session) => _controls?.Use(session);
 
         void Awake()
         {
@@ -55,23 +55,10 @@ namespace Fairground.View.Attractions.BasketballHoop
 
         void OpenMatch()
         {
-            if (_viewModel == null)
-                return;
-
-            ResolveHoop();
             BoothHudBinding.Attach(hud, _viewModel, () => BasketballHoopHud.Lines(_viewModel));
             Subscribe();
-            _viewModel.StartGame();
+            _viewModel.StartMatch();
             UpdateSpawnerAvailability();
-        }
-
-        void ResolveHoop()
-        {
-            if (hoop == null)
-                hoop = FindAnyObjectByType<BasketDetectorView>();
-
-            if (ballSpawner == null)
-                ballSpawner = FindAnyObjectByType<BallSpawnerView>();
         }
 
         void Subscribe()

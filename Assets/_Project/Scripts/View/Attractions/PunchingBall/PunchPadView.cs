@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Fairground.View.Attractions.PunchingBall
 {
     /// <summary>
-    /// Punch target. Observer: <see cref="Punched"/> with impact magnitude.
+    /// Punch target. Observer: <see cref="Punched"/> with impact speed.
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public sealed class PunchPadView : MonoBehaviour
@@ -46,14 +46,14 @@ namespace Fairground.View.Attractions.PunchingBall
             ApplyTint(_baseColor);
         }
 
-        public bool TryApplyImpact(float impactMagnitude)
+        public bool TryApplyImpact(float impactSpeed)
         {
-            if (!CanAcceptPunch || impactMagnitude < minImpactSpeed)
+            if (!CanAcceptPunch || impactSpeed < minImpactSpeed)
                 return false;
 
             _nextPunchAt = Time.time + cooldownSeconds;
             ApplyHitFeedback();
-            Punched?.Invoke(this, impactMagnitude);
+            Punched?.Invoke(this, impactSpeed);
             return true;
         }
 

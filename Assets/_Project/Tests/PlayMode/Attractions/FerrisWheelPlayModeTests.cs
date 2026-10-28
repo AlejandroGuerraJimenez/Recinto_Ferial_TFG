@@ -16,7 +16,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         {
             yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.FerrisWheel.SceneName);
 
-            var controller = AttractionSceneTestHelper.Require<FerrisWheelAttractionController>();
+            var controller = AttractionSceneTestHelper.Require<FerrisWheelAttractionHost>();
             yield return AttractionSceneTestHelper.WaitUntil(
                 () => controller.ViewModel != null && controller.ViewModel.IsRiding,
                 3f,

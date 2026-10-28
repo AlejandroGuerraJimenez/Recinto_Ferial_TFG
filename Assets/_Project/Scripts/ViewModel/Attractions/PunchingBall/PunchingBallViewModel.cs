@@ -6,15 +6,15 @@ using Fairground.ViewModel.Attractions;
 namespace Fairground.ViewModel.Attractions.PunchingBall
 {
     /// <summary>
-    /// Publishes punch-match state. The session owns the counters.
+    /// Publishes punch-match state. The match owns the counters.
     /// </summary>
     public sealed class PunchingBallViewModel : BoothMatchViewModel
     {
-        readonly PunchingBallSession _session;
+        readonly PunchingBallMatch _match;
 
         public PunchingBallViewModel(PunchingBallRules rules = null)
         {
-            _session = new PunchingBallSession(rules ?? new PunchingBallRules());
+            _match = new PunchingBallMatch(rules ?? new PunchingBallRules());
         }
 
         public PunchingBallViewModel(
@@ -28,27 +28,26 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
 
         public AttractionId AttractionId => AttractionId.PunchingBall;
 
-        public MatchPhase Phase => _session.Phase;
-        public int Score => _session.Score;
-        public int BestScore => _session.BestScore;
-        public int LastPunchPower => _session.LastPunchPower;
-        public int PunchesRemaining => _session.PunchesRemaining;
-        public int WinScoreThreshold => _session.Rules.WinScoreThreshold;
-        public int MaxScore => _session.Rules.MaxScore;
+        public MatchPhase Phase => _match.Phase;
+        public int BestScore => _match.BestScore;
+        public int LastPunchPower => _match.LastPunchPower;
+        public int PunchesRemaining => _match.PunchesRemaining;
+        public int WinScoreThreshold => _match.Rules.WinScoreThreshold;
+        public int MaxScore => _match.Rules.MaxScore;
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanPunch => IsPlaying && PunchesRemaining > 0;
 
-        public override void StartGame()
+        public override void StartMatch()
         {
-            _session.Start();
+            _match.Start();
             Notify();
         }
 
-        public bool TryRegisterPunch(float impactMagnitude) => Apply(() => _session.TryRegisterPunch(impactMagnitude));
+        public bool TryRegisterPunch(float impactSpeed) => Apply(() => _match.TryRegisterPunch(impactSpeed));
 
         public override void Restart()
         {
-            _session.Restart();
+            _match.Restart();
             Notify();
         }
     }

@@ -19,7 +19,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         {
             yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.BalloonThrow.SceneName);
 
-            var controller = AttractionSceneTestHelper.Require<BalloonThrowAttractionController>();
+            var controller = AttractionSceneTestHelper.Require<BalloonThrowAttractionHost>();
             yield return AttractionSceneTestHelper.WaitUntil(
                 () => controller.ViewModel != null && controller.ViewModel.IsPlaying,
                 3f,
@@ -28,7 +28,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             BalloonThrowViewModel vm = controller.ViewModel;
             Assert.AreEqual(AttractionId.BalloonThrow, controller.AttractionId);
             Assert.AreEqual(MatchPhase.Playing, vm.Phase);
-            Assert.Greater(vm.ThrowsRemaining, 0);
+            Assert.Greater(vm.AttemptsRemaining, 0);
             Assert.Greater(vm.BalloonsRemaining, 0);
             Assert.IsNotNull(Object.FindAnyObjectByType<BallSpawnerView>());
             Assert.IsNotNull(Object.FindAnyObjectByType<BoothHudView>());
@@ -40,7 +40,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         {
             yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.BalloonThrow.SceneName);
 
-            var controller = AttractionSceneTestHelper.Require<BalloonThrowAttractionController>();
+            var controller = AttractionSceneTestHelper.Require<BalloonThrowAttractionHost>();
             yield return AttractionSceneTestHelper.WaitUntil(
                 () => controller.ViewModel != null && controller.ViewModel.IsPlaying,
                 3f,
@@ -53,7 +53,7 @@ namespace Fairground.Tests.PlayMode.Attractions
                 "Ball spawner did not provide a ball.");
 
             BalloonThrowViewModel vm = controller.ViewModel;
-            int throwsBefore = vm.ThrowsRemaining;
+            int throwsBefore = vm.AttemptsRemaining;
             int balloonsBefore = vm.BalloonsRemaining;
             var balloon = AttractionSceneTestHelper.Require<BalloonTargetView>();
 
@@ -64,7 +64,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             spawner.LaunchCurrentBall(toTarget * 12f);
 
             yield return AttractionSceneTestHelper.WaitUntil(
-                () => vm.ThrowsRemaining == throwsBefore - 1,
+                () => vm.AttemptsRemaining == throwsBefore - 1,
                 2f,
                 "Throw was not registered in the ViewModel.");
 
@@ -85,7 +85,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             }
 
             if (vm.Score == 0)
-                Assert.IsTrue(balloon.TryRegisterHitFrom(ball), "Thrown ball could not register a balloon hit.");
+                Assert.IsTrue(balloon.TryRegisterPopFrom(ball), "Thrown ball could not register a balloon hit.");
 
             yield return AttractionSceneTestHelper.WaitUntil(
                 () => vm.Score > 0 && vm.BalloonsRemaining < balloonsBefore,
@@ -101,7 +101,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         {
             yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.BalloonThrow.SceneName);
 
-            var controller = AttractionSceneTestHelper.Require<BalloonThrowAttractionController>();
+            var controller = AttractionSceneTestHelper.Require<BalloonThrowAttractionHost>();
             yield return AttractionSceneTestHelper.WaitUntil(
                 () => controller.ViewModel != null && controller.ViewModel.IsPlaying,
                 3f,
@@ -114,11 +114,11 @@ namespace Fairground.Tests.PlayMode.Attractions
                 "Ball spawner did not provide a ball.");
 
             BalloonThrowViewModel vm = controller.ViewModel;
-            int startingThrows = vm.ThrowsRemaining;
+            int startingThrows = vm.AttemptsRemaining;
             spawner.LaunchCurrentBall(Vector3.forward * 8f);
 
             yield return AttractionSceneTestHelper.WaitUntil(
-                () => vm.ThrowsRemaining == startingThrows - 1,
+                () => vm.AttemptsRemaining == startingThrows - 1,
                 2f,
                 "Throw was not registered before restart.");
 
@@ -126,7 +126,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             yield return null;
 
             Assert.AreEqual(MatchPhase.Playing, vm.Phase);
-            Assert.AreEqual(startingThrows, vm.ThrowsRemaining);
+            Assert.AreEqual(startingThrows, vm.AttemptsRemaining);
             Assert.AreEqual(0, vm.Score);
             Assert.Greater(vm.BalloonsRemaining, 0);
         }

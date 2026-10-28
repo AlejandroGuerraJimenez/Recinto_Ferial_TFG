@@ -42,7 +42,7 @@ namespace Fairground.View
                 Register(plane);
         }
 
-        public void OnChanged(ARTrackablesChangedEventArgs<ARPlane> args)
+        public void HandleTrackablesChanged(ARTrackablesChangedEventArgs<ARPlane> args)
         {
             for (var i = 0; i < args.added.Count; i++)
                 Register(args.added[i]);

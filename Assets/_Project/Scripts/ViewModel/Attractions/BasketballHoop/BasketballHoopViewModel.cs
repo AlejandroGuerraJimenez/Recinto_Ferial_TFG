@@ -22,7 +22,6 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
 
         public AttractionId AttractionId => AttractionId.BasketballHoop;
 
-        public int BallsRemaining => AttemptsRemaining;
         public bool CanThrow => CanSpendAttempt;
 
         public bool TryRegisterThrow() => TrySpendAttempt();

@@ -19,15 +19,14 @@ namespace Fairground.View
 
         readonly FairgroundParcelPads _parcels = new FairgroundParcelPads();
         DetectedPlane? _locked;
-        FairgroundSession _session;
+        FairgroundVisitState _visit;
 
         void OnEnable()
         {
-            AttractionViewpoint.Clear();
             if (planeSelection == null)
                 return;
 
-            planeSelection.OnPlaneSelected += HandlePlaneSelected;
+            planeSelection.PlaneSelected += HandlePlaneSelected;
             planeSelection.OnLockedConfirm += HandleEnter;
             planeSelection.OnRestarted += HandleRestarted;
             RestoreParcelMenu();
@@ -37,7 +36,7 @@ namespace Fairground.View
         {
             if (planeSelection != null)
             {
-                planeSelection.OnPlaneSelected -= HandlePlaneSelected;
+                planeSelection.PlaneSelected -= HandlePlaneSelected;
                 planeSelection.OnLockedConfirm -= HandleEnter;
                 planeSelection.OnRestarted -= HandleRestarted;
             }
@@ -61,8 +60,7 @@ namespace Fairground.View
         {
             _locked = plane;
             _parcels.PinTo(planeSelection.LockedSurface != null ? planeSelection.LockedSurface : planeSelection.Proposal);
-            RememberViewpoint();
-            CurrentSession().Remember(plane);
+            CurrentVisit().Remember(plane);
         }
 
         void HandleEnter()
@@ -71,8 +69,7 @@ namespace Fairground.View
                 return;
 
             var chosen = AimedParcel();
-            RememberViewpoint();
-            var session = CurrentSession();
+            var session = CurrentVisit();
             session.Remember(_locked.Value, chosen);
             FairgroundVisit.Deliver(session);
             AttractionExit.Enter(AttractionScenes.GetSceneName(chosen));
@@ -80,11 +77,11 @@ namespace Fairground.View
 
         void RestoreParcelMenu()
         {
-            if (!FairgroundVisit.TryReceive(out var session) || !session.SelectedPlane.HasValue)
+            if (!FairgroundVisit.TryReceive(out var visit) || !visit.SelectedPlane.HasValue)
                 return;
 
-            _session = session;
-            planeSelection.TryRestore(session.SelectedPlane.Value);
+            _visit = visit;
+            planeSelection.TryRestore(visit.SelectedPlane.Value);
         }
 
         void HandleRestarted()
@@ -101,22 +98,13 @@ namespace Fairground.View
             return attractionId;
         }
 
-        FairgroundSession CurrentSession()
+        FairgroundVisitState CurrentVisit()
         {
-            if (_session == null && !FairgroundVisit.TryReceive(out _session))
-                _session = new FairgroundSession();
+            if (_visit == null && !FairgroundVisit.TryReceive(out _visit))
+                _visit = new FairgroundVisitState();
 
-            FairgroundVisit.Deliver(_session);
-            return _session;
-        }
-
-        static void RememberViewpoint()
-        {
-            var camera = Camera.main;
-            if (camera == null)
-                return;
-
-            AttractionViewpoint.Remember(camera.transform.position, camera.transform.eulerAngles.y);
+            FairgroundVisit.Deliver(_visit);
+            return _visit;
         }
     }
 }

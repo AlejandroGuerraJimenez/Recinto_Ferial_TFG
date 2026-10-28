@@ -25,9 +25,9 @@ namespace Fairground.View.Attractions.FerrisWheel
 
             var go = new GameObject("FerrisWheelGame");
             var match = new FerrisWheelViewModel(degreesPerSecond);
-            var controller = go.AddComponent<FerrisWheelAttractionController>();
+            var controller = go.AddComponent<FerrisWheelAttractionHost>();
             controller.Configure(rig, cabinCount, match);
-            controller.Receive(Session);
+            controller.Receive(Visit);
 
             AttractionSceneSupport.CreateVrCamera(xrOrigin);
             AttractionSceneSupport.CreateDesktopPlay(xrOrigin, controller.Input, FerrisWheelDesktopPlay.Profile());

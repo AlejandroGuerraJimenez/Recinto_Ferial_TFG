@@ -23,9 +23,9 @@ namespace Fairground.View.Attractions.BasketballHoop
         {
             var go = new GameObject("BasketballHoopGame");
             var match = new BasketballHoopViewModel(pointsPerBasket, startingBalls, winScoreThreshold);
-            var controller = go.AddComponent<BasketballHoopAttractionController>();
+            var controller = go.AddComponent<BasketballHoopAttractionHost>();
             controller.Configure(booth.Hoop, booth.Spawner, booth.Hud, match);
-            controller.Receive(Session);
+            controller.Receive(Visit);
             AttachPlaySupport(
                 booth.XrOrigin,
                 controller.Input,

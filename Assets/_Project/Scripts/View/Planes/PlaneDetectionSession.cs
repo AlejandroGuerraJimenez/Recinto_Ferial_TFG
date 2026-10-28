@@ -13,7 +13,7 @@ namespace Fairground.View
         /// Every mode the provider can return. Quest drops a floor when the request omits the flag it used.
         /// The selection filter still keeps only upward surfaces.
         /// </summary>
-        public const PlaneDetectionMode FlatSurfaces =
+        public const PlaneDetectionMode AllProviderModes =
             PlaneDetectionMode.Horizontal | PlaneDetectionMode.Vertical | PlaneDetectionMode.NotAxisAligned;
 
         ARPlaneManager _manager;
@@ -35,7 +35,7 @@ namespace Fairground.View
         /// Binds the manager again. AR Foundation looks up the plane subsystem only inside OnEnable.
         /// Enabling before OpenXR has loaded that subsystem leaves it null for the rest of the session.
         /// </summary>
-        public void TryAttach(GameObject prefab, UnityAction<ARTrackablesChangedEventArgs<ARPlane>> listener)
+        public void Attach(GameObject prefab, UnityAction<ARTrackablesChangedEventArgs<ARPlane>> listener)
         {
             _prefab = prefab;
             EnsureManager();
@@ -163,12 +163,12 @@ namespace Fairground.View
             _manager.requestedDetectionMode = PlaneDetectionMode.None;
         }
 
-        public void ResumeHorizontal(bool permitted)
+        public void ResumeDetection(bool permitted)
         {
             if (!permitted || _manager == null)
                 return;
 
-            _manager.requestedDetectionMode = FlatSurfaces;
+            _manager.requestedDetectionMode = AllProviderModes;
             _manager.enabled = true;
         }
 
@@ -227,13 +227,13 @@ namespace Fairground.View
         {
             _prefab = prefab != null ? prefab : _prefab;
             _manager.planePrefab = _prefab;
-            _manager.requestedDetectionMode = FlatSurfaces;
+            _manager.requestedDetectionMode = AllProviderModes;
         }
 
         void Enable()
         {
             _manager.enabled = true;
-            Debug.Log("Scene permission granted. Flat surface detection started.");
+            Debug.Log("Scene permission granted. Plane detection started.");
         }
     }
 }

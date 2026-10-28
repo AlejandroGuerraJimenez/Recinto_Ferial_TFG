@@ -24,9 +24,9 @@ namespace Fairground.View.Attractions.BalloonThrow
             var go = new GameObject("BalloonThrowGame");
             int count = booth.Balloons != null ? Mathf.Max(1, booth.Balloons.Length) : 1;
             var match = new BalloonThrowViewModel(pointsPerBalloon, startingThrows, count);
-            var controller = go.AddComponent<BalloonThrowAttractionController>();
+            var controller = go.AddComponent<BalloonThrowAttractionHost>();
             controller.Configure(booth.Balloons, booth.Spawner, booth.Hud, match);
-            controller.Receive(Session);
+            controller.Receive(Visit);
             AttachPlaySupport(booth.XrOrigin, controller.Input, BalloonThrowDesktopPlay.Profile(booth.Spawner));
             booth.EnsureBallReady();
         }

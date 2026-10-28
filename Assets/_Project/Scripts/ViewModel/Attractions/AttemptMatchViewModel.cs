@@ -23,7 +23,7 @@ namespace Fairground.ViewModel.Attractions
         public bool IsPlaying => Phase == MatchPhase.Playing;
         public bool CanSpendAttempt => IsPlaying && AttemptsRemaining > 0;
 
-        public override void StartGame()
+        public override void StartMatch()
         {
             Match.Start();
             Notify();

@@ -8,7 +8,7 @@ namespace Fairground.View.Attractions.PunchingBall
     /// <summary>
     /// View Facade: owns ViewModel and observes punch pad events.
     /// </summary>
-    public sealed class PunchingBallAttractionController : MonoBehaviour
+    public sealed class PunchingBallAttractionHost : MonoBehaviour
     {
         [SerializeField] PunchPadView punchPad;
         [SerializeField] PunchPowerMeterView powerMeter;
@@ -27,14 +27,14 @@ namespace Fairground.View.Attractions.PunchingBall
             BoothHudView hudView,
             PunchingBallViewModel match)
         {
-            punchPad = pad;
-            powerMeter = meter;
-            hud = hudView;
-            _viewModel = match;
+            punchPad = BoothWiring.Require(pad, "Punching ball", "a pad");
+            powerMeter = BoothWiring.Require(meter, "Punching ball", "a power meter");
+            hud = BoothWiring.Require(hudView, "Punching ball", "a HUD");
+            _viewModel = BoothWiring.Require(match, "Punching ball", "a match");
             OpenMatch();
         }
 
-        public void Receive(FairgroundSession session) => _controls?.Use(session);
+        public void Receive(FairgroundVisitState session) => _controls?.Use(session);
 
         void Awake() => _controls = new AttractionMatchControls(RestartMatch);
 
@@ -49,24 +49,11 @@ namespace Fairground.View.Attractions.PunchingBall
 
         void OpenMatch()
         {
-            if (_viewModel == null)
-                return;
-
-            ResolvePad();
             BoothHudBinding.Attach(hud, _viewModel, () => PunchingBallHud.Lines(_viewModel));
             Subscribe();
-            _viewModel.StartGame();
+            _viewModel.StartMatch();
             UpdatePadAvailability();
             powerMeter?.ResetMeter();
-        }
-
-        void ResolvePad()
-        {
-            if (punchPad == null)
-                punchPad = FindAnyObjectByType<PunchPadView>();
-
-            if (powerMeter == null)
-                powerMeter = FindAnyObjectByType<PunchPowerMeterView>();
         }
 
         void Subscribe()
@@ -81,12 +68,12 @@ namespace Fairground.View.Attractions.PunchingBall
                 punchPad.Punched -= OnPunched;
         }
 
-        void OnPunched(PunchPadView pad, float impactMagnitude)
+        void OnPunched(PunchPadView pad, float impactSpeed)
         {
             if (_viewModel == null)
                 return;
 
-            if (!_viewModel.TryRegisterPunch(impactMagnitude))
+            if (!_viewModel.TryRegisterPunch(impactSpeed))
                 return;
 
             powerMeter?.SetPower(_viewModel.LastPunchPower, _viewModel.MaxScore);

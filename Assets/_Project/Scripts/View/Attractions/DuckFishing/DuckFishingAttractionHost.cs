@@ -9,7 +9,7 @@ namespace Fairground.View.Attractions.DuckFishing
     /// <summary>
     /// View Facade: owns ViewModel and observes hook/duck events.
     /// </summary>
-    public sealed class DuckFishingAttractionController : MonoBehaviour
+    public sealed class DuckFishingAttractionHost : MonoBehaviour
     {
         [SerializeField] DuckTargetView[] ducks;
         [SerializeField] FishingRodView rod;
@@ -32,15 +32,15 @@ namespace Fairground.View.Attractions.DuckFishing
             Transform pondRoot,
             DuckFishingViewModel match)
         {
-            ducks = duckTargets;
-            rod = fishingRod;
-            hud = hudView;
-            pond = pondRoot;
-            _viewModel = match;
+            ducks = BoothWiring.RequireAny(duckTargets, "Duck fishing", "ducks");
+            rod = BoothWiring.Require(fishingRod, "Duck fishing", "a rod");
+            hud = BoothWiring.Require(hudView, "Duck fishing", "a HUD");
+            pond = BoothWiring.Require(pondRoot, "Duck fishing", "a pond");
+            _viewModel = BoothWiring.Require(match, "Duck fishing", "a match");
             OpenMatch();
         }
 
-        public void Receive(FairgroundSession session) => _controls?.Use(session);
+        public void Receive(FairgroundVisitState session) => _controls?.Use(session);
 
         void Awake() => _controls = new AttractionMatchControls(RestartMatch, headsetTriggers: true);
 
@@ -63,31 +63,11 @@ namespace Fairground.View.Attractions.DuckFishing
 
         void OpenMatch()
         {
-            if (_viewModel == null)
-                return;
-
-            ResolveRefs();
+            RememberDuckRoot();
             BoothHudBinding.Attach(hud, _viewModel, () => DuckFishingHud.Lines(_viewModel));
             Subscribe();
-            _viewModel.StartGame();
+            _viewModel.StartMatch();
             UpdateHookAvailability();
-        }
-
-        void ResolveRefs()
-        {
-            if (ducks == null || ducks.Length == 0)
-                ducks = FindObjectsByType<DuckTargetView>();
-
-            if (rod == null)
-                rod = FindAnyObjectByType<FishingRodView>();
-
-            if (pond == null)
-            {
-                var pondGo = GameObject.Find("Pond");
-                pond = pondGo != null ? pondGo.transform : null;
-            }
-
-            RememberDuckRoot();
         }
 
         void Subscribe()

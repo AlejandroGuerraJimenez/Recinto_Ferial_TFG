@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
 {
-    public sealed class BalloonThrowSessionTests
+    public sealed class BalloonThrowMatchTests
     {
         [Test]
         public void AttractionScenes_MapsBalloonThrowId()
@@ -20,9 +20,9 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         }
 
         [Test]
-        public void Session_Start_InitializesCounters()
+        public void Match_Start_InitializesCounters()
         {
-            var session = CreateSession(10, 8, 6);
+            var session = CreateMatch(10, 8, 6);
             session.Start();
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.AreEqual(0, session.Score);
@@ -31,9 +31,9 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         }
 
         [Test]
-        public void Session_Start_DoesNotReset_RestartDoes()
+        public void Match_Start_DoesNotReset_RestartDoes()
         {
-            var session = CreateSession(10, 2, 3);
+            var session = CreateMatch(10, 2, 3);
             session.Start();
             Assert.IsTrue(session.TrySpendAttempt());
             session.Start();
@@ -46,9 +46,9 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         }
 
         [Test]
-        public void Session_Hit_AddsScoreAndCanWin()
+        public void Match_Hit_AddsScoreAndCanWin()
         {
-            var session = CreateSession(10, 8, 2);
+            var session = CreateMatch(10, 8, 2);
             session.Start();
             Assert.IsTrue(session.TryRegisterSuccess());
             Assert.AreEqual(10, session.Score);
@@ -57,9 +57,9 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         }
 
         [Test]
-        public void Session_ThrowsExhausted_LosesWhenBalloonsRemainAfterBallsResolve()
+        public void Match_ThrowsExhausted_LosesWhenBalloonsRemainAfterBallsResolve()
         {
-            var session = CreateSession(10, 2, 3);
+            var session = CreateMatch(10, 2, 3);
             session.Start();
             Assert.IsTrue(session.TrySpendAttempt());
             Assert.IsTrue(session.TrySpendAttempt());
@@ -71,9 +71,9 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         }
 
         [Test]
-        public void Session_LastThrow_CanWinBeforeBallResolves()
+        public void Match_LastThrow_CanWinBeforeBallResolves()
         {
-            var session = CreateSession(10, 1, 1);
+            var session = CreateMatch(10, 1, 1);
             session.Start();
             Assert.IsTrue(session.TrySpendAttempt());
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
@@ -84,9 +84,9 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         }
 
         [Test]
-        public void Session_LastThrow_LosesAfterBallResolvesWithoutHit()
+        public void Match_LastThrow_LosesAfterBallResolvesWithoutHit()
         {
-            var session = CreateSession(10, 1, 2);
+            var session = CreateMatch(10, 1, 2);
             session.Start();
             Assert.IsTrue(session.TrySpendAttempt());
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
@@ -100,9 +100,9 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             var vm = new BalloonThrowViewModel(new BalloonThrowRules(10, 3, 2));
             int events = 0;
             vm.StateChanged += () => events++;
-            vm.StartGame();
+            vm.StartMatch();
             Assert.IsTrue(vm.TryRegisterThrow());
-            Assert.IsTrue(vm.TryRegisterHit());
+            Assert.IsTrue(vm.TryRegisterPop());
             Assert.AreEqual(3, events);
             Assert.AreEqual("¡Explota los globos!", BalloonThrowHud.Status(vm));
             Assert.AreEqual("Puntos: 10", BalloonThrowHud.Lines(vm)[0]);
@@ -114,18 +114,18 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         public void ViewModel_FromCounts_OwnsSpawnAndRestart()
         {
             var vm = new BalloonThrowViewModel(10, 1, 2);
-            vm.StartGame();
-            Assert.IsTrue(vm.CanSpawnBall);
+            vm.StartMatch();
+            Assert.IsTrue(vm.CanSpendThrow);
             Assert.AreEqual(2, vm.BalloonCount);
             Assert.IsTrue(vm.TryRegisterThrow());
-            Assert.IsFalse(vm.CanSpawnBall);
+            Assert.IsFalse(vm.CanSpendThrow);
             vm.Restart();
-            Assert.IsTrue(vm.CanSpawnBall);
-            Assert.AreEqual(1, vm.ThrowsRemaining);
+            Assert.IsTrue(vm.CanSpendThrow);
+            Assert.AreEqual(1, vm.AttemptsRemaining);
             Assert.AreEqual(0, vm.Score);
         }
 
-        static AttemptMatch CreateSession(int points, int throws, int balloons)
+        static AttemptMatch CreateMatch(int points, int throws, int balloons)
         {
             return new AttemptMatch(new BalloonThrowRules(points, throws, balloons).Attempt);
         }

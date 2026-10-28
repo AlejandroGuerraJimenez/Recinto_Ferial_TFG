@@ -25,15 +25,14 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
 
         public AttractionId AttractionId => AttractionId.BalloonThrow;
 
-        public int ThrowsRemaining => AttemptsRemaining;
         public int BalloonsRemaining => TargetsRemaining;
         public int BalloonsPopped => Successes;
         public int BalloonCount => _rules.BalloonCount;
-        public bool CanSpawnBall => CanSpendAttempt;
+        public bool CanSpendThrow => CanSpendAttempt;
 
         public bool TryRegisterThrow() => TrySpendAttempt();
 
-        public bool TryRegisterHit() => TryRegisterSuccess();
+        public bool TryRegisterPop() => TryRegisterSuccess();
 
         public bool TryResolveThrow() => TryResolveAttempt();
     }

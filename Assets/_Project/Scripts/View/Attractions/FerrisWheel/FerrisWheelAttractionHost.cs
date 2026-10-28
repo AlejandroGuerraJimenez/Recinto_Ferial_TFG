@@ -8,13 +8,13 @@ namespace Fairground.View.Attractions.FerrisWheel
     /// <summary>
     /// View facade: owns the ride ViewModel and pushes its angle into the rig.
     /// </summary>
-    public sealed class FerrisWheelAttractionController : MonoBehaviour
+    public sealed class FerrisWheelAttractionHost : MonoBehaviour
     {
         [SerializeField] FerrisWheelRigView rig;
 
         FerrisWheelViewModel _viewModel;
         AttractionInput _input;
-        FairgroundSession _session;
+        FairgroundVisitState _visit;
 
         public AttractionId AttractionId => AttractionId.FerrisWheel;
         public FerrisWheelViewModel ViewModel => _viewModel;
@@ -39,7 +39,7 @@ namespace Fairground.View.Attractions.FerrisWheel
             rig?.ApplyAngle(_viewModel.AngleDegrees);
         }
 
-        public void Receive(FairgroundSession session) => _session = session;
+        public void Receive(FairgroundVisitState session) => _visit = session;
 
         void Awake()
         {
@@ -56,7 +56,7 @@ namespace Fairground.View.Attractions.FerrisWheel
             rig?.ApplyAngle(_viewModel.AngleDegrees);
 
             if (_input != null && _input.ReturnToFairgroundPressed)
-                AttractionExit.ReturnToFairground(_session);
+                AttractionExit.ReturnToFairground(_visit);
         }
 
         void OnDestroy()

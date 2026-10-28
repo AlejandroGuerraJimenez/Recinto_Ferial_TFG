@@ -35,7 +35,7 @@ namespace Fairground.Tests.EditMode
         static PlaneSelectionViewModel Listening(Tally received)
         {
             var viewModel = new PlaneSelectionViewModel();
-            viewModel.OnPlaneSelected += _ => received.Add();
+            viewModel.PlaneSelected += _ => received.Add();
             return viewModel;
         }
 
@@ -51,7 +51,7 @@ namespace Fairground.Tests.EditMode
         {
             var viewModel = new PlaneSelectionViewModel();
             var received = 0;
-            viewModel.OnPlaneSelected += _ => received++;
+            viewModel.PlaneSelected += _ => received++;
             Assert.IsTrue(viewModel.SelectPlane(Table()));
             Assert.IsFalse(viewModel.SelectPlane(Table()));
             Assert.AreEqual(1, received);

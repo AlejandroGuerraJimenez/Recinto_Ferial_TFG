@@ -10,24 +10,24 @@ namespace Fairground.ViewModel.Attractions.FerrisWheel
     /// </summary>
     public sealed class FerrisWheelViewModel
     {
-        readonly FerrisWheelSession _session;
+        readonly FerrisWheelRide _ride;
 
         public FerrisWheelViewModel(float degreesPerSecond = FerrisWheelBalance.DegreesPerSecond)
         {
-            _session = new FerrisWheelSession(new FerrisWheelRules(degreesPerSecond));
+            _ride = new FerrisWheelRide(new FerrisWheelRules(degreesPerSecond));
         }
 
         public AttractionId AttractionId => AttractionId.FerrisWheel;
         public event Action StateChanged;
 
-        public FerrisWheelPhase Phase => _session.Phase;
-        public float AngleDegrees => _session.AngleDegrees;
-        public float DegreesPerSecond => _session.Rules.DegreesPerSecond;
+        public FerrisWheelPhase Phase => _ride.Phase;
+        public float AngleDegrees => _ride.AngleDegrees;
+        public float DegreesPerSecond => _ride.Rules.DegreesPerSecond;
         public bool IsRiding => Phase == FerrisWheelPhase.Riding;
 
         public void StartRide()
         {
-            _session.Start();
+            _ride.Start();
             StateChanged?.Invoke();
         }
 
@@ -36,7 +36,7 @@ namespace Fairground.ViewModel.Attractions.FerrisWheel
             if (!IsRiding)
                 return;
 
-            _session.Advance(deltaSeconds);
+            _ride.Advance(deltaSeconds);
         }
     }
 }

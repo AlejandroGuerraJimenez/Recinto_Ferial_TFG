@@ -24,7 +24,7 @@ namespace Fairground.ViewModel
 
         public event Action<PlaneSelectionState> StateChanged;
 
-        public event Action<DetectedPlane> OnPlaneSelected;
+        public event Action<DetectedPlane> PlaneSelected;
 
         public bool SelectPlane(DetectedPlane plane) => _context.State.Select(_context, plane);
 
@@ -36,6 +36,6 @@ namespace Fairground.ViewModel
 
         void NotifyState(PlaneSelectionState state) => StateChanged?.Invoke(state);
 
-        void NotifySelected(DetectedPlane plane) => OnPlaneSelected?.Invoke(plane);
+        void NotifySelected(DetectedPlane plane) => PlaneSelected?.Invoke(plane);
     }
 }

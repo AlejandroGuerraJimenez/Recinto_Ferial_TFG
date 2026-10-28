@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Fairground.Tests.EditMode.Attractions.FerrisWheel
 {
-    public sealed class FerrisWheelSessionTests
+    public sealed class FerrisWheelRideTests
     {
         [Test]
         public void AttractionScenes_MapsFerrisWheelId()
@@ -39,18 +39,18 @@ namespace Fairground.Tests.EditMode.Attractions.FerrisWheel
         }
 
         [Test]
-        public void Session_DoesNotSpinUntilStarted()
+        public void Ride_DoesNotSpinUntilStarted()
         {
-            var session = new FerrisWheelSession(new FerrisWheelRules());
+            var session = new FerrisWheelRide(new FerrisWheelRules());
             session.Advance(1f);
             Assert.AreEqual(FerrisWheelPhase.NotStarted, session.Phase);
             Assert.AreEqual(0f, session.AngleDegrees, 0.001f);
         }
 
         [Test]
-        public void Session_AdvancesWhileRiding()
+        public void Ride_AdvancesWhileRiding()
         {
-            var session = new FerrisWheelSession(new FerrisWheelRules(16f));
+            var session = new FerrisWheelRide(new FerrisWheelRules(16f));
             session.Start();
             session.Advance(0.5f);
 

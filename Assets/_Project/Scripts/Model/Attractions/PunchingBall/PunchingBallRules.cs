@@ -38,12 +38,12 @@ namespace Fairground.Model.Attractions.PunchingBall
         public int MaxScore { get; }
         public float MaxImpactSpeed { get; }
 
-        public int ScoreForImpact(float impactMagnitude)
+        public int ScoreForSpeed(float impactSpeed)
         {
-            if (impactMagnitude <= 0f)
+            if (impactSpeed <= 0f)
                 return 0;
 
-            float t = impactMagnitude / MaxImpactSpeed;
+            float t = impactSpeed / MaxImpactSpeed;
             if (t > 1f)
                 t = 1f;
 

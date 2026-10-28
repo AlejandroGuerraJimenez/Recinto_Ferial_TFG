@@ -9,7 +9,7 @@ namespace Fairground.View.Attractions.BalloonThrow
     /// <summary>
     /// Hosts the balloon match: targets, the shared throw tracker, and the HUD.
     /// </summary>
-    public sealed class BalloonThrowAttractionController : MonoBehaviour
+    public sealed class BalloonThrowAttractionHost : MonoBehaviour
     {
         [SerializeField] BalloonTargetView[] balloons;
         [SerializeField] BallSpawnerView ballSpawner;
@@ -20,7 +20,7 @@ namespace Fairground.View.Attractions.BalloonThrow
         readonly ThrownPropTracker _props = new ThrownPropTracker();
         readonly BalloonTargetFactory _balloonFactory = new BalloonTargetFactory();
         Transform _balloonRoot;
-        FairgroundSession _session;
+        FairgroundVisitState _visit;
 
         public AttractionId AttractionId => AttractionId.BalloonThrow;
         public BalloonThrowViewModel ViewModel => _viewModel;
@@ -32,16 +32,16 @@ namespace Fairground.View.Attractions.BalloonThrow
             BoothHudView hudView,
             BalloonThrowViewModel match)
         {
-            balloons = balloonTargets;
-            ballSpawner = spawner;
-            hud = hudView;
-            _viewModel = match;
+            balloons = BoothWiring.RequireAny(balloonTargets, "Balloon throw", "balloons");
+            ballSpawner = BoothWiring.Require(spawner, "Balloon throw", "a ball spawner");
+            hud = BoothWiring.Require(hudView, "Balloon throw", "a HUD");
+            _viewModel = BoothWiring.Require(match, "Balloon throw", "a match");
             OpenMatch();
         }
 
-        public void Receive(FairgroundSession session)
+        public void Receive(FairgroundVisitState session)
         {
-            _session = session;
+            _visit = session;
             _controls?.Use(session);
         }
 
@@ -63,22 +63,11 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         void OpenMatch()
         {
-            if (_viewModel == null)
-                return;
-
-            ResolveBalloons();
+            RememberBalloonRoot();
             BoothHudBinding.Attach(hud, _viewModel, () => BalloonThrowHud.Lines(_viewModel));
             Subscribe();
-            _viewModel.StartGame();
+            _viewModel.StartMatch();
             UpdateSpawnerAvailability();
-        }
-
-        void ResolveBalloons()
-        {
-            if (balloons == null || balloons.Length == 0)
-                balloons = FindObjectsByType<BalloonTargetView>();
-
-            RememberBalloonRoot();
         }
 
         void Subscribe()
@@ -117,7 +106,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         void OnPropResolved() => Forward(_viewModel.TryResolveThrow);
 
-        void OnBalloonPopped(BalloonTargetView balloon) => Forward(_viewModel.TryRegisterHit);
+        void OnBalloonPopped(BalloonTargetView balloon) => Forward(_viewModel.TryRegisterPop);
 
         void Forward(System.Func<bool> action)
         {
@@ -133,7 +122,7 @@ namespace Fairground.View.Attractions.BalloonThrow
             if (ballSpawner == null || _viewModel == null)
                 return;
 
-            ballSpawner.SetSpawningEnabled(_viewModel.CanSpawnBall);
+            ballSpawner.SetSpawningEnabled(_viewModel.CanSpendThrow);
         }
 
         public void RestartMatch()
@@ -157,7 +146,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 
             balloons = _balloonFactory.CreateRow(_viewModel.BalloonCount);
             RememberBalloonRoot();
-            AttractionPlacement.TryApply(_session, _balloonRoot);
+            AttractionPlacement.TryApply(_visit, _balloonRoot);
         }
 
         void RememberBalloonRoot()

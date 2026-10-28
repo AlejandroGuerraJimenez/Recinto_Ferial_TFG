@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace Fairground.Tests.EditMode.Attractions.DuckFishing
 {
-    public sealed class DuckFishingSessionTests
+    public sealed class DuckFishingMatchTests
     {
         [Test]
         public void AttractionScenes_MapsDuckFishingId()
@@ -20,9 +20,9 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         }
 
         [Test]
-        public void Session_Start_InitializesCounters()
+        public void Match_Start_InitializesCounters()
         {
-            var session = CreateSession(10, 8, 6, 4);
+            var session = CreateMatch(10, 8, 6, 4);
             session.Start();
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.AreEqual(0, session.Score);
@@ -31,9 +31,9 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         }
 
         [Test]
-        public void Session_Start_DoesNotReset_RestartDoes()
+        public void Match_Start_DoesNotReset_RestartDoes()
         {
-            var session = CreateSession(10, 2, 6, 4);
+            var session = CreateMatch(10, 2, 6, 4);
             session.Start();
             Assert.IsTrue(session.TrySpendAttempt());
             session.Start();
@@ -46,9 +46,9 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         }
 
         [Test]
-        public void Session_Catch_AddsScoreAndCanWin()
+        public void Match_Catch_AddsScoreAndCanWin()
         {
-            var session = CreateSession(10, 8, 6, 2);
+            var session = CreateMatch(10, 8, 6, 2);
             session.Start();
             Assert.IsTrue(session.TryRegisterSuccess());
             Assert.AreEqual(10, session.Score);
@@ -57,9 +57,9 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         }
 
         [Test]
-        public void Session_AttemptsExhausted_LosesWhenNotEnoughCaught()
+        public void Match_AttemptsExhausted_LosesWhenNotEnoughCaught()
         {
-            var session = CreateSession(10, 2, 6, 3);
+            var session = CreateMatch(10, 2, 6, 3);
             session.Start();
             Assert.IsTrue(session.TrySpendAttempt());
             Assert.IsTrue(session.TrySpendAttempt());
@@ -71,9 +71,9 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         }
 
         [Test]
-        public void Session_LastDip_CanWinBeforeResolve()
+        public void Match_LastDip_CanWinBeforeResolve()
         {
-            var session = CreateSession(10, 1, 6, 1);
+            var session = CreateMatch(10, 1, 6, 1);
             session.Start();
             Assert.IsTrue(session.TrySpendAttempt());
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
@@ -84,9 +84,9 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         }
 
         [Test]
-        public void Session_FourCatchesOfSix_WinsWithDucksLeft()
+        public void Match_FourCatchesOfSix_WinsWithDucksLeft()
         {
-            var session = CreateSession(10, 8, 6, 4);
+            var session = CreateMatch(10, 8, 6, 4);
             session.Start();
             Assert.IsTrue(session.TryRegisterSuccess());
             Assert.IsTrue(session.TryRegisterSuccess());
@@ -104,7 +104,7 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
             var vm = new DuckFishingViewModel(new DuckFishingRules(10, 3, 6, 2));
             int events = 0;
             vm.StateChanged += () => events++;
-            vm.StartGame();
+            vm.StartMatch();
             Assert.IsTrue(vm.TryRegisterDip());
             Assert.IsTrue(vm.TryRegisterCatch());
             Assert.AreEqual(3, events);
@@ -116,7 +116,7 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         public void ViewModel_Restart_ResetsMatch()
         {
             var vm = new DuckFishingViewModel(10, 2, 6, 4);
-            vm.StartGame();
+            vm.StartMatch();
             Assert.IsTrue(vm.CanDip);
             Assert.IsTrue(vm.TryRegisterDip());
             Assert.IsTrue(vm.CanDip);
@@ -127,7 +127,7 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
             Assert.AreEqual(0, vm.Score);
         }
 
-        static AttemptMatch CreateSession(int points, int attempts, int ducks, int toWin)
+        static AttemptMatch CreateMatch(int points, int attempts, int ducks, int toWin)
         {
             return new AttemptMatch(new DuckFishingRules(points, attempts, ducks, toWin).Attempt);
         }

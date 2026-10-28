@@ -19,7 +19,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         {
             yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.PunchingBall.SceneName);
 
-            var controller = AttractionSceneTestHelper.Require<PunchingBallAttractionController>();
+            var controller = AttractionSceneTestHelper.Require<PunchingBallAttractionHost>();
             yield return AttractionSceneTestHelper.WaitUntil(
                 () => controller.ViewModel != null && controller.ViewModel.IsPlaying,
                 3f,
@@ -40,7 +40,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         {
             yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.PunchingBall.SceneName);
 
-            var controller = AttractionSceneTestHelper.Require<PunchingBallAttractionController>();
+            var controller = AttractionSceneTestHelper.Require<PunchingBallAttractionHost>();
             yield return AttractionSceneTestHelper.WaitUntil(
                 () => controller.ViewModel != null && controller.ViewModel.CanPunch,
                 3f,
@@ -67,7 +67,7 @@ namespace Fairground.Tests.PlayMode.Attractions
         {
             yield return AttractionSceneTestHelper.LoadAttractionScene(AttractionCatalog.PunchingBall.SceneName);
 
-            var controller = AttractionSceneTestHelper.Require<PunchingBallAttractionController>();
+            var controller = AttractionSceneTestHelper.Require<PunchingBallAttractionHost>();
             yield return AttractionSceneTestHelper.WaitUntil(
                 () => controller.ViewModel != null && controller.ViewModel.CanPunch,
                 3f,

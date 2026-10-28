@@ -26,9 +26,9 @@ namespace Fairground.View.Attractions.DuckFishing
             int count = booth.Ducks != null ? Mathf.Max(1, booth.Ducks.Length) : 1;
             int win = Mathf.Clamp(ducksToWin, 1, count);
             var match = new DuckFishingViewModel(pointsPerDuck, startingAttempts, count, win);
-            var controller = go.AddComponent<DuckFishingAttractionController>();
+            var controller = go.AddComponent<DuckFishingAttractionHost>();
             controller.Configure(booth.Ducks, booth.Rod, booth.Hud, booth.Pond, match);
-            controller.Receive(Session);
+            controller.Receive(Visit);
             AttachPlaySupport(booth.XrOrigin, controller.Input, DuckFishingDesktopPlay.Profile(booth.Rod));
         }
     }

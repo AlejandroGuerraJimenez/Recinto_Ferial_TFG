@@ -5,11 +5,11 @@ namespace Fairground.Model.Attractions.FerrisWheel
     /// <summary>
     /// Mutable ride state. The wheel starts when <see cref="Start"/> is called and then only spins.
     /// </summary>
-    public sealed class FerrisWheelSession
+    public sealed class FerrisWheelRide
     {
         readonly FerrisWheelRules _rules;
 
-        public FerrisWheelSession(FerrisWheelRules rules)
+        public FerrisWheelRide(FerrisWheelRules rules)
         {
             _rules = rules ?? throw new ArgumentNullException(nameof(rules));
         }

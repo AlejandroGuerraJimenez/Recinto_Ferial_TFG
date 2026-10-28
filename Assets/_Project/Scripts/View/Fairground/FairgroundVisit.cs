@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Fairground.View
 {
     /// <summary>
-    /// Carries one <see cref="FairgroundSession"/> from the fairground into the attraction scene.
+    /// Carries one <see cref="FairgroundVisitState"/> from the fairground into the attraction scene.
     /// The fairground delivers it when a floor is confirmed. The attraction installer reads it on load.
     /// Leaving an attraction keeps the floor. <see cref="Close"/> drops the visit.
     /// </summary>
@@ -15,15 +15,15 @@ namespace Fairground.View
     {
         static FairgroundVisit _active;
 
-        public FairgroundSession Session { get; private set; }
+        public FairgroundVisitState State { get; private set; }
 
         /// <summary>
-        /// Hands <paramref name="session"/> to whichever scene loads next.
+        /// Hands <paramref name="visit"/> to whichever scene loads next.
         /// </summary>
-        public static void Deliver(FairgroundSession session)
+        public static void Deliver(FairgroundVisitState visit)
         {
-            if (session == null)
-                throw new ArgumentNullException(nameof(session));
+            if (visit == null)
+                throw new ArgumentNullException(nameof(visit));
 
             if (_active == null)
             {
@@ -32,22 +32,22 @@ namespace Fairground.View
                 _active = host.AddComponent<FairgroundVisit>();
             }
 
-            _active.Session = session;
+            _active.State = visit;
         }
 
         /// <summary>
-        /// The session delivered before this scene loaded, if the fairground opened a visit.
+        /// The visit delivered before this scene loaded, if the fairground opened one.
         /// </summary>
-        public static bool TryReceive(out FairgroundSession session)
+        public static bool TryReceive(out FairgroundVisitState visit)
         {
             if (_active == null)
             {
-                session = null;
+                visit = null;
                 return false;
             }
 
-            session = _active.Session;
-            return session != null;
+            visit = _active.State;
+            return visit != null;
         }
 
         /// <summary>
@@ -60,8 +60,8 @@ namespace Fairground.View
 
             var visit = _active;
             _active = null;
-            visit.Session?.Clear();
-            visit.Session = null;
+            visit.State?.Clear();
+            visit.State = null;
             Destroy(visit.gameObject);
         }
 

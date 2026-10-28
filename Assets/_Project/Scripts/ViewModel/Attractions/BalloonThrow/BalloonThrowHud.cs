@@ -15,7 +15,7 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
 
         public static string[] Lines(BalloonThrowViewModel match)
         {
-            return Lines(match.Score, match.ThrowsRemaining, match.BalloonsRemaining, match.Phase);
+            return Lines(match.Score, match.AttemptsRemaining, match.BalloonsRemaining, match.Phase);
         }
 
         public static string Status(BalloonThrowViewModel match)

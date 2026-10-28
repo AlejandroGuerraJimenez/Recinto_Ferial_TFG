@@ -24,9 +24,9 @@ namespace Fairground.View.Attractions.PunchingBall
         {
             var go = new GameObject("PunchingBallGame");
             var match = new PunchingBallViewModel(startingPunches, winScoreThreshold, maxScore, maxImpactSpeed);
-            var controller = go.AddComponent<PunchingBallAttractionController>();
+            var controller = go.AddComponent<PunchingBallAttractionHost>();
             controller.Configure(booth.Pad, booth.Meter, booth.Hud, match);
-            controller.Receive(Session);
+            controller.Receive(Visit);
             AttachPlaySupport(booth.XrOrigin, controller.Input, PunchingBallDesktopPlay.Profile(booth.Pad));
         }
     }

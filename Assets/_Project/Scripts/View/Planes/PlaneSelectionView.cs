@@ -22,9 +22,9 @@ namespace Fairground.View
     {
         [SerializeField, FormerlySerializedAs("m_PlaneManager")] ARPlaneManager planeManager;
         [SerializeField, FormerlySerializedAs("m_PlanePrefab")] GameObject planePrefab;
-        [SerializeField] Transform m_RightController;
+        [SerializeField, FormerlySerializedAs("m_RightController")] Transform rightController;
         [SerializeField, FormerlySerializedAs("m_RayDistance")] float rayDistance = 8f;
-        [SerializeField] bool m_EnableEditorStandIn = true;
+        [SerializeField, FormerlySerializedAs("m_EnableEditorStandIn")] bool enableEditorStandIn = true;
 
         PlaneSelectionViewModel _viewModel;
         PlaneDetectionSession _detection;
@@ -54,7 +54,7 @@ namespace Fairground.View
         /// <summary>
         /// Fired once when the user confirms a surface. Other surfaces are hidden. Parcels stay on this one.
         /// </summary>
-        public event Action<DetectedPlane> OnPlaneSelected;
+        public event Action<DetectedPlane> PlaneSelected;
 
         /// <summary>
         /// Fired when the trigger is pressed again after a surface is already locked.
@@ -105,13 +105,13 @@ namespace Fairground.View
             _pointer = new PlanePointer();
             _trackable = new SelectedTrackableGuard();
             CreateViewModel();
-            CreateSession();
+            OpenDetection();
         }
 
         void OnEnable()
         {
             _input.Enable();
-            _detection.Listen(_registration.OnChanged);
+            _detection.Listen(_registration.HandleTrackablesChanged);
             EnsurePermission();
         }
 
@@ -189,7 +189,7 @@ namespace Fairground.View
             _attachAttempts = 0;
             _scanSince = -1f;
             _askedForRoom = false;
-            _detection.TryAttach(planePrefab, _registration.OnChanged);
+            _detection.Attach(planePrefab, _registration.HandleTrackablesChanged);
             _viewModel?.RestartSelection();
             OnRestarted?.Invoke();
         }
@@ -197,11 +197,11 @@ namespace Fairground.View
         void CreateViewModel()
         {
             _viewModel = new PlaneSelectionViewModel();
-            _viewModel.OnPlaneSelected += HandlePlaneSelected;
+            _viewModel.PlaneSelected += HandlePlaneSelected;
             _viewModel.StateChanged += HandleStateChanged;
         }
 
-        void CreateSession()
+        void OpenDetection()
         {
             _detection = new PlaneDetectionSession(planeManager);
             _aim = new PlaneAimController(AimSource(), rayDistance);
@@ -214,7 +214,7 @@ namespace Fairground.View
             _confirm = Confirm;
             _restart = RestartSelection;
             _isAwaiting = IsAwaiting;
-            _standIn = new EditorStandInHost(m_EnableEditorStandIn, transform, planePrefab, DetectionRunning);
+            _standIn = new EditorStandInHost(enableEditorStandIn, transform, planePrefab, DetectionRunning);
             _registration = new PlaneRegistration(
                 _catalog,
                 _aim,
@@ -264,7 +264,7 @@ namespace Fairground.View
 
             _nextAttach = Time.unscaledTime + 1.5f;
             _attachAttempts++;
-            _detection.TryAttach(planePrefab, _registration.OnChanged);
+            _detection.Attach(planePrefab, _registration.HandleTrackablesChanged);
         }
 
         void OnDenied()
@@ -282,7 +282,7 @@ namespace Fairground.View
             Debug.Log("[Planos] " + status.Replace("\n", " | "));
         }
 
-        void HandlePlaneSelected(DetectedPlane plane) => OnPlaneSelected?.Invoke(plane);
+        void HandlePlaneSelected(DetectedPlane plane) => PlaneSelected?.Invoke(plane);
 
         void HandleStateChanged(PlaneSelectionState state)
         {
@@ -296,8 +296,8 @@ namespace Fairground.View
         {
             ReleaseHold();
             _detection.Prepare(planePrefab);
-            _detection.ResumeHorizontal(_permissionGranted);
-            _detection.Listen(_registration.OnChanged);
+            _detection.ResumeDetection(_permissionGranted);
+            _detection.Listen(_registration.HandleTrackablesChanged);
             _standIn.AllowAgain(_catalog);
         }
 
@@ -353,7 +353,7 @@ namespace Fairground.View
             if (_viewModel == null)
                 return;
 
-            _viewModel.OnPlaneSelected -= HandlePlaneSelected;
+            _viewModel.PlaneSelected -= HandlePlaneSelected;
             _viewModel.StateChanged -= HandleStateChanged;
         }
 
@@ -404,9 +404,9 @@ namespace Fairground.View
         IAimRaySource AimSource()
         {
 #if UNITY_EDITOR
-            return new FirstAvailableAim(new RightControllerAim(m_RightController), new EditorCameraAim());
+            return new FirstAvailableAim(new RightControllerAim(rightController), new EditorCameraAim());
 #else
-            return new RightControllerAim(m_RightController);
+            return new RightControllerAim(rightController);
 #endif
         }
 

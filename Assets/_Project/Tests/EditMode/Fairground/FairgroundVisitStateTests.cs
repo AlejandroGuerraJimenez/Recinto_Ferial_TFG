@@ -5,13 +5,13 @@ using NUnit.Framework;
 
 namespace Fairground.Tests.EditMode.Fairground
 {
-    public sealed class FairgroundSessionTests
+    public sealed class FairgroundVisitStateTests
     {
         [Test]
         public void Remember_StaysOnThatInstance()
         {
-            var first = new FairgroundSession();
-            var second = new FairgroundSession();
+            var first = new FairgroundVisitState();
+            var second = new FairgroundVisitState();
 
             first.Remember(Plane("table"), AttractionId.BalloonThrow);
 
@@ -24,7 +24,7 @@ namespace Fairground.Tests.EditMode.Fairground
         [Test]
         public void RememberPlane_ClearsThePendingAttraction()
         {
-            var session = new FairgroundSession();
+            var session = new FairgroundVisitState();
             session.Remember(Plane("floor"), AttractionId.DuckFishing);
 
             session.Remember(Plane("floor"));
@@ -36,7 +36,7 @@ namespace Fairground.Tests.EditMode.Fairground
         [Test]
         public void LeaveAttraction_KeepsTheFloor()
         {
-            var session = new FairgroundSession();
+            var session = new FairgroundVisitState();
             session.Remember(Plane("floor"), AttractionId.FerrisWheel);
 
             session.LeaveAttraction();
@@ -48,7 +48,7 @@ namespace Fairground.Tests.EditMode.Fairground
         [Test]
         public void Clear_DropsFloorAndAttraction()
         {
-            var session = new FairgroundSession();
+            var session = new FairgroundVisitState();
             session.Remember(Plane("floor"), AttractionId.BasketballHoop);
 
             session.Clear();
