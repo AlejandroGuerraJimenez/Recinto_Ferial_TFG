@@ -30,17 +30,17 @@ namespace Fairground.View.Attractions.DuckFishing
             FishingRodView fishingRod,
             BoothHudView hudView,
             Transform pondRoot,
-            DuckFishingViewModel match)
+            DuckFishingViewModel viewModel)
         {
             ducks = BoothWiring.RequireAny(duckTargets, "Duck fishing", "ducks");
             rod = BoothWiring.Require(fishingRod, "Duck fishing", "a rod");
             hud = BoothWiring.Require(hudView, "Duck fishing", "a HUD");
             pond = BoothWiring.Require(pondRoot, "Duck fishing", "a pond");
-            _viewModel = BoothWiring.Require(match, "Duck fishing", "a match");
+            _viewModel = BoothWiring.Require(viewModel, "Duck fishing", "a match");
             OpenMatch();
         }
 
-        public void Receive(FairgroundVisitState session) => _controls?.Use(session);
+        public void Receive(FairgroundVisitState visit) => _controls?.Use(visit);
 
         void Awake() => _controls = new AttractionMatchControls(RestartMatch, headsetTriggers: true);
 
@@ -63,7 +63,7 @@ namespace Fairground.View.Attractions.DuckFishing
 
         void OpenMatch()
         {
-            RememberDuckRoot();
+            CaptureTargetRoot();
             BoothHudBinding.Attach(hud, _viewModel, () => DuckFishingHud.Lines(_viewModel));
             Subscribe();
             _viewModel.StartMatch();
@@ -90,13 +90,13 @@ namespace Fairground.View.Attractions.DuckFishing
             rod.Hook.DuckCaught -= OnDuckCaught;
         }
 
-        void OnDipStarted() => Forward(_viewModel.TryRegisterDip);
+        void OnDipStarted() => ApplyAndRefresh(_viewModel.TryRegisterDip);
 
-        void OnDipResolved() => Forward(_viewModel.TryResolveDip);
+        void OnDipResolved() => ApplyAndRefresh(_viewModel.TryResolveDip);
 
-        void OnDuckCaught(DuckTargetView duck) => Forward(_viewModel.TryRegisterCatch);
+        void OnDuckCaught(DuckTargetView duck) => ApplyAndRefresh(_viewModel.TryRegisterCatch);
 
-        void Forward(System.Func<bool> action)
+        void ApplyAndRefresh(System.Func<bool> action)
         {
             if (_viewModel == null)
                 return;
@@ -127,15 +127,37 @@ namespace Fairground.View.Attractions.DuckFishing
 
         void RebuildDucks()
         {
+            if (CanRearm(ducks, _viewModel.DuckCount))
+            {
+                for (var i = 0; i < ducks.Length; i++)
+                    ducks[i].Rearm();
+
+                return;
+            }
+
             if (_duckRoot != null)
                 Destroy(_duckRoot.gameObject);
 
             Transform pondRoot = pond != null ? pond : transform;
             ducks = _duckFactory.CreateRing(pondRoot, _viewModel.DuckCount);
-            RememberDuckRoot();
+            CaptureTargetRoot();
         }
 
-        void RememberDuckRoot()
+        static bool CanRearm(DuckTargetView[] targets, int count)
+        {
+            if (targets == null || targets.Length != count)
+                return false;
+
+            for (var i = 0; i < targets.Length; i++)
+            {
+                if (targets[i] == null)
+                    return false;
+            }
+
+            return true;
+        }
+
+        void CaptureTargetRoot()
         {
             if (ducks == null || ducks.Length == 0 || ducks[0] == null)
                 return;

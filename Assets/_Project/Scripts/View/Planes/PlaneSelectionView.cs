@@ -59,7 +59,7 @@ namespace Fairground.View
         /// <summary>
         /// Fired when the trigger is pressed again after a surface is already locked.
         /// </summary>
-        public event Action OnLockedConfirm;
+        public event Action LockedConfirm;
 
         /// <summary>
         /// Fired when the user clears the locked surface and detection starts again.
@@ -313,7 +313,7 @@ namespace Fairground.View
             }
 
             if (State == PlaneSelectionState.PlaneSelected)
-                OnLockedConfirm?.Invoke();
+                LockedConfirm?.Invoke();
         }
 
         void Submit(DetectedPlane snapshot)

@@ -10,7 +10,6 @@ namespace Fairground.View.Attractions.BasketballHoop.Builders
     {
         readonly HoopFactory _hoopFactory = new HoopFactory();
         readonly BasketballBallFactory _ballFactory = new BasketballBallFactory();
-        readonly BallSpawnerFactory _spawnerFactory = new BallSpawnerFactory();
 
         public BasketDetectorView Hoop { get; private set; }
 
@@ -26,7 +25,11 @@ namespace Fairground.View.Attractions.BasketballHoop.Builders
             Hoop = _hoopFactory.Create();
             Track(Top(Hoop != null ? Hoop.transform : null));
 
-            Spawner = _spawnerFactory.Create(_ballFactory.CreateTemplate());
+            Spawner = ThrownPropSpawnerFactory.Create(
+                _ballFactory.CreateTemplate(),
+                BasketballHoopLayout.SpawnerPosition,
+                BasketballHoopLayout.SpawnerPedestalRadius,
+                BasketballHoopLayout.SpawnerLocalOffset);
             Track(Spawner != null ? Spawner.transform : null);
         }
 

@@ -1,3 +1,4 @@
+using System;
 using Fairground.Core.Attractions;
 using Fairground.Model.Attractions.DuckFishing;
 
@@ -12,10 +13,15 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
 
         readonly DuckFishingRules _rules;
 
-        public DuckFishingViewModel(DuckFishingRules rules = null)
-            : base((rules ?? Default).Attempt)
+        public DuckFishingViewModel()
+            : this(Default)
         {
-            _rules = rules ?? Default;
+        }
+
+        public DuckFishingViewModel(DuckFishingRules rules)
+            : base((rules ?? throw new ArgumentNullException(nameof(rules))).Attempt)
+        {
+            _rules = rules;
         }
 
         public DuckFishingViewModel(int pointsPerDuck, int startingAttempts, int duckCount, int ducksToWin)

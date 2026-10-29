@@ -12,7 +12,7 @@ namespace Fairground.View.Attractions.FerrisWheel
     {
         public const string RiderAnchorName = "RiderAnchor";
 
-        const float ReachMeters = LondonEyeLayout.TicketReachMeters;
+        const float ReachMeters = FerrisWheelSiteLayout.TicketReachMeters;
 
         FerrisWheelRigView _rig;
         GameObject _xrOrigin;
@@ -27,10 +27,10 @@ namespace Fairground.View.Attractions.FerrisWheel
             if (axis == null || rig == null)
                 return;
 
-            float floorY = -LondonEyeLayout.FootBelowHubMeters;
+            float floorY = -FerrisWheelSiteLayout.FootBelowHubMeters;
             var root = new GameObject("TicketBooth");
             root.transform.SetParent(axis, false);
-            root.transform.localPosition = new Vector3(0f, floorY, LondonEyeLayout.PlayerLocalZ + 7f);
+            root.transform.localPosition = new Vector3(0f, floorY, FerrisWheelSiteLayout.PlayerLocalZ + 7f);
             root.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
 
             BuildStall(root.transform);

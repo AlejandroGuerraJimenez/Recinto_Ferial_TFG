@@ -12,10 +12,11 @@ namespace Fairground.View.Attractions.BalloonThrow
         [SerializeField] Renderer balloonRenderer;
         [SerializeField] Color poppedColor = new Color(1f, 0.85f, 0.2f, 1f);
         [SerializeField] float popScale = 1.35f;
-        [SerializeField] float destroyDelay = 0.2f;
 
         bool _popped;
         MaterialPropertyBlock _popTint;
+        Vector3 _restScale;
+        Collider _collider;
 
         public event Action<BalloonTargetView> Popped;
         public bool IsPopped => _popped;
@@ -24,6 +25,9 @@ namespace Fairground.View.Attractions.BalloonThrow
         {
             if (balloonRenderer == null)
                 balloonRenderer = GetComponentInChildren<Renderer>();
+
+            _restScale = transform.localScale;
+            _collider = GetComponent<Collider>();
         }
 
         void OnCollisionEnter(Collision collision) => TryPop(collision.collider);
@@ -50,12 +54,30 @@ namespace Fairground.View.Attractions.BalloonThrow
             ApplyPop();
         }
 
+        public void Rearm()
+        {
+            _popped = false;
+            transform.localScale = _restScale;
+            if (_collider != null)
+                _collider.enabled = true;
+
+            if (balloonRenderer == null)
+                return;
+
+            balloonRenderer.enabled = true;
+            balloonRenderer.SetPropertyBlock(null);
+        }
+
         void ApplyPop()
         {
             _popped = true;
             ApplyPopFeedback();
             Popped?.Invoke(this);
-            Destroy(gameObject, destroyDelay);
+            if (_collider != null)
+                _collider.enabled = false;
+
+            if (balloonRenderer != null)
+                balloonRenderer.enabled = false;
         }
 
         bool CanPop(Collider other)

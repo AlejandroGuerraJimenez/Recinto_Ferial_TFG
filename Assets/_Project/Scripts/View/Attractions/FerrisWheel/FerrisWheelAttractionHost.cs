@@ -20,17 +20,17 @@ namespace Fairground.View.Attractions.FerrisWheel
         public FerrisWheelViewModel ViewModel => _viewModel;
         public AttractionInput Input => _input;
 
-        public void Configure(FerrisWheelRigView wheelRig, int cabins, FerrisWheelViewModel match)
+        public void Configure(FerrisWheelRigView wheelRig, int cabins, FerrisWheelViewModel viewModel)
         {
             rig = wheelRig;
-            _viewModel = match;
+            _viewModel = viewModel;
             int built = rig != null ? rig.CabinCount : 0;
             if (built < 1)
                 Debug.LogError("[FerrisWheel] The ride has no cabins.");
             else if (cabins != built)
                 Debug.LogError(
                     "[FerrisWheel] Cabin count " + cabins + " does not match the wheel (" + built +
-                    "). Cabins come from " + nameof(LondonEyeLayout) + ".");
+                    "). Cabins come from " + nameof(FerrisWheelSiteLayout) + ".");
 
             if (_viewModel == null)
                 return;
@@ -39,7 +39,7 @@ namespace Fairground.View.Attractions.FerrisWheel
             rig?.ApplyAngle(_viewModel.AngleDegrees);
         }
 
-        public void Receive(FairgroundVisitState session) => _visit = session;
+        public void Receive(FairgroundVisitState visit) => _visit = visit;
 
         void Awake()
         {

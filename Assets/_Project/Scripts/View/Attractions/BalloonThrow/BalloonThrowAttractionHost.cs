@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Fairground.View.Attractions.BalloonThrow
 {
     /// <summary>
-    /// Hosts the balloon match: targets, the shared throw tracker, and the HUD.
+    /// Hosts the balloon match: targets, the shared throw session, and the HUD.
     /// </summary>
     public sealed class BalloonThrowAttractionHost : MonoBehaviour
     {
@@ -16,64 +16,60 @@ namespace Fairground.View.Attractions.BalloonThrow
         [SerializeField] BoothHudView hud;
 
         BalloonThrowViewModel _viewModel;
-        AttractionMatchControls _controls;
-        readonly ThrownPropTracker _props = new ThrownPropTracker();
+        ThrownMatchSession _match;
         readonly BalloonTargetFactory _balloonFactory = new BalloonTargetFactory();
         Transform _balloonRoot;
         FairgroundVisitState _visit;
 
         public AttractionId AttractionId => AttractionId.BalloonThrow;
         public BalloonThrowViewModel ViewModel => _viewModel;
-        public AttractionInput Input => _controls != null ? _controls.Input : null;
+        public AttractionInput Input => _match != null ? _match.Input : null;
 
         public void Configure(
             BalloonTargetView[] balloonTargets,
             BallSpawnerView spawner,
             BoothHudView hudView,
-            BalloonThrowViewModel match)
+            BalloonThrowViewModel viewModel)
         {
             balloons = BoothWiring.RequireAny(balloonTargets, "Balloon throw", "balloons");
             ballSpawner = BoothWiring.Require(spawner, "Balloon throw", "a ball spawner");
             hud = BoothWiring.Require(hudView, "Balloon throw", "a HUD");
-            _viewModel = BoothWiring.Require(match, "Balloon throw", "a match");
+            _viewModel = BoothWiring.Require(viewModel, "Balloon throw", "a match");
             OpenMatch();
         }
 
-        public void Receive(FairgroundVisitState session)
+        public void Receive(FairgroundVisitState visit)
         {
-            _visit = session;
-            _controls?.Use(session);
+            _visit = visit;
+            _match?.Use(visit);
         }
 
         void Awake()
         {
-            _controls = new AttractionMatchControls(RestartMatch);
-            _props.Thrown += OnPropThrown;
-            _props.Resolved += OnPropResolved;
+            _match = new ThrownMatchSession(RestartMatch);
+            _match.Bind();
         }
 
-        void Update() => _controls?.Tick();
+        void Update() => _match.Tick();
 
         void OnDestroy()
         {
-            Unsubscribe();
-            _controls?.Dispose();
-            _controls = null;
+            UnsubscribeBalloons();
+            _match?.Dispose();
         }
 
         void OpenMatch()
         {
-            RememberBalloonRoot();
-            BoothHudBinding.Attach(hud, _viewModel, () => BalloonThrowHud.Lines(_viewModel));
-            Subscribe();
-            _viewModel.StartMatch();
-            UpdateSpawnerAvailability();
-        }
-
-        void Subscribe()
-        {
+            CaptureTargetRoot();
             SubscribeBalloons();
-            _props.Attach(ballSpawner);
+            _match.Open(
+                _viewModel,
+                ballSpawner,
+                hud,
+                () => BalloonThrowHud.Lines(_viewModel),
+                _viewModel.TryRegisterThrow,
+                _viewModel.TryResolveThrow,
+                () => _viewModel.CanThrow);
         }
 
         void SubscribeBalloons()
@@ -86,12 +82,6 @@ namespace Fairground.View.Attractions.BalloonThrow
                     balloon.Popped += OnBalloonPopped;
         }
 
-        void Unsubscribe()
-        {
-            UnsubscribeBalloons();
-            _props.Detach();
-        }
-
         void UnsubscribeBalloons()
         {
             if (balloons == null)
@@ -102,54 +92,51 @@ namespace Fairground.View.Attractions.BalloonThrow
                     balloon.Popped -= OnBalloonPopped;
         }
 
-        void OnPropThrown() => Forward(_viewModel.TryRegisterThrow);
-
-        void OnPropResolved() => Forward(_viewModel.TryResolveThrow);
-
-        void OnBalloonPopped(BalloonTargetView balloon) => Forward(_viewModel.TryRegisterPop);
-
-        void Forward(System.Func<bool> action)
-        {
-            if (_viewModel == null)
-                return;
-
-            if (action())
-                UpdateSpawnerAvailability();
-        }
-
-        void UpdateSpawnerAvailability()
-        {
-            if (ballSpawner == null || _viewModel == null)
-                return;
-
-            ballSpawner.SetSpawningEnabled(_viewModel.CanSpendThrow);
-        }
+        void OnBalloonPopped(BalloonTargetView balloon) => _match.ApplyAndRefresh(_viewModel.TryRegisterPop);
 
         public void RestartMatch()
         {
             if (_viewModel == null)
                 return;
 
-            Unsubscribe();
-            _props.DestroyAll(ballSpawner);
-            _viewModel.Restart();
-            RebuildBalloons();
-            Subscribe();
-            UpdateSpawnerAvailability();
-            ballSpawner?.TrySpawnImmediate();
+            UnsubscribeBalloons();
+            _match.Restart(RebuildBalloons);
+            SubscribeBalloons();
         }
 
         void RebuildBalloons()
         {
+            if (CanRearm(balloons, _viewModel.BalloonCount))
+            {
+                for (var i = 0; i < balloons.Length; i++)
+                    balloons[i].Rearm();
+
+                return;
+            }
+
             if (_balloonRoot != null)
                 Destroy(_balloonRoot.gameObject);
 
             balloons = _balloonFactory.CreateRow(_viewModel.BalloonCount);
-            RememberBalloonRoot();
+            CaptureTargetRoot();
             AttractionPlacement.TryApply(_visit, _balloonRoot);
         }
 
-        void RememberBalloonRoot()
+        static bool CanRearm(BalloonTargetView[] targets, int count)
+        {
+            if (targets == null || targets.Length != count)
+                return false;
+
+            for (var i = 0; i < targets.Length; i++)
+            {
+                if (targets[i] == null)
+                    return false;
+            }
+
+            return true;
+        }
+
+        void CaptureTargetRoot()
         {
             if (balloons == null || balloons.Length == 0 || balloons[0] == null)
                 return;

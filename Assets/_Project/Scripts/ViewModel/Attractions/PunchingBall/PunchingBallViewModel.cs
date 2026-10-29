@@ -1,3 +1,4 @@
+using System;
 using Fairground.Core.Attractions;
 using Fairground.Model.Attractions;
 using Fairground.Model.Attractions.PunchingBall;
@@ -12,9 +13,14 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
     {
         readonly PunchingBallMatch _match;
 
-        public PunchingBallViewModel(PunchingBallRules rules = null)
+        public PunchingBallViewModel()
+            : this(new PunchingBallRules())
         {
-            _match = new PunchingBallMatch(rules ?? new PunchingBallRules());
+        }
+
+        public PunchingBallViewModel(PunchingBallRules rules)
+        {
+            _match = new PunchingBallMatch(rules ?? throw new ArgumentNullException(nameof(rules)));
         }
 
         public PunchingBallViewModel(

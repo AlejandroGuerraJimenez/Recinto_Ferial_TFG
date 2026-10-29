@@ -11,7 +11,7 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
     /// Builds the London Eye ride: georeference at the hub, Google tiles with the real wheel cut out,
     /// and the project ferris wheel scaled to a 60 m radius. The player stands on a platform under the wheel.
     /// </summary>
-    public sealed class LondonEyeRideFactory
+    public sealed class FerrisWheelSiteFactory
     {
         public const string RootName = "CesiumGeoreference";
 
@@ -32,9 +32,9 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             var root = new GameObject(RootName);
             var georeference = root.AddComponent<CesiumGeoreference>();
             georeference.SetOriginLongitudeLatitudeHeight(
-                LondonEyeLayout.Longitude,
-                LondonEyeLayout.Latitude,
-                LondonEyeLayout.HubHeightMeters);
+                FerrisWheelSiteLayout.Longitude,
+                FerrisWheelSiteLayout.Latitude,
+                FerrisWheelSiteLayout.HubHeightMeters);
             return georeference;
         }
 
@@ -55,16 +55,16 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             var tileset = tilesetObject.AddComponent<Cesium3DTileset>();
             bool quest = Application.platform == RuntimePlatform.Android;
             tileset.tilesetSource = CesiumDataSource.FromCesiumIon;
-            tileset.ionAssetID = LondonEyeLayout.GooglePhotorealisticAssetId;
+            tileset.ionAssetID = FerrisWheelSiteLayout.GooglePhotorealisticAssetId;
             tileset.ionAccessToken = token;
             tileset.showCreditsOnScreen = true;
             tileset.createPhysicsMeshes = false;
             tileset.maximumScreenSpaceError = quest
-                ? LondonEyeLayout.QuestMaximumScreenSpaceError
-                : LondonEyeLayout.EditorMaximumScreenSpaceError;
+                ? FerrisWheelSiteLayout.QuestMaximumScreenSpaceError
+                : FerrisWheelSiteLayout.EditorMaximumScreenSpaceError;
             tileset.maximumCachedBytes = quest
-                ? LondonEyeLayout.QuestMaximumCachedBytes
-                : LondonEyeLayout.EditorMaximumCachedBytes;
+                ? FerrisWheelSiteLayout.QuestMaximumCachedBytes
+                : FerrisWheelSiteLayout.EditorMaximumCachedBytes;
 
             CutOutLondonEye(tilesetObject, parent);
             tilesetObject.SetActive(true);
@@ -104,8 +104,8 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
 
             Vector3 along = WheelDirection();
             Vector3 axle = AxleDirection();
-            float halfLength = LondonEyeLayout.CutoutHalfLengthMeters;
-            float halfWidth = LondonEyeLayout.CutoutHalfWidthMeters;
+            float halfLength = FerrisWheelSiteLayout.CutoutHalfLengthMeters;
+            float halfWidth = FerrisWheelSiteLayout.CutoutHalfWidthMeters;
             Vector3[] corners =
             {
                 along * halfLength + axle * halfWidth,
@@ -128,12 +128,12 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
         {
             var axis = new GameObject("WheelAxis");
             axis.transform.SetParent(parent, false);
-            axis.transform.localRotation = Quaternion.Euler(0f, LondonEyeLayout.AxisYawDegrees, 0f);
+            axis.transform.localRotation = Quaternion.Euler(0f, FerrisWheelSiteLayout.AxisYawDegrees, 0f);
 
             var factory = new FerrisWheelFactory();
-            FerrisWheelRigView rig = factory.Create(LondonEyeLayout.CabinCount);
+            FerrisWheelRigView rig = factory.Create(FerrisWheelSiteLayout.CabinCount);
             Transform wheelRoot = rig.transform;
-            float scale = LondonEyeLayout.RadiusMeters / FerrisWheelLayout.Radius;
+            float scale = FerrisWheelSiteLayout.RadiusMeters / FerrisWheelLayout.Radius;
             wheelRoot.SetParent(axis.transform, false);
             wheelRoot.localRotation = Quaternion.identity;
             wheelRoot.localScale = Vector3.one * scale;
@@ -141,7 +141,7 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             wheelRoot.localPosition = -scale * FerrisWheelLayout.WheelCenter;
             // Beam centre sits on the slab, so the sill does not poke through it.
             const float footRestMeters = 1.4f;
-            float footWorldY = -LondonEyeLayout.FootBelowHubMeters + footRestMeters;
+            float footWorldY = -FerrisWheelSiteLayout.FootBelowHubMeters + footRestMeters;
             float footY = FerrisWheelLayout.HubHeight + footWorldY / scale;
             factory.PlaceFeet(wheelRoot, footY);
             LiftCabinsAbovePlatform(rig, scale);
@@ -156,16 +156,16 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
 
         static void CreateWalkFloor(Transform axis)
         {
-            const float thickness = LondonEyeLayout.FloorThicknessMeters;
-            float top = -LondonEyeLayout.FootBelowHubMeters;
+            const float thickness = FerrisWheelSiteLayout.FloorThicknessMeters;
+            float top = -FerrisWheelSiteLayout.FootBelowHubMeters;
             var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             floor.name = "WalkFloor";
             floor.transform.SetParent(axis, false);
             floor.transform.localPosition = new Vector3(0f, top - thickness * 0.5f, 0f);
             floor.transform.localScale = new Vector3(
-                LondonEyeLayout.PlatformHalfAlongMeters * 2f,
+                FerrisWheelSiteLayout.PlatformHalfAlongMeters * 2f,
                 thickness,
-                LondonEyeLayout.PlatformHalfAxleMeters * 2f);
+                FerrisWheelSiteLayout.PlatformHalfAxleMeters * 2f);
             PrimitiveMaterialApplier.Apply(floor, new Color(0.55f, 0.52f, 0.47f, 1f));
         }
 
@@ -181,8 +181,8 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
 
             float bottomLocal = body.localPosition.y - body.localScale.y * 0.5f;
             float bottomY = pivot.position.y + bottomLocal * pivot.lossyScale.y;
-            float floorY = -LondonEyeLayout.FootBelowHubMeters;
-            float liftWorld = floorY + LondonEyeLayout.CabinClearanceMeters - bottomY;
+            float floorY = -FerrisWheelSiteLayout.FootBelowHubMeters;
+            float liftWorld = floorY + FerrisWheelSiteLayout.CabinClearanceMeters - bottomY;
             if (liftWorld <= 0.01f)
                 return;
 
@@ -237,10 +237,10 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
                 return;
             }
 
-            float floorY = -LondonEyeLayout.FootBelowHubMeters;
+            float floorY = -FerrisWheelSiteLayout.FootBelowHubMeters;
             Transform origin = xrOrigin.transform;
             origin.SetParent(axis, false);
-            origin.localPosition = new Vector3(0f, floorY, LondonEyeLayout.PlayerLocalZ);
+            origin.localPosition = new Vector3(0f, floorY, FerrisWheelSiteLayout.PlayerLocalZ);
             origin.localRotation = Quaternion.identity;
             origin.localScale = Vector3.one;
 
@@ -249,7 +249,7 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
             {
                 Vector3 local = camera.transform.localPosition;
                 if (local.y < 0.5f)
-                    local.y = LondonEyeLayout.EyeHeightMeters;
+                    local.y = FerrisWheelSiteLayout.EyeHeightMeters;
                 camera.transform.localPosition = local;
             }
 
@@ -286,14 +286,14 @@ namespace Fairground.View.Attractions.FerrisWheel.Factories
         /// <summary>Horizontal direction of the wheel, local +X of the yawed axle, in east/up/north.</summary>
         static Vector3 WheelDirection()
         {
-            float yaw = LondonEyeLayout.AxisYawDegrees * Mathf.Deg2Rad;
+            float yaw = FerrisWheelSiteLayout.AxisYawDegrees * Mathf.Deg2Rad;
             return new Vector3(Mathf.Cos(yaw), 0f, -Mathf.Sin(yaw));
         }
 
         /// <summary>Axle direction, local +Z of the yawed axle, in east/up/north.</summary>
         static Vector3 AxleDirection()
         {
-            float yaw = LondonEyeLayout.AxisYawDegrees * Mathf.Deg2Rad;
+            float yaw = FerrisWheelSiteLayout.AxisYawDegrees * Mathf.Deg2Rad;
             return new Vector3(Mathf.Sin(yaw), 0f, Mathf.Cos(yaw));
         }
     }

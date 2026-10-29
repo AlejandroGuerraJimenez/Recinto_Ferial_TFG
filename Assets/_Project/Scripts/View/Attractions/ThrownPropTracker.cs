@@ -41,14 +41,8 @@ namespace Fairground.View.Attractions
 
         public void DestroyAll(BallSpawnerView spawner)
         {
-            var snapshot = new List<IThrownProp>(_live);
             Release();
             spawner?.Reset();
-            foreach (var prop in snapshot)
-            {
-                if (prop is Component component && component != null)
-                    UnityEngine.Object.Destroy(component.gameObject);
-            }
         }
 
         void OnSpawned(IThrownProp prop) => Watch(prop);

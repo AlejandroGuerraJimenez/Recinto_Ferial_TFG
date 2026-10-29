@@ -14,7 +14,6 @@ namespace Fairground.View.Attractions.DuckFishing
         [SerializeField] float bobAmplitude = 0.04f;
         [SerializeField] float bobSpeed = 2.4f;
         [SerializeField] float catchScale = 1.25f;
-        [SerializeField] float destroyDelay = 0.25f;
         [SerializeField] Renderer duckRenderer;
         [SerializeField] Color caughtColor = new Color(1f, 0.9f, 0.2f, 1f);
 
@@ -22,6 +21,8 @@ namespace Fairground.View.Attractions.DuckFishing
         float _baseY;
         bool _caught;
         Vector3 _center;
+        Vector3 _restScale;
+        Collider _collider;
         MaterialPropertyBlock _tint;
 
         public event Action<DuckTargetView> Caught;
@@ -41,6 +42,9 @@ namespace Fairground.View.Attractions.DuckFishing
         {
             if (duckRenderer == null)
                 duckRenderer = GetComponentInChildren<Renderer>();
+
+            _restScale = transform.localScale;
+            _collider = GetComponent<Collider>();
             _center = transform.position;
             _baseY = transform.position.y;
         }
@@ -61,8 +65,27 @@ namespace Fairground.View.Attractions.DuckFishing
             _caught = true;
             ApplyCatchFeedback();
             Caught?.Invoke(this);
-            Destroy(gameObject, destroyDelay);
+            if (_collider != null)
+                _collider.enabled = false;
+
+            if (duckRenderer != null)
+                duckRenderer.enabled = false;
+
             return true;
+        }
+
+        public void Rearm()
+        {
+            _caught = false;
+            transform.localScale = _restScale;
+            if (_collider != null)
+                _collider.enabled = true;
+
+            if (duckRenderer == null)
+                return;
+
+            duckRenderer.enabled = true;
+            duckRenderer.SetPropertyBlock(null);
         }
 
         void ApplyOrbitPose(float deltaTime)

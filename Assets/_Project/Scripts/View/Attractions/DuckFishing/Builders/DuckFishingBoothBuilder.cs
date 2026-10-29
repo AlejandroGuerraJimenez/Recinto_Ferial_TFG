@@ -1,3 +1,4 @@
+using Fairground.Core.Attractions;
 using Fairground.View.Attractions.DuckFishing.Factories;
 using UnityEngine;
 
@@ -10,8 +11,6 @@ namespace Fairground.View.Attractions.DuckFishing.Builders
     {
         readonly DuckTargetFactory _duckFactory = new DuckTargetFactory();
         readonly FishingRodFactory _rodFactory = new FishingRodFactory();
-        readonly int _duckCount;
-
         Transform _pond;
 
         public Transform Pond => _pond;
@@ -20,10 +19,9 @@ namespace Fairground.View.Attractions.DuckFishing.Builders
 
         public FishingRodView Rod { get; private set; }
 
-        public DuckFishingBoothBuilder(GameObject xrOriginPrefab, int duckCount)
+        public DuckFishingBoothBuilder(GameObject xrOriginPrefab)
             : base(DuckFishingBoothLayout.Props(), xrOriginPrefab)
         {
-            _duckCount = duckCount;
         }
 
         protected override void OnEnvironmentReady(Transform environmentRoot)
@@ -33,7 +31,7 @@ namespace Fairground.View.Attractions.DuckFishing.Builders
 
         protected override void BuildGameplay()
         {
-            Ducks = _duckFactory.CreateRing(_pond, _duckCount);
+            Ducks = _duckFactory.CreateRing(_pond, DuckFishingBalance.DuckCount);
             Rod = _rodFactory.Create(XrOrigin);
         }
 

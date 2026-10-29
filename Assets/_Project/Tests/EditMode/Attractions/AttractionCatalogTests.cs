@@ -41,9 +41,9 @@ namespace Fairground.Tests.EditMode.Attractions
         }
 
         [Test]
-        public void UnknownId_HasNoSceneAndUsesParcelFallback()
+        public void UnknownId_HasNoSceneAndNoDisplayName()
         {
-            Assert.AreEqual("Parcela", AttractionCatalog.DisplayName(AttractionId.None));
+            Assert.Throws<ArgumentOutOfRangeException>(() => AttractionCatalog.DisplayName(AttractionId.None));
             Assert.IsFalse(AttractionCatalog.TryGetBySceneName("Missing", out _));
             Assert.Throws<ArgumentOutOfRangeException>(() => AttractionCatalog.GetSceneName(AttractionId.None));
         }

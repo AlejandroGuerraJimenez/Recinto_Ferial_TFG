@@ -25,7 +25,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             var rig = AttractionSceneTestHelper.Require<FerrisWheelRigView>();
             Assert.AreEqual(AttractionId.FerrisWheel, controller.AttractionId);
             Assert.AreEqual(FerrisWheelPhase.Riding, controller.ViewModel.Phase);
-            Assert.AreEqual(LondonEyeLayout.CabinCount, rig.CabinCount);
+            Assert.AreEqual(FerrisWheelSiteLayout.CabinCount, rig.CabinCount);
             Assert.IsNotNull(rig.Wheel);
 
             float startAngle = controller.ViewModel.AngleDegrees;

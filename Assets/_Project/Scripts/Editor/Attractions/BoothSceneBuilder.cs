@@ -11,7 +11,8 @@ using UnityEngine.SceneManagement;
 namespace Fairground.Editor.Attractions
 {
     /// <summary>
-    /// What one booth scene adds on top of the shared editor bake: layout, materials, and match defaults.
+    /// What one booth scene adds on top of the shared editor bake: layout and materials.
+    /// Match numbers stay in AttractionBalance. The installer does not serialize them.
     /// </summary>
     public sealed class BoothSceneRecipe
     {
@@ -19,8 +20,6 @@ namespace Fairground.Editor.Attractions
         public string Title;
         public Func<BoothLayout> Layout;
         public (string ChildPath, string MaterialFile)[] BakedMaterials = Array.Empty<(string, string)>();
-        public Type InstallerType;
-        public Action<SerializedObject> WriteMatchDefaults;
 
         public string PrefabFolder => "Assets/_Project/Prefabs/Attractions/" + Attraction;
 
@@ -174,13 +173,12 @@ namespace Fairground.Editor.Attractions
             Transform bakedRoot)
         {
             var go = new GameObject(recipe.Attraction + "Installer");
-            var installer = go.AddComponent(recipe.InstallerType);
+            var installer = go.AddComponent<AttractionModuleHost>();
             var so = new SerializedObject(installer);
             so.FindProperty("xrOriginPrefab").objectReferenceValue = xrOriginPrefab;
             so.FindProperty("boothEnvironmentPrefab").objectReferenceValue = boothPrefab;
             so.FindProperty("bakedBoothEnvironment").objectReferenceValue = bakedRoot;
             so.FindProperty("buildOnAwake").boolValue = true;
-            recipe.WriteMatchDefaults?.Invoke(so);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             var lightFactory = new BoothPropFactory(recipe.Layout());

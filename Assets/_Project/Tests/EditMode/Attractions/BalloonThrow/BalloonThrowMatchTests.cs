@@ -115,12 +115,12 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
         {
             var vm = new BalloonThrowViewModel(10, 1, 2);
             vm.StartMatch();
-            Assert.IsTrue(vm.CanSpendThrow);
+            Assert.IsTrue(vm.CanThrow);
             Assert.AreEqual(2, vm.BalloonCount);
             Assert.IsTrue(vm.TryRegisterThrow());
-            Assert.IsFalse(vm.CanSpendThrow);
+            Assert.IsFalse(vm.CanThrow);
             vm.Restart();
-            Assert.IsTrue(vm.CanSpendThrow);
+            Assert.IsTrue(vm.CanThrow);
             Assert.AreEqual(1, vm.AttemptsRemaining);
             Assert.AreEqual(0, vm.Score);
         }

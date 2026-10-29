@@ -19,20 +19,20 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
                 MatchPhase.Playing);
         }
 
-        public static string[] Lines(DuckFishingViewModel match)
+        public static string[] Lines(DuckFishingViewModel viewModel)
         {
             return Lines(
-                match.Score,
-                match.AttemptsRemaining,
-                match.DucksCaught,
-                match.DucksToWin,
-                match.DucksToWin,
-                match.Phase);
+                viewModel.Score,
+                viewModel.AttemptsRemaining,
+                viewModel.DucksCaught,
+                viewModel.DucksToWin,
+                viewModel.DucksToWin,
+                viewModel.Phase);
         }
 
-        public static string Status(DuckFishingViewModel match)
+        public static string Status(DuckFishingViewModel viewModel)
         {
-            return Status(match.DucksToWin, match.Phase);
+            return Status(viewModel.DucksToWin, viewModel.Phase);
         }
 
         static string[] Lines(

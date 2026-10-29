@@ -17,6 +17,8 @@ namespace Fairground.View.Attractions
 
         protected GameObject XrOriginPrefab => xrOriginPrefab;
 
+        protected Material PrimitiveTemplate => primitiveLitTemplate;
+
         protected FairgroundVisitState Visit { get; private set; }
 
         void Awake()

@@ -25,16 +25,16 @@ namespace Fairground.View.Attractions.PunchingBall
             PunchPadView pad,
             PunchPowerMeterView meter,
             BoothHudView hudView,
-            PunchingBallViewModel match)
+            PunchingBallViewModel viewModel)
         {
             punchPad = BoothWiring.Require(pad, "Punching ball", "a pad");
             powerMeter = BoothWiring.Require(meter, "Punching ball", "a power meter");
             hud = BoothWiring.Require(hudView, "Punching ball", "a HUD");
-            _viewModel = BoothWiring.Require(match, "Punching ball", "a match");
+            _viewModel = BoothWiring.Require(viewModel, "Punching ball", "a match");
             OpenMatch();
         }
 
-        public void Receive(FairgroundVisitState session) => _controls?.Use(session);
+        public void Receive(FairgroundVisitState visit) => _controls?.Use(visit);
 
         void Awake() => _controls = new AttractionMatchControls(RestartMatch);
 

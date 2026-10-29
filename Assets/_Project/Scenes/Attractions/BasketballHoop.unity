@@ -157,16 +157,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 100001}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6f1a2b34c5d47e8a9b0c1d2e3f40516, type: 3}
+  m_Script: {fileID: 11500000, guid: c3d4e5f60718293a4b5c6d7e8f901234, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Fairground.View::Fairground.View.Attractions.BasketballHoop.BasketballHoopSceneInstaller
+  m_EditorClassIdentifier: Fairground.View::Fairground.View.Attractions.AttractionModuleHost
   xrOriginPrefab: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
   primitiveLitTemplate: {fileID: 2100000, guid: f8b2c3d4e5f6789012345678abcdef01, type: 2}
   boothEnvironmentPrefab: {fileID: 1100000001, guid: b1c2d3e405162738495a6b7c8d9e0f30, type: 3}
   bakedBoothEnvironment: {fileID: 200002}
-  pointsPerBasket: 2
-  startingBalls: 10
-  winScoreThreshold: 5
   buildOnAwake: 1
 --- !u!1 &100101
 GameObject:

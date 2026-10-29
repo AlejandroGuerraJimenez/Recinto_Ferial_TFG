@@ -1,3 +1,4 @@
+using System;
 using Fairground.Core.Attractions;
 using Fairground.Model.Attractions.BalloonThrow;
 
@@ -12,10 +13,15 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
 
         readonly BalloonThrowRules _rules;
 
-        public BalloonThrowViewModel(BalloonThrowRules rules = null)
-            : base((rules ?? Default).Attempt)
+        public BalloonThrowViewModel()
+            : this(Default)
         {
-            _rules = rules ?? Default;
+        }
+
+        public BalloonThrowViewModel(BalloonThrowRules rules)
+            : base((rules ?? throw new ArgumentNullException(nameof(rules))).Attempt)
+        {
+            _rules = rules;
         }
 
         public BalloonThrowViewModel(int pointsPerBalloon, int startingThrows, int balloonCount)
@@ -28,7 +34,7 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
         public int BalloonsRemaining => TargetsRemaining;
         public int BalloonsPopped => Successes;
         public int BalloonCount => _rules.BalloonCount;
-        public bool CanSpendThrow => CanSpendAttempt;
+        public bool CanThrow => CanSpendAttempt;
 
         public bool TryRegisterThrow() => TrySpendAttempt();
 

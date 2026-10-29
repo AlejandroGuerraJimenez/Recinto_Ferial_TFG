@@ -35,7 +35,14 @@ namespace Fairground.View.Attractions.PunchingBall
 
         void Update()
         {
-            transform.localScale = Vector3.Lerp(transform.localScale, _restScale, Time.deltaTime * recoverSpeed);
+            if ((transform.localScale - _restScale).sqrMagnitude < 0.000001f)
+                return;
+
+            var next = Vector3.Lerp(transform.localScale, _restScale, Time.deltaTime * recoverSpeed);
+            if ((next - _restScale).sqrMagnitude < 0.000001f)
+                next = _restScale;
+
+            transform.localScale = next;
         }
 
         public void SetAcceptingPunches(bool enabled) => _accepting = enabled;

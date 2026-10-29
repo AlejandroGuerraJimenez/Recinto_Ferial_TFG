@@ -12,6 +12,9 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         public static readonly Color Sky = new Color(0.35f, 0.55f, 0.75f, 1f);
         public static readonly Vector3 HudPosition = new Vector3(0f, 2.1f, 3.2f);
+        public static readonly Vector3 SpawnerPosition = new Vector3(0.35f, 1.05f, 0.55f);
+        public const float SpawnerPedestalRadius = 0.25f;
+        public static readonly Vector3 SpawnerLocalOffset = Vector3.zero;
 
         public static BoothLayout Props()
         {

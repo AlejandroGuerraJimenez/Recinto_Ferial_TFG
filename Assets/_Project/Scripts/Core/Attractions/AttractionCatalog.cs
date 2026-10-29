@@ -6,11 +6,10 @@ namespace Fairground.Core.Attractions
     /// <summary>
     /// Playable attractions. Each entry is one <see cref="AttractionDescriptor"/>
     /// (id, visible name, scene). Lookups are indexed from that list.
-    /// The id list stays closed because each scene is fixed in the player build.
-    /// A new scoring booth adds an <see cref="AttractionId"/>, a row in <see cref="Playable"/>,
-    /// rules that build an attempt match, a view model that names those counters,
-    /// and the view of its props. It does not add a session type.
-    /// Punch and the wheel keep their own model.
+    /// The id list stays append-only because each value is serialized on the visit.
+    /// A new attraction adds an <see cref="AttractionId"/>, a row in <see cref="Playable"/>,
+    /// balance constants, its own folder, one line in the view module registry, and a scene.
+    /// It does not add a session type. Punch and the wheel keep their own model.
     /// </summary>
     public static class AttractionCatalog
     {
@@ -68,7 +67,7 @@ namespace Fairground.Core.Attractions
             if (TryGet(attractionId, out var attraction))
                 return attraction.DisplayName;
 
-            return "Parcela";
+            throw new ArgumentOutOfRangeException(nameof(attractionId), attractionId, "Unknown attraction.");
         }
 
         public static string GetSceneName(AttractionId attractionId)

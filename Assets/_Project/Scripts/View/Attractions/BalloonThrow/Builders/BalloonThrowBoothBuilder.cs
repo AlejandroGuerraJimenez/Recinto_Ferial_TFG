@@ -1,3 +1,4 @@
+using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BalloonThrow.Factories;
 using UnityEngine;
 
@@ -10,26 +11,27 @@ namespace Fairground.View.Attractions.BalloonThrow.Builders
     {
         readonly ThrowableBallFactory _ballFactory = new ThrowableBallFactory();
         readonly BalloonTargetFactory _balloonFactory = new BalloonTargetFactory();
-        readonly BallSpawnerFactory _spawnerFactory = new BallSpawnerFactory();
-        readonly int _balloonCount;
 
         public BalloonTargetView[] Balloons { get; private set; }
 
         public BallSpawnerView Spawner { get; private set; }
 
-        public BalloonThrowBoothBuilder(GameObject xrOriginPrefab, int balloonCount)
+        public BalloonThrowBoothBuilder(GameObject xrOriginPrefab)
             : base(BalloonThrowBoothLayout.Props(), xrOriginPrefab)
         {
-            _balloonCount = balloonCount;
         }
 
         protected override void BuildGameplay()
         {
-            Balloons = _balloonFactory.CreateRow(_balloonCount);
+            Balloons = _balloonFactory.CreateRow(BalloonThrowBalance.BalloonCount);
             if (Balloons != null && Balloons.Length > 0 && Balloons[0] != null)
                 Track(Balloons[0].transform.parent);
 
-            Spawner = _spawnerFactory.Create(_ballFactory.CreateTemplate());
+            Spawner = ThrownPropSpawnerFactory.Create(
+                _ballFactory.CreateTemplate(),
+                BalloonThrowBoothLayout.SpawnerPosition,
+                BalloonThrowBoothLayout.SpawnerPedestalRadius,
+                BalloonThrowBoothLayout.SpawnerLocalOffset);
             Track(Spawner != null ? Spawner.transform : null);
         }
 

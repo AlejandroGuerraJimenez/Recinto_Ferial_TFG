@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Fairground.Core.Attractions;
 using Fairground.Core.Planes;
@@ -14,19 +15,37 @@ namespace Fairground.View
     {
         const float Lift = 0.06f;
 
-        static readonly Color[] Colors =
+        static Color ColorFor(AttractionId attractionId)
         {
-            new Color(0.9f, 0.2f, 0.25f, 1f),
-            new Color(0.2f, 0.45f, 0.95f, 1f),
-            new Color(0.95f, 0.75f, 0.15f, 1f),
-            new Color(0.65f, 0.3f, 0.9f, 1f),
-            new Color(0.95f, 0.45f, 0.15f, 1f),
-        };
+            switch (attractionId)
+            {
+                case AttractionId.BalloonThrow: return new Color(0.9f, 0.2f, 0.25f, 1f);
+                case AttractionId.DuckFishing: return new Color(0.2f, 0.45f, 0.95f, 1f);
+                case AttractionId.PunchingBall: return new Color(0.95f, 0.75f, 0.15f, 1f);
+                case AttractionId.FerrisWheel: return new Color(0.65f, 0.3f, 0.9f, 1f);
+                case AttractionId.BasketballHoop: return new Color(0.95f, 0.45f, 0.15f, 1f);
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(attractionId),
+                        attractionId,
+                        "Parcel color is missing.");
+            }
+        }
 
         readonly List<ParcelPad> _pads = new List<ParcelPad>();
         Transform _root;
         string _planeId;
         bool _pinned;
+        bool _hasLayout;
+        int _boundaryStamp;
+        bool _hadAim;
+        Vector3 _aimOrigin;
+        Vector3 _aimDirection;
+        Vector3 _surfacePosition;
+        Quaternion _surfaceRotation;
+
+        const float AimMoveEpsilonSqr = 0.0001f;
+        const float AimTurnEpsilon = 0.25f;
 
         public void Show(PlaneSurfaceVisual surface, Ray? aim)
         {
@@ -41,9 +60,18 @@ namespace Fairground.View
 
             var id = surface.Snapshot.Id;
             if (_root == null || _planeId != id || _root.parent != surface.transform)
+            {
                 CreatePads(surface);
+                Layout(surface, aim);
+                RememberLayout(surface, aim);
+                return;
+            }
+
+            if (!LayoutChanged(surface, aim))
+                return;
 
             Layout(surface, aim);
+            RememberLayout(surface, aim);
         }
 
         /// <summary>
@@ -80,12 +108,13 @@ namespace Fairground.View
         public void Hide()
         {
             if (_root != null)
-                Object.Destroy(_root.gameObject);
+                UnityEngine.Object.Destroy(_root.gameObject);
 
             _root = null;
             _planeId = null;
             _pads.Clear();
             _pinned = false;
+            _hasLayout = false;
         }
 
         void CreatePads(PlaneSurfaceVisual surface)
@@ -102,11 +131,67 @@ namespace Fairground.View
                 _pads.Add(ParcelPad.Create(
                     _root,
                     attractions[i],
-                    Colors[i % Colors.Length],
+                    ColorFor(attractions[i].Id),
                     surface.FillTemplate));
             }
 
             Debug.Log("[Parcelas] " + attractions.Length + " sobre " + _planeId);
+        }
+
+        bool LayoutChanged(PlaneSurfaceVisual surface, Ray? aim)
+        {
+            if (!_hasLayout)
+                return true;
+
+            if (BoundaryStamp(surface.HasSnapshot ? surface.Snapshot.Boundary : null) != _boundaryStamp)
+                return true;
+
+            if ((surface.transform.position - _surfacePosition).sqrMagnitude > AimMoveEpsilonSqr)
+                return true;
+
+            if (Quaternion.Angle(surface.transform.rotation, _surfaceRotation) > AimTurnEpsilon)
+                return true;
+
+            if (aim.HasValue != _hadAim)
+                return true;
+
+            if (!aim.HasValue)
+                return false;
+
+            var ray = aim.Value;
+            if ((ray.origin - _aimOrigin).sqrMagnitude > AimMoveEpsilonSqr)
+                return true;
+
+            return Vector3.Angle(ray.direction, _aimDirection) > AimTurnEpsilon;
+        }
+
+        void RememberLayout(PlaneSurfaceVisual surface, Ray? aim)
+        {
+            _hasLayout = true;
+            _boundaryStamp = BoundaryStamp(surface.HasSnapshot ? surface.Snapshot.Boundary : null);
+            _surfacePosition = surface.transform.position;
+            _surfaceRotation = surface.transform.rotation;
+            _hadAim = aim.HasValue;
+            if (!aim.HasValue)
+                return;
+
+            _aimOrigin = aim.Value.origin;
+            _aimDirection = aim.Value.direction;
+        }
+
+        static int BoundaryStamp(IReadOnlyList<PlanePoint> boundary)
+        {
+            if (boundary == null)
+                return 0;
+
+            var hash = boundary.Count;
+            for (var i = 0; i < boundary.Count; i++)
+            {
+                hash = unchecked(hash * 31 + boundary[i].X.GetHashCode());
+                hash = unchecked(hash * 31 + boundary[i].Y.GetHashCode());
+            }
+
+            return hash;
         }
 
         void Layout(PlaneSurfaceVisual surface, Ray? aim)

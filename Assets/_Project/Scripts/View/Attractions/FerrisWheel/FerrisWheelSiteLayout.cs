@@ -1,10 +1,10 @@
 namespace Fairground.View.Attractions.FerrisWheel
 {
     /// <summary>
-    /// London Eye ride in Cesium's local frame: X east, Y up, Z north.
-    /// The globe origin is the hub. The project wheel is scaled onto that hub, and the player stands on the platform under it.
+    /// Site of the ferris wheel in Cesium's local frame: X east, Y up, Z north.
+    /// The numbers are the London Eye bank. The ride aggregate stays <c>FerrisWheel</c>.
     /// </summary>
-    public static class LondonEyeLayout
+    public static class FerrisWheelSiteLayout
     {
         /// <summary>Hub, centre of the OpenStreetMap footprint of the wheel.</summary>
         public const double Latitude = 51.5033416;

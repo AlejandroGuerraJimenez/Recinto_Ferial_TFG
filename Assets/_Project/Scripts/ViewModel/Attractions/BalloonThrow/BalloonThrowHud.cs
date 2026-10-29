@@ -13,14 +13,14 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
             return Lines(0, BalloonThrowBalance.StartingThrows, BalloonThrowBalance.BalloonCount, MatchPhase.Playing);
         }
 
-        public static string[] Lines(BalloonThrowViewModel match)
+        public static string[] Lines(BalloonThrowViewModel viewModel)
         {
-            return Lines(match.Score, match.AttemptsRemaining, match.BalloonsRemaining, match.Phase);
+            return Lines(viewModel.Score, viewModel.AttemptsRemaining, viewModel.BalloonsRemaining, viewModel.Phase);
         }
 
-        public static string Status(BalloonThrowViewModel match)
+        public static string Status(BalloonThrowViewModel viewModel)
         {
-            return Status(match.Phase);
+            return Status(viewModel.Phase);
         }
 
         static string[] Lines(int score, int throwsRemaining, int balloonsRemaining, MatchPhase phase)

@@ -15,6 +15,8 @@ namespace Fairground.View.Attractions
         [SerializeField] float respawnDelay = 0.35f;
 
         readonly HashSet<ThrownPropView> _live = new HashSet<ThrownPropView>();
+        readonly HashSet<ThrownPropView> _pooled = new HashSet<ThrownPropView>();
+        readonly Stack<ThrownPropView> _pool = new Stack<ThrownPropView>();
         ThrownPropView _current;
         float _respawnAt = -1f;
         bool _spawningEnabled = true;
@@ -81,12 +83,46 @@ namespace Fairground.View.Attractions
         ThrownPropView CreateBall()
         {
             Transform point = spawnPoint != null ? spawnPoint : transform;
-            ThrownPropView ball = Instantiate(ballPrefab, point.position, point.rotation);
+            ThrownPropView ball = TakeFromPool(point);
             ball.gameObject.SetActive(true);
             Register(ball);
             ball.Thrown += OnThrown;
             ResetPhysics(ball);
             return ball;
+        }
+
+        ThrownPropView TakeFromPool(Transform point)
+        {
+            while (_pool.Count > 0)
+            {
+                ThrownPropView pooled = _pool.Pop();
+                _pooled.Remove(pooled);
+                if (pooled == null)
+                    continue;
+
+                pooled.Rearm(point.position, point.rotation);
+                return pooled;
+            }
+
+            ThrownPropView created = Instantiate(ballPrefab, point.position, point.rotation);
+            created.UsePool(ReleaseToPool);
+            return created;
+        }
+
+        void ReleaseToPool(ThrownPropView ball)
+        {
+            if (ball == null || !_pooled.Add(ball))
+                return;
+
+            ball.Thrown -= OnThrown;
+            ball.Destroyed -= OnDestroyed;
+            _live.Remove(ball);
+            if (ReferenceEquals(_current, ball))
+                _current = null;
+
+            ball.gameObject.SetActive(false);
+            ball.transform.SetParent(transform, true);
+            _pool.Push(ball);
         }
 
         void Register(ThrownPropView ball)
@@ -142,14 +178,7 @@ namespace Fairground.View.Attractions
 
             var snapshot = new List<ThrownPropView>(_live);
             foreach (var ball in snapshot)
-            {
-                if (ball == null)
-                    continue;
-
-                ball.Thrown -= OnThrown;
-                ball.Destroyed -= OnDestroyed;
-                Destroy(ball.gameObject);
-            }
+                ReleaseToPool(ball);
 
             _live.Clear();
         }
@@ -161,7 +190,7 @@ namespace Fairground.View.Attractions
 
             var ball = _current;
             _current = null;
-            Destroy(ball.gameObject);
+            ReleaseToPool(ball);
         }
 
         static void DisableGrab(ThrownPropView ball)

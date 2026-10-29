@@ -9,15 +9,15 @@ namespace Fairground.View.Attractions
     /// </summary>
     public static class BoothHudBinding
     {
-        public static void Attach(BoothHudView hud, BoothMatchViewModel match, Func<string[]> lines)
+        public static void Attach(BoothHudView hud, BoothMatchViewModel viewModel, Func<string[]> lines)
         {
-            if (hud == null || match == null)
+            if (hud == null || viewModel == null)
                 return;
 
             hud.Bind(
                 lines,
-                handler => match.StateChanged += handler,
-                handler => match.StateChanged -= handler);
+                handler => viewModel.StateChanged += handler,
+                handler => viewModel.StateChanged -= handler);
         }
     }
 }

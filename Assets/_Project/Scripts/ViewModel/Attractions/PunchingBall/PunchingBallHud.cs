@@ -13,19 +13,19 @@ namespace Fairground.ViewModel.Attractions.PunchingBall
             return Lines(0, PunchingBallBalance.StartingPunches, 0, PunchingBallBalance.WinScoreThreshold, MatchPhase.Playing);
         }
 
-        public static string[] Lines(PunchingBallViewModel match)
+        public static string[] Lines(PunchingBallViewModel viewModel)
         {
             return Lines(
-                match.BestScore,
-                match.PunchesRemaining,
-                match.LastPunchPower,
-                match.WinScoreThreshold,
-                match.Phase);
+                viewModel.BestScore,
+                viewModel.PunchesRemaining,
+                viewModel.LastPunchPower,
+                viewModel.WinScoreThreshold,
+                viewModel.Phase);
         }
 
-        public static string Status(PunchingBallViewModel match)
+        public static string Status(PunchingBallViewModel viewModel)
         {
-            return Status(match.WinScoreThreshold, match.Phase);
+            return Status(viewModel.WinScoreThreshold, viewModel.Phase);
         }
 
         static string[] Lines(int bestScore, int punchesRemaining, int lastPunch, int winScoreThreshold, MatchPhase phase)

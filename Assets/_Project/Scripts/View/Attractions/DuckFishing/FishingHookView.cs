@@ -60,15 +60,21 @@ namespace Fairground.View.Attractions.DuckFishing
                 return;
 
             var duck = other.GetComponentInParent<DuckTargetView>();
-            if (duck == null || duck.IsCaught)
-                return;
+            TryCatch(duck);
+        }
+
+        public bool TryCatch(DuckTargetView duck)
+        {
+            if (!_dipping || _caughtThisDip || duck == null || duck.IsCaught)
+                return false;
 
             if (!duck.TryCatch())
-                return;
+                return false;
 
             _caughtThisDip = true;
             DuckCaught?.Invoke(duck);
             FinishDip();
+            return true;
         }
 
         void FinishDip()

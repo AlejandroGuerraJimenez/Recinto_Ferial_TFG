@@ -1,6 +1,6 @@
 using System.IO;
 using Fairground.Core.Attractions;
-using Fairground.View.Attractions.FerrisWheel;
+using Fairground.View.Attractions;
 using Fairground.View.Attractions.Rendering;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -70,12 +70,10 @@ namespace Fairground.Editor.Attractions.FerrisWheel
         static void CreateInstaller(GameObject xrOriginPrefab, Material primitiveTemplate)
         {
             var go = new GameObject("FerrisWheelInstaller");
-            var installer = go.AddComponent<FerrisWheelSceneInstaller>();
+            var installer = go.AddComponent<AttractionModuleHost>();
             var so = new SerializedObject(installer);
             so.FindProperty("xrOriginPrefab").objectReferenceValue = xrOriginPrefab;
             so.FindProperty("primitiveLitTemplate").objectReferenceValue = primitiveTemplate;
-            so.FindProperty("degreesPerSecond").floatValue = FerrisWheelBalance.DegreesPerSecond;
-            so.FindProperty("cabinCount").intValue = LondonEyeLayout.CabinCount;
             so.FindProperty("buildOnAwake").boolValue = true;
             so.ApplyModifiedPropertiesWithoutUndo();
         }

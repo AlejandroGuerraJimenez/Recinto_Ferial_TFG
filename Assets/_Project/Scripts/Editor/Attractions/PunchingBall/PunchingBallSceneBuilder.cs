@@ -1,4 +1,3 @@
-using Fairground.Model.Attractions.PunchingBall;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.PunchingBall;
 using UnityEditor;
@@ -6,7 +5,7 @@ using UnityEditor;
 namespace Fairground.Editor.Attractions.PunchingBall
 {
     /// <summary>
-    /// Menu and match defaults for the punch booth. The shared builder bakes the scene.
+    /// Menu for the punch booth. The shared builder bakes the scene. Balance stays in code.
     /// </summary>
     public static class PunchingBallSceneBuilder
     {
@@ -19,14 +18,6 @@ namespace Fairground.Editor.Attractions.PunchingBall
             {
                 ("Ground", "BoothGround.mat"),
                 ("BoothBack", "BoothBack.mat"),
-            },
-            InstallerType = typeof(PunchingBallSceneInstaller),
-            WriteMatchDefaults = so =>
-            {
-                so.FindProperty("startingPunches").intValue = PunchingBallRules.DefaultStartingPunches;
-                so.FindProperty("winScoreThreshold").intValue = PunchingBallRules.DefaultWinScoreThreshold;
-                so.FindProperty("maxScore").intValue = PunchingBallRules.DefaultMaxScore;
-                so.FindProperty("maxImpactSpeed").floatValue = PunchingBallRules.DefaultMaxImpactSpeed;
             },
         };
 

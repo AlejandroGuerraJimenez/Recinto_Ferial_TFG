@@ -15,7 +15,6 @@ namespace Fairground.View
     public sealed class FairgroundAttractionFlow : MonoBehaviour
     {
         [SerializeField] PlaneSelectionView planeSelection;
-        [SerializeField] AttractionId attractionId = AttractionId.BalloonThrow;
 
         readonly FairgroundParcelPads _parcels = new FairgroundParcelPads();
         DetectedPlane? _locked;
@@ -27,7 +26,7 @@ namespace Fairground.View
                 return;
 
             planeSelection.PlaneSelected += HandlePlaneSelected;
-            planeSelection.OnLockedConfirm += HandleEnter;
+            planeSelection.LockedConfirm += HandleEnter;
             planeSelection.OnRestarted += HandleRestarted;
             RestoreParcelMenu();
         }
@@ -37,7 +36,7 @@ namespace Fairground.View
             if (planeSelection != null)
             {
                 planeSelection.PlaneSelected -= HandlePlaneSelected;
-                planeSelection.OnLockedConfirm -= HandleEnter;
+                planeSelection.LockedConfirm -= HandleEnter;
                 planeSelection.OnRestarted -= HandleRestarted;
             }
 
@@ -60,18 +59,20 @@ namespace Fairground.View
         {
             _locked = plane;
             _parcels.PinTo(planeSelection.LockedSurface != null ? planeSelection.LockedSurface : planeSelection.Proposal);
-            CurrentVisit().Remember(plane);
+            EnsureVisit().Remember(plane);
+            FairgroundVisit.Deliver(_visit);
         }
 
         void HandleEnter()
         {
-            if (!_locked.HasValue)
+            AttractionId aimed = AttractionId.None;
+            bool hit = TryAimedParcel(out aimed);
+            if (!ParcelEntry.TryChoose(_locked.HasValue && hit, aimed, out AttractionId chosen))
                 return;
 
-            var chosen = AimedParcel();
-            var session = CurrentVisit();
-            session.Remember(_locked.Value, chosen);
-            FairgroundVisit.Deliver(session);
+            var visit = EnsureVisit();
+            visit.Remember(_locked.Value, chosen);
+            FairgroundVisit.Deliver(visit);
             AttractionExit.Enter(AttractionScenes.GetSceneName(chosen));
         }
 
@@ -90,20 +91,19 @@ namespace Fairground.View
             _parcels.Release();
         }
 
-        AttractionId AimedParcel()
+        bool TryAimedParcel(out AttractionId attractionId)
         {
-            if (planeSelection != null && planeSelection.TryGetAim(out var ray) && _parcels.TryPick(ray, out var aimed))
-                return aimed;
-
-            return attractionId;
+            attractionId = AttractionId.None;
+            return planeSelection != null
+                && planeSelection.TryGetAim(out var ray)
+                && _parcels.TryPick(ray, out attractionId);
         }
 
-        FairgroundVisitState CurrentVisit()
+        FairgroundVisitState EnsureVisit()
         {
             if (_visit == null && !FairgroundVisit.TryReceive(out _visit))
                 _visit = new FairgroundVisitState();
 
-            FairgroundVisit.Deliver(_visit);
             return _visit;
         }
     }

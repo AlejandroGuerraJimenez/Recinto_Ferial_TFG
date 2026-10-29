@@ -1,4 +1,3 @@
-using Fairground.Model.Attractions.DuckFishing;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.DuckFishing;
 using UnityEditor;
@@ -6,7 +5,7 @@ using UnityEditor;
 namespace Fairground.Editor.Attractions.DuckFishing
 {
     /// <summary>
-    /// Menu and match defaults for the duck booth. The shared builder bakes the scene.
+    /// Menu for the duck booth. The shared builder bakes the scene. Balance stays in code.
     /// </summary>
     public static class DuckFishingSceneBuilder
     {
@@ -21,14 +20,6 @@ namespace Fairground.Editor.Attractions.DuckFishing
                 ("BoothBack", "BoothBack.mat"),
                 ("Pond/Basin", "BoothBasin.mat"),
                 ("Pond/Water", "BoothWater.mat"),
-            },
-            InstallerType = typeof(DuckFishingSceneInstaller),
-            WriteMatchDefaults = so =>
-            {
-                so.FindProperty("duckCount").intValue = DuckFishingRules.DefaultDuckCount;
-                so.FindProperty("ducksToWin").intValue = DuckFishingRules.DefaultDucksToWin;
-                so.FindProperty("startingAttempts").intValue = DuckFishingRules.DefaultStartingAttempts;
-                so.FindProperty("pointsPerDuck").intValue = DuckFishingRules.DefaultPointsPerDuck;
             },
         };
 

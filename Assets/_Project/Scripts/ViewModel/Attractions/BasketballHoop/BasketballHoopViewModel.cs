@@ -1,3 +1,4 @@
+using System;
 using Fairground.Core.Attractions;
 using Fairground.Model.Attractions.BasketballHoop;
 
@@ -10,8 +11,13 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
     {
         static readonly BasketballHoopRules Default = new BasketballHoopRules();
 
-        public BasketballHoopViewModel(BasketballHoopRules rules = null)
-            : base((rules ?? Default).Attempt)
+        public BasketballHoopViewModel()
+            : this(Default)
+        {
+        }
+
+        public BasketballHoopViewModel(BasketballHoopRules rules)
+            : base((rules ?? throw new ArgumentNullException(nameof(rules))).Attempt)
         {
         }
 

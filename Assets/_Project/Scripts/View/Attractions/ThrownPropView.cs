@@ -20,7 +20,10 @@ namespace Fairground.View.Attractions
         bool _throwReported;
         bool _isThrown;
         bool _resolved;
+        bool _startKinematic;
+        bool _startGravity;
         float _despawnAt = -1f;
+        Action<ThrownPropView> _returnToPool;
 
         public event Action<IThrownProp> Thrown;
         public event Action<IThrownProp> Resolved;
@@ -37,6 +40,8 @@ namespace Fairground.View.Attractions
             _rigidbody = GetComponent<Rigidbody>();
             _grabInteractable = GetComponent<XRGrabInteractable>();
             _release = GetComponent<HeldThrowRelease>();
+            _startKinematic = _rigidbody.isKinematic;
+            _startGravity = _rigidbody.useGravity;
             HeldThrowGrab.Apply(_grabInteractable);
             _grabInteractable.selectExited.AddListener(OnSelectExited);
         }
@@ -56,6 +61,23 @@ namespace Fairground.View.Attractions
                 ResolveAndDestroy();
         }
 
+        public void UsePool(Action<ThrownPropView> returnToPool) => _returnToPool = returnToPool;
+
+        public void Rearm(Vector3 position, Quaternion rotation)
+        {
+            _throwReported = false;
+            _isThrown = false;
+            _resolved = false;
+            _despawnAt = -1f;
+            transform.SetPositionAndRotation(position, rotation);
+            _rigidbody.isKinematic = _startKinematic;
+            _rigidbody.useGravity = _startGravity;
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
+            _grabInteractable.enabled = true;
+            gameObject.SetActive(true);
+        }
+
         public void Launch(Vector3 velocity)
         {
             if (_isThrown)
@@ -68,6 +90,12 @@ namespace Fairground.View.Attractions
         protected void ResolveAndDestroy()
         {
             NotifyResolved();
+            if (_returnToPool != null)
+            {
+                _returnToPool(this);
+                return;
+            }
+
             Destroy(gameObject);
         }
 

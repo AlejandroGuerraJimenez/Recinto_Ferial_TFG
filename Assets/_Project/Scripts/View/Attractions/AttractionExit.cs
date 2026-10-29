@@ -11,12 +11,12 @@ namespace Fairground.View.Attractions
     {
         static bool _loading;
 
-        public static void ReturnToFairground(FairgroundVisitState session)
+        public static void ReturnToFairground(FairgroundVisitState visit)
         {
             if (_loading)
                 return;
 
-            session?.LeaveAttraction();
+            visit?.LeaveAttraction();
             Load(AttractionScenes.Fairground);
         }
 

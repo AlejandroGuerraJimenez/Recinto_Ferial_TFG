@@ -1,4 +1,3 @@
-using Fairground.Model.Attractions.BalloonThrow;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BalloonThrow;
 using UnityEditor;
@@ -6,7 +5,7 @@ using UnityEditor;
 namespace Fairground.Editor.Attractions.BalloonThrow
 {
     /// <summary>
-    /// Menu and match defaults for the balloon booth. The shared builder bakes the scene.
+    /// Menu for the balloon booth. The shared builder bakes the scene. Balance stays in code.
     /// </summary>
     public static class BalloonThrowSceneBuilder
     {
@@ -19,13 +18,6 @@ namespace Fairground.Editor.Attractions.BalloonThrow
             {
                 ("Ground", "BoothGround.mat"),
                 ("BoothBack", "BoothBack.mat"),
-            },
-            InstallerType = typeof(BalloonThrowSceneInstaller),
-            WriteMatchDefaults = so =>
-            {
-                so.FindProperty("balloonCount").intValue = BalloonThrowRules.DefaultBalloonCount;
-                so.FindProperty("pointsPerBalloon").intValue = BalloonThrowRules.DefaultPointsPerBalloon;
-                so.FindProperty("startingThrows").intValue = BalloonThrowRules.DefaultStartingThrows;
             },
         };
 

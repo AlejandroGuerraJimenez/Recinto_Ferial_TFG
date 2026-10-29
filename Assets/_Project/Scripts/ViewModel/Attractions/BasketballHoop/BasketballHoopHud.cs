@@ -13,14 +13,14 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
             return Lines(0, BasketballHoopBalance.StartingBalls, MatchPhase.Playing);
         }
 
-        public static string[] Lines(BasketballHoopViewModel match)
+        public static string[] Lines(BasketballHoopViewModel viewModel)
         {
-            return Lines(match.Score, match.AttemptsRemaining, match.Phase);
+            return Lines(viewModel.Score, viewModel.AttemptsRemaining, viewModel.Phase);
         }
 
-        public static string Status(BasketballHoopViewModel match)
+        public static string Status(BasketballHoopViewModel viewModel)
         {
-            return Status(match.Phase);
+            return Status(viewModel.Phase);
         }
 
         static string[] Lines(int score, int ballsRemaining, MatchPhase phase)

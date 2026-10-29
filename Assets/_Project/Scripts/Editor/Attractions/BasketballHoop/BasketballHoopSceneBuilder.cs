@@ -1,4 +1,3 @@
-using Fairground.Model.Attractions.BasketballHoop;
 using Fairground.Core.Attractions;
 using Fairground.View.Attractions.BasketballHoop;
 using UnityEditor;
@@ -6,7 +5,7 @@ using UnityEditor;
 namespace Fairground.Editor.Attractions.BasketballHoop
 {
     /// <summary>
-    /// Menu and match defaults for the basketball booth. The shared builder bakes the scene.
+    /// Menu for the basketball booth. The shared builder bakes the scene. Balance stays in code.
     /// </summary>
     public static class BasketballHoopSceneBuilder
     {
@@ -23,13 +22,6 @@ namespace Fairground.Editor.Attractions.BasketballHoop
                 ("RightRail", "BoothRail.mat"),
                 ("BackStop", "BoothBackStop.mat"),
                 ("Marquee", "BoothMarquee.mat"),
-            },
-            InstallerType = typeof(BasketballHoopSceneInstaller),
-            WriteMatchDefaults = so =>
-            {
-                so.FindProperty("pointsPerBasket").intValue = BasketballHoopRules.DefaultPointsPerBasket;
-                so.FindProperty("startingBalls").intValue = BasketballHoopRules.DefaultStartingBalls;
-                so.FindProperty("winScoreThreshold").intValue = BasketballHoopRules.DefaultWinScoreThreshold;
             },
         };
 

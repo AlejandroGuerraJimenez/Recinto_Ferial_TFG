@@ -21,7 +21,7 @@ namespace Fairground.View.Attractions
 
         public AttractionInput Input => _input;
 
-        public void Use(FairgroundVisitState session) => _visit = session;
+        public void Use(FairgroundVisitState visit) => _visit = visit;
 
         public void Tick()
         {
