@@ -13,7 +13,11 @@ namespace Fairground.View.Attractions
             float pedestalRadius,
             Vector3 spawnLocalPosition)
         {
-            ThrowStation station = ThrowStation.Create(position, pedestalRadius, spawnLocalPosition);
+            return Create(template, ThrowStation.Create(position, pedestalRadius, spawnLocalPosition));
+        }
+
+        public static BallSpawnerView Create(ThrownPropView template, ThrowStation station)
+        {
             var spawner = station.Root.gameObject.AddComponent<BallSpawnerView>();
             spawner.Configure(template, station.SpawnPoint);
             return spawner;

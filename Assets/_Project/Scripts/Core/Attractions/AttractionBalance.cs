@@ -6,6 +6,7 @@ namespace Fairground.Core.Attractions
     public static class BalloonThrowBalance
     {
         public const int PointsPerBalloon = 10;
+        public const int BombPenalty = 5;
         public const int StartingThrows = 8;
         public const int BalloonCount = 6;
     }

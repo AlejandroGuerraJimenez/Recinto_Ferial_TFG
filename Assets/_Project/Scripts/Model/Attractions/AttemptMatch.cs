@@ -56,6 +56,16 @@ namespace Fairground.Model.Attractions
             return true;
         }
 
+        public bool TryRegisterPenalty(int points)
+        {
+            if (Phase != MatchPhase.Playing || points <= 0)
+                return false;
+
+            Score -= points;
+            Refresh();
+            return true;
+        }
+
         public bool ResolveAttempt()
         {
             if (InFlight <= 0)

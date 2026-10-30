@@ -29,14 +29,14 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
             {
                 $"Puntos: {score}",
                 $"Lanzamientos: {throwsRemaining}",
-                $"Globos: {balloonsRemaining}",
+                $"Dianas: {balloonsRemaining}",
                 Status(phase),
             };
         }
 
         static string Status(MatchPhase phase)
         {
-            return MatchHud.Phase(phase, "¡Explota los globos!", "¡Ganaste!", "¡Sin lanzamientos!");
+            return MatchHud.Phase(phase, "¡A la diana!", "¡Ganaste!", "¡Sin lanzamientos!");
         }
     }
 }

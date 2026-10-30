@@ -4,6 +4,7 @@ namespace Fairground.View.Attractions.BalloonThrow
 {
     /// <summary>
     /// Editor throw: place the ball in front of the camera and launch it along the look direction.
+    /// The dart itself stays on the stump until the player grabs it.
     /// </summary>
     public static class BalloonThrowDesktopPlay
     {

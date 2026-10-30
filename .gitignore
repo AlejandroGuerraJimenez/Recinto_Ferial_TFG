@@ -117,6 +117,10 @@ InitTestScene*.unity*
 *_BackUpThisFolder_ButDontShipItWithYourGame/
 *_BurstDebugInformation_DoNotShip/
 
+# Booth environments baked from layout code. Unity rewrites these on bake and play.
+# The prefab .meta stays tracked so the scene keeps the same guid.
+Assets/_Project/Prefabs/Attractions/**/*BoothEnvironment.prefab
+
 # Cesium ion access token (not committed)
 Assets/_Project/Settings/cesium-ion-token.txt
 Assets/_Project/Settings/cesium-ion-token.txt.meta

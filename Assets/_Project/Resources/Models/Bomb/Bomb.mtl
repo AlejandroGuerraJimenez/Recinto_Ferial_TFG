@@ -1,0 +1,9 @@
+newmtl Black
+Kd 0.020 0.020 0.025
+Ns 80
+newmtl DarkMetal
+Kd 0.320 0.330 0.360
+Ns 120
+newmtl White
+Kd 0.940 0.950 0.900
+Ns 20

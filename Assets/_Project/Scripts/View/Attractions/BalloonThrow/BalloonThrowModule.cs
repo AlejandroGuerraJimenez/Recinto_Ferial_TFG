@@ -20,7 +20,7 @@ namespace Fairground.View.Attractions.BalloonThrow
             var go = new GameObject("BalloonThrowGame");
             var viewModel = new BalloonThrowViewModel();
             var host = go.AddComponent<BalloonThrowAttractionHost>();
-            host.Configure(booth.Balloons, booth.Spawner, booth.Hud, viewModel);
+            host.Configure(booth.Balloons, booth.Bombs, booth.Spawner, booth.Hud, viewModel);
             host.Receive(context.Visit);
             BoothModuleShell.AttachPlay(
                 booth.XrOrigin,

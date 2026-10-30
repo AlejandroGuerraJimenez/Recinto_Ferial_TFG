@@ -23,6 +23,8 @@ namespace Fairground.View.Attractions.Rendering
             Cache.Clear();
         }
 
+        public static Material Shared(Color color) => GetOrCreateShared(color);
+
         public static void Apply(GameObject target, Color color)
         {
             var renderer = target != null ? target.GetComponent<Renderer>() : null;

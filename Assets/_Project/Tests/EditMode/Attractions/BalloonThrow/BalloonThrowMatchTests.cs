@@ -104,9 +104,9 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             Assert.IsTrue(vm.TryRegisterThrow());
             Assert.IsTrue(vm.TryRegisterPop());
             Assert.AreEqual(3, events);
-            Assert.AreEqual("¡Explota los globos!", BalloonThrowHud.Status(vm));
+            Assert.AreEqual("¡A la diana!", BalloonThrowHud.Status(vm));
             Assert.AreEqual("Puntos: 10", BalloonThrowHud.Lines(vm)[0]);
-            Assert.AreEqual("¡Explota los globos!", BalloonThrowHud.Lines(vm)[3]);
+            Assert.AreEqual("¡A la diana!", BalloonThrowHud.Lines(vm)[3]);
             Assert.AreEqual(AttractionId.BalloonThrow, vm.AttractionId);
         }
 
@@ -123,6 +123,20 @@ namespace Fairground.Tests.EditMode.Attractions.BalloonThrow
             Assert.IsTrue(vm.CanThrow);
             Assert.AreEqual(1, vm.AttemptsRemaining);
             Assert.AreEqual(0, vm.Score);
+        }
+
+        [Test]
+        public void ViewModel_Bomb_SubtractsPointsWithoutPoppingATarget()
+        {
+            var vm = new BalloonThrowViewModel(10, 4, 3);
+            vm.StartMatch();
+            Assert.IsTrue(vm.TryRegisterPop());
+            Assert.IsTrue(vm.TryRegisterBomb());
+            Assert.AreEqual(10 - BalloonThrowBalance.BombPenalty, vm.Score);
+            Assert.AreEqual(1, vm.BalloonsPopped);
+            Assert.AreEqual(MatchPhase.Playing, vm.Phase);
+            Assert.IsTrue(vm.TryRegisterBomb());
+            Assert.AreEqual(10 - BalloonThrowBalance.BombPenalty * 2, vm.Score);
         }
 
         static AttemptMatch CreateMatch(int points, int throws, int balloons)

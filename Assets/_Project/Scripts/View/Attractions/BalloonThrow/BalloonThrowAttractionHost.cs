@@ -12,6 +12,7 @@ namespace Fairground.View.Attractions.BalloonThrow
     public sealed class BalloonThrowAttractionHost : MonoBehaviour
     {
         [SerializeField] BalloonTargetView[] balloons;
+        [SerializeField] BombTargetView[] bombs;
         [SerializeField] BallSpawnerView ballSpawner;
         [SerializeField] BoothHudView hud;
 
@@ -27,11 +28,13 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         public void Configure(
             BalloonTargetView[] balloonTargets,
+            BombTargetView[] bombTargets,
             BallSpawnerView spawner,
             BoothHudView hudView,
             BalloonThrowViewModel viewModel)
         {
             balloons = BoothWiring.RequireAny(balloonTargets, "Balloon throw", "balloons");
+            bombs = BoothWiring.RequireAny(bombTargets, "Balloon throw", "bombs");
             ballSpawner = BoothWiring.Require(spawner, "Balloon throw", "a ball spawner");
             hud = BoothWiring.Require(hudView, "Balloon throw", "a HUD");
             _viewModel = BoothWiring.Require(viewModel, "Balloon throw", "a match");
@@ -55,6 +58,7 @@ namespace Fairground.View.Attractions.BalloonThrow
         void OnDestroy()
         {
             UnsubscribeBalloons();
+            UnsubscribeBombs();
             _match?.Dispose();
         }
 
@@ -62,6 +66,7 @@ namespace Fairground.View.Attractions.BalloonThrow
         {
             CaptureTargetRoot();
             SubscribeBalloons();
+            SubscribeBombs();
             _match.Open(
                 _viewModel,
                 ballSpawner,
@@ -94,14 +99,49 @@ namespace Fairground.View.Attractions.BalloonThrow
 
         void OnBalloonPopped(BalloonTargetView balloon) => _match.ApplyAndRefresh(_viewModel.TryRegisterPop);
 
+        void SubscribeBombs()
+        {
+            if (bombs == null)
+                return;
+
+            foreach (var bomb in bombs)
+                if (bomb != null)
+                    bomb.Exploded += OnBombExploded;
+        }
+
+        void UnsubscribeBombs()
+        {
+            if (bombs == null)
+                return;
+
+            foreach (var bomb in bombs)
+                if (bomb != null)
+                    bomb.Exploded -= OnBombExploded;
+        }
+
+        void OnBombExploded(BombTargetView bomb) => _match.ApplyAndRefresh(_viewModel.TryRegisterBomb);
+
         public void RestartMatch()
         {
             if (_viewModel == null)
                 return;
 
             UnsubscribeBalloons();
+            UnsubscribeBombs();
             _match.Restart(RebuildBalloons);
+            RearmBombs();
             SubscribeBalloons();
+            SubscribeBombs();
+        }
+
+        void RearmBombs()
+        {
+            if (bombs == null)
+                return;
+
+            for (int i = 0; i < bombs.Length; i++)
+                if (bombs[i] != null)
+                    bombs[i].Rearm();
         }
 
         void RebuildBalloons()

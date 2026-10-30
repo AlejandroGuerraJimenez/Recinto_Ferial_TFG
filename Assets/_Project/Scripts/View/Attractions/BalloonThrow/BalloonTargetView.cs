@@ -5,29 +5,30 @@ namespace Fairground.View.Attractions.BalloonThrow
 {
     /// <summary>
     /// Balloon target. Observer: <see cref="Popped"/>.
+    /// A hit hides every ring. The collider stays on this object so the bullseye still catches the dart.
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public sealed class BalloonTargetView : MonoBehaviour
     {
-        [SerializeField] Renderer balloonRenderer;
-        [SerializeField] Color poppedColor = new Color(1f, 0.85f, 0.2f, 1f);
         [SerializeField] float popScale = 1.35f;
 
         bool _popped;
-        MaterialPropertyBlock _popTint;
         Vector3 _restScale;
         Collider _collider;
+        Renderer[] _parts;
+        bool[] _drawn;
 
         public event Action<BalloonTargetView> Popped;
         public bool IsPopped => _popped;
 
         void Awake()
         {
-            if (balloonRenderer == null)
-                balloonRenderer = GetComponentInChildren<Renderer>();
-
             _restScale = transform.localScale;
             _collider = GetComponent<Collider>();
+            _parts = GetComponentsInChildren<Renderer>(true);
+            _drawn = new bool[_parts.Length];
+            for (int i = 0; i < _parts.Length; i++)
+                _drawn[i] = _parts[i] != null && _parts[i].enabled;
         }
 
         void OnCollisionEnter(Collision collision) => TryPop(collision.collider);
@@ -61,23 +62,18 @@ namespace Fairground.View.Attractions.BalloonThrow
             if (_collider != null)
                 _collider.enabled = true;
 
-            if (balloonRenderer == null)
-                return;
-
-            balloonRenderer.enabled = true;
-            balloonRenderer.SetPropertyBlock(null);
+            SetDrawn(true);
         }
 
         void ApplyPop()
         {
             _popped = true;
-            ApplyPopFeedback();
+            transform.localScale = _restScale * popScale;
             Popped?.Invoke(this);
             if (_collider != null)
                 _collider.enabled = false;
 
-            if (balloonRenderer != null)
-                balloonRenderer.enabled = false;
+            SetDrawn(false);
         }
 
         bool CanPop(Collider other)
@@ -89,17 +85,16 @@ namespace Fairground.View.Attractions.BalloonThrow
             return ball != null && ball.IsThrown;
         }
 
-        void ApplyPopFeedback()
+        void SetDrawn(bool visible)
         {
-            transform.localScale *= popScale;
-            if (balloonRenderer == null)
+            if (_parts == null)
                 return;
 
-            _popTint ??= new MaterialPropertyBlock();
-            balloonRenderer.GetPropertyBlock(_popTint);
-            _popTint.SetColor("_BaseColor", poppedColor);
-            _popTint.SetColor("_Color", poppedColor);
-            balloonRenderer.SetPropertyBlock(_popTint);
+            for (int i = 0; i < _parts.Length; i++)
+            {
+                if (_parts[i] != null)
+                    _parts[i].enabled = visible && _drawn[i];
+            }
         }
     }
 }

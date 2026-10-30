@@ -40,6 +40,8 @@ namespace Fairground.ViewModel.Attractions.BalloonThrow
 
         public bool TryRegisterPop() => TryRegisterSuccess();
 
+        public bool TryRegisterBomb() => Apply(() => Match.TryRegisterPenalty(_rules.BombPenalty));
+
         public bool TryResolveThrow() => TryResolveAttempt();
     }
 }

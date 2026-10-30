@@ -14,11 +14,7 @@ namespace Fairground.Editor.Attractions.BalloonThrow
             Attraction = AttractionId.BalloonThrow,
             Title = "Balloon Throw",
             Layout = BalloonThrowBoothLayout.Props,
-            BakedMaterials = new (string, string)[]
-            {
-                ("Ground", "BoothGround.mat"),
-                ("BoothBack", "BoothBack.mat"),
-            },
+            BakedMaterials = BalloonThrowBoothLayout.MaterialBindings(),
         };
 
         [MenuItem("Fairground/Attractions/Build Balloon Throw Scene")]

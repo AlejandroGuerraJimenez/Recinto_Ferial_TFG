@@ -72,8 +72,14 @@ namespace Fairground.View.Attractions
 
             Vector3 gesture = PeakVelocity();
             _count = 0;
-            if (gesture.magnitude < minGestureSpeed || _body == null)
+            if (_body == null)
                 return false;
+
+            if (gesture.magnitude < minGestureSpeed)
+            {
+                Drop();
+                return false;
+            }
 
             Vector3 velocity = Vector3.ClampMagnitude(gesture * velocityScale, maxSpeed);
             velocity = ApplyArc(velocity);
@@ -82,6 +88,14 @@ namespace Fairground.View.Attractions
             _body.linearVelocity = velocity;
             _body.angularVelocity = Vector3.zero;
             return true;
+        }
+
+        void Drop()
+        {
+            _body.isKinematic = false;
+            _body.useGravity = true;
+            _body.linearVelocity = Vector3.zero;
+            _body.angularVelocity = Vector3.zero;
         }
 
         void OnSelected(SelectEnterEventArgs args)
