@@ -20,116 +20,104 @@ namespace Fairground.Tests.EditMode.Attractions.DuckFishing
         }
 
         [Test]
-        public void Match_Start_InitializesCounters()
+        public void Match_Start_OpensTheClock()
         {
-            var session = CreateMatch(10, 8, 6, 4);
+            var session = new DuckFishingMatch(new DuckFishingRules(30, 6));
             session.Start();
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.AreEqual(0, session.Score);
-            Assert.AreEqual(8, session.AttemptsRemaining);
-            Assert.AreEqual(6, session.TargetsRemaining);
+            Assert.AreEqual(30f, session.SecondsRemaining);
+            Assert.AreEqual(6, session.DuckCount);
         }
 
         [Test]
-        public void Match_Start_DoesNotReset_RestartDoes()
+        public void Match_Catch_ScoresOnePerDuck()
         {
-            var session = CreateMatch(10, 2, 6, 4);
+            var session = new DuckFishingMatch(new DuckFishingRules(30, 6));
             session.Start();
-            Assert.IsTrue(session.TrySpendAttempt());
-            session.Start();
-            Assert.AreEqual(1, session.AttemptsRemaining);
-            session.Restart();
+            Assert.IsTrue(session.TryRegisterCatch());
+            Assert.IsTrue(session.TryRegisterCatch());
+            Assert.AreEqual(2, session.Score);
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.AreEqual(0, session.Score);
-            Assert.AreEqual(2, session.AttemptsRemaining);
-            Assert.AreEqual(0, session.InFlight);
         }
 
         [Test]
-        public void Match_Catch_AddsScoreAndCanWin()
+        public void Match_TimeUp_LocksTheDuckCount()
         {
-            var session = CreateMatch(10, 8, 6, 2);
+            var session = new DuckFishingMatch(new DuckFishingRules(10, 6));
             session.Start();
-            Assert.IsTrue(session.TryRegisterSuccess());
-            Assert.AreEqual(10, session.Score);
-            Assert.IsTrue(session.TryRegisterSuccess());
+            Assert.IsTrue(session.TryRegisterCatch());
+            session.Tick(10f);
+            Assert.AreEqual(0f, session.SecondsRemaining);
             Assert.AreEqual(MatchPhase.Won, session.Phase);
+            Assert.AreEqual(1, session.Score);
+            Assert.IsFalse(session.TryRegisterCatch());
         }
 
         [Test]
-        public void Match_AttemptsExhausted_LosesWhenNotEnoughCaught()
+        public void Match_TimeUpWithNone_EndsWithoutPoints()
         {
-            var session = CreateMatch(10, 2, 6, 3);
+            var session = new DuckFishingMatch(new DuckFishingRules(5, 6));
             session.Start();
-            Assert.IsTrue(session.TrySpendAttempt());
-            Assert.IsTrue(session.TrySpendAttempt());
-            Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsTrue(session.ResolveAttempt());
-            Assert.IsTrue(session.ResolveAttempt());
+            session.Tick(5f);
             Assert.AreEqual(MatchPhase.Lost, session.Phase);
-            Assert.IsFalse(session.TrySpendAttempt());
+            Assert.AreEqual(0, session.Score);
         }
 
         [Test]
-        public void Match_LastDip_CanWinBeforeResolve()
+        public void Match_AllDucks_EndsBeforeTheClock()
         {
-            var session = CreateMatch(10, 1, 6, 1);
+            var session = new DuckFishingMatch(new DuckFishingRules(30, 2));
             session.Start();
-            Assert.IsTrue(session.TrySpendAttempt());
-            Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsTrue(session.TryRegisterSuccess());
+            Assert.IsTrue(session.TryRegisterCatch());
+            Assert.IsTrue(session.TryRegisterCatch());
             Assert.AreEqual(MatchPhase.Won, session.Phase);
-            Assert.IsTrue(session.ResolveAttempt());
-            Assert.AreEqual(MatchPhase.Won, session.Phase);
-        }
-
-        [Test]
-        public void Match_FourCatchesOfSix_WinsWithDucksLeft()
-        {
-            var session = CreateMatch(10, 8, 6, 4);
-            session.Start();
-            Assert.IsTrue(session.TryRegisterSuccess());
-            Assert.IsTrue(session.TryRegisterSuccess());
-            Assert.IsTrue(session.TryRegisterSuccess());
-            Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.AreEqual(3, session.TargetsRemaining);
-            Assert.IsTrue(session.TryRegisterSuccess());
-            Assert.AreEqual(MatchPhase.Won, session.Phase);
-            Assert.AreEqual(2, session.TargetsRemaining);
+            Assert.AreEqual(2, session.Score);
+            Assert.Greater(session.SecondsRemaining, 0f);
         }
 
         [Test]
         public void ViewModel_NotifiesStateChanges()
         {
-            var vm = new DuckFishingViewModel(new DuckFishingRules(10, 3, 6, 2));
+            var vm = new DuckFishingViewModel(new DuckFishingRules(20, 6));
             int events = 0;
             vm.StateChanged += () => events++;
             vm.StartMatch();
-            Assert.IsTrue(vm.TryRegisterDip());
             Assert.IsTrue(vm.TryRegisterCatch());
-            Assert.AreEqual(3, events);
-            Assert.AreEqual("¡Atrapa 2 patos!", DuckFishingHud.Status(vm));
+            Assert.AreEqual(2, events);
+            Assert.AreEqual("¡Engancha el aro!", DuckFishingHud.Status(vm));
+            Assert.AreEqual(1, vm.Score);
             Assert.AreEqual(AttractionId.DuckFishing, vm.AttractionId);
         }
 
         [Test]
-        public void ViewModel_Restart_ResetsMatch()
+        public void ViewModel_Tick_RefreshesWhenTheSecondChanges()
         {
-            var vm = new DuckFishingViewModel(10, 2, 6, 4);
+            var vm = new DuckFishingViewModel(10, 6);
+            int events = 0;
+            vm.StateChanged += () => events++;
             vm.StartMatch();
-            Assert.IsTrue(vm.CanDip);
-            Assert.IsTrue(vm.TryRegisterDip());
-            Assert.IsTrue(vm.CanDip);
-            Assert.AreEqual(1, vm.AttemptsRemaining);
-            vm.Restart();
-            Assert.IsTrue(vm.CanDip);
-            Assert.AreEqual(2, vm.AttemptsRemaining);
-            Assert.AreEqual(0, vm.Score);
+            vm.Tick(0.2f);
+            Assert.AreEqual(1, events);
+            vm.Tick(0.9f);
+            Assert.AreEqual(2, events);
+            Assert.AreEqual(9, vm.SecondsLeft);
         }
 
-        static AttemptMatch CreateMatch(int points, int attempts, int ducks, int toWin)
+        [Test]
+        public void ViewModel_Restart_ResetsTheRound()
         {
-            return new AttemptMatch(new DuckFishingRules(points, attempts, ducks, toWin).Attempt);
+            var vm = new DuckFishingViewModel(12, 6);
+            vm.StartMatch();
+            Assert.IsTrue(vm.CanFish);
+            Assert.IsTrue(vm.TryRegisterCatch());
+            vm.Tick(12f);
+            Assert.IsFalse(vm.CanFish);
+            vm.Restart();
+            Assert.IsTrue(vm.CanFish);
+            Assert.AreEqual(12, vm.SecondsLeft);
+            Assert.AreEqual(0, vm.Score);
+            Assert.AreEqual(0, vm.DucksCaught);
         }
     }
 }

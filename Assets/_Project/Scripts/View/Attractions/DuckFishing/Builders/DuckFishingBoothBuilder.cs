@@ -12,12 +12,15 @@ namespace Fairground.View.Attractions.DuckFishing.Builders
         readonly DuckTargetFactory _duckFactory = new DuckTargetFactory();
         readonly FishingRodFactory _rodFactory = new FishingRodFactory();
         Transform _pond;
+        Transform _booth;
 
         public Transform Pond => _pond;
 
         public DuckTargetView[] Ducks { get; private set; }
 
         public FishingRodView Rod { get; private set; }
+
+        public DuckPen Pen { get; private set; }
 
         public DuckFishingBoothBuilder(GameObject xrOriginPrefab)
             : base(DuckFishingBoothLayout.Props(), xrOriginPrefab)
@@ -26,11 +29,15 @@ namespace Fairground.View.Attractions.DuckFishing.Builders
 
         protected override void OnEnvironmentReady(Transform environmentRoot)
         {
+            _booth = environmentRoot;
             _pond = ResolvePond(environmentRoot);
         }
 
         protected override void BuildGameplay()
         {
+            Transform booth = _booth != null ? _booth : _pond;
+            Pen = DuckPen.Create(booth, DuckFishingBalance.DuckCount);
+            Track(Pen.transform);
             Ducks = _duckFactory.CreateRing(_pond, DuckFishingBalance.DuckCount);
             Rod = _rodFactory.Create(XrOrigin);
         }

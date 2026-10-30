@@ -10,51 +10,38 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
     {
         public static string[] Opening()
         {
-            return Lines(
-                0,
-                DuckFishingBalance.StartingAttempts,
-                0,
-                DuckFishingBalance.DucksToWin,
-                DuckFishingBalance.DucksToWin,
-                MatchPhase.Playing);
+            return Lines(0, DuckFishingBalance.RoundSeconds, 0, DuckFishingBalance.DuckCount, MatchPhase.Playing);
         }
 
         public static string[] Lines(DuckFishingViewModel viewModel)
         {
             return Lines(
                 viewModel.Score,
-                viewModel.AttemptsRemaining,
+                viewModel.SecondsLeft,
                 viewModel.DucksCaught,
-                viewModel.DucksToWin,
-                viewModel.DucksToWin,
+                viewModel.DuckCount,
                 viewModel.Phase);
         }
 
         public static string Status(DuckFishingViewModel viewModel)
         {
-            return Status(viewModel.DucksToWin, viewModel.Phase);
+            return Status(viewModel.Phase);
         }
 
-        static string[] Lines(
-            int score,
-            int attemptsRemaining,
-            int ducksCaught,
-            int ducksToWin,
-            int statusTarget,
-            MatchPhase phase)
+        static string[] Lines(int score, int secondsLeft, int ducksCaught, int duckCount, MatchPhase phase)
         {
             return new[]
             {
                 $"Puntos: {score}",
-                $"Intentos: {attemptsRemaining}",
-                $"Patos: {ducksCaught}/{ducksToWin}",
-                Status(statusTarget, phase),
+                $"Tiempo: {secondsLeft}",
+                $"Patos: {ducksCaught}/{duckCount}",
+                Status(phase),
             };
         }
 
-        static string Status(int ducksToWin, MatchPhase phase)
+        static string Status(MatchPhase phase)
         {
-            return MatchHud.Phase(phase, $"¡Atrapa {ducksToWin} patos!", "¡Ganaste!", "¡Sin intentos!");
+            return MatchHud.Phase(phase, "¡Engancha el aro!", "¡Tiempo!", "¡Tiempo!");
         }
     }
 }

@@ -56,6 +56,7 @@ namespace Fairground.View.Attractions
             target.name = piece.Name;
             target.transform.SetParent(parent, false);
             target.transform.localPosition = piece.LocalPosition;
+            target.transform.localEulerAngles = piece.LocalEulerAngles;
             target.transform.localScale = piece.LocalScale;
 
             if (!piece.Empty && piece.Tint)

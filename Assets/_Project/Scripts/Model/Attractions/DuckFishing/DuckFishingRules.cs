@@ -1,48 +1,26 @@
-using System;
 using Fairground.Core.Attractions;
-using Fairground.Model.Attractions;
 
 namespace Fairground.Model.Attractions.DuckFishing
 {
     /// <summary>
-    /// Immutable scoring and win/lose policy.
+    /// Round length and how many ducks are in the pond. The score is the ducks pulled out.
     /// </summary>
     public sealed class DuckFishingRules
     {
-        public const int DefaultPointsPerDuck = DuckFishingBalance.PointsPerDuck;
-        public const int DefaultStartingAttempts = DuckFishingBalance.StartingAttempts;
+        public const int DefaultRoundSeconds = DuckFishingBalance.RoundSeconds;
         public const int DefaultDuckCount = DuckFishingBalance.DuckCount;
-        public const int DefaultDucksToWin = DuckFishingBalance.DucksToWin;
 
         public DuckFishingRules(
-            int pointsPerDuck = DefaultPointsPerDuck,
-            int startingAttempts = DefaultStartingAttempts,
-            int duckCount = DefaultDuckCount,
-            int ducksToWin = DefaultDucksToWin)
+            int roundSeconds = DefaultRoundSeconds,
+            int duckCount = DefaultDuckCount)
         {
-            RuleGuard.NonNegative(pointsPerDuck, nameof(pointsPerDuck));
-            RuleGuard.Positive(startingAttempts, nameof(startingAttempts));
+            RuleGuard.Positive(roundSeconds, nameof(roundSeconds));
             RuleGuard.Positive(duckCount, nameof(duckCount));
-            RuleGuard.Positive(ducksToWin, nameof(ducksToWin));
-
-            if (ducksToWin > duckCount)
-                throw new ArgumentOutOfRangeException(nameof(ducksToWin));
-
-            PointsPerDuck = pointsPerDuck;
-            StartingAttempts = startingAttempts;
+            RoundSeconds = roundSeconds;
             DuckCount = duckCount;
-            DucksToWin = ducksToWin;
-            Attempt = AttemptMatchRules.BySuccessCount(
-                pointsPerDuck,
-                startingAttempts,
-                duckCount,
-                ducksToWin);
         }
 
-        public int PointsPerDuck { get; }
-        public int StartingAttempts { get; }
+        public int RoundSeconds { get; }
         public int DuckCount { get; }
-        public int DucksToWin { get; }
-        public AttemptMatchRules Attempt { get; }
     }
 }

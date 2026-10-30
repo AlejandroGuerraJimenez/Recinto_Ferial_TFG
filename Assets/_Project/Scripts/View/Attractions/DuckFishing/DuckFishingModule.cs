@@ -20,7 +20,7 @@ namespace Fairground.View.Attractions.DuckFishing
             var go = new GameObject("DuckFishingGame");
             var viewModel = new DuckFishingViewModel();
             var host = go.AddComponent<DuckFishingAttractionHost>();
-            host.Configure(booth.Ducks, booth.Rod, booth.Hud, booth.Pond, viewModel);
+            host.Configure(booth.Ducks, booth.Rod, booth.Hud, booth.Pond, booth.Pen, viewModel);
             host.Receive(context.Visit);
             BoothModuleShell.AttachPlay(
                 booth.XrOrigin,

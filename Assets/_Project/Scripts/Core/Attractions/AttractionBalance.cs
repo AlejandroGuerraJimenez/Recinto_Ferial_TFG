@@ -12,10 +12,8 @@ namespace Fairground.Core.Attractions
 
     public static class DuckFishingBalance
     {
-        public const int PointsPerDuck = 10;
-        public const int StartingAttempts = 8;
+        public const int RoundSeconds = 45;
         public const int DuckCount = 6;
-        public const int DucksToWin = 4;
     }
 
     public static class BasketballHoopBalance

@@ -24,6 +24,7 @@ namespace Fairground.View.Attractions
         public bool Empty;
         public PrimitiveType Primitive;
         public Vector3 LocalPosition;
+        public Vector3 LocalEulerAngles;
         public Vector3 LocalScale = Vector3.one;
         public Color Color = Color.white;
         public bool Tint = true;

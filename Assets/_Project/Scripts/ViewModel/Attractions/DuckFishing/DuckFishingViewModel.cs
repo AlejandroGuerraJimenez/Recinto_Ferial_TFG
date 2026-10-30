@@ -1,17 +1,19 @@
 using System;
 using Fairground.Core.Attractions;
+using Fairground.Model.Attractions;
 using Fairground.Model.Attractions.DuckFishing;
 
 namespace Fairground.ViewModel.Attractions.DuckFishing
 {
     /// <summary>
-    /// Duck verbs on a shared attempt match. The match owns the counters.
+    /// Timed duck round. The score is how many ducks have been pulled out.
     /// </summary>
-    public sealed class DuckFishingViewModel : AttemptMatchViewModel
+    public sealed class DuckFishingViewModel : BoothMatchViewModel
     {
         static readonly DuckFishingRules Default = new DuckFishingRules();
 
-        readonly DuckFishingRules _rules;
+        readonly DuckFishingMatch _match;
+        int _shownSeconds;
 
         public DuckFishingViewModel()
             : this(Default)
@@ -19,28 +21,51 @@ namespace Fairground.ViewModel.Attractions.DuckFishing
         }
 
         public DuckFishingViewModel(DuckFishingRules rules)
-            : base((rules ?? throw new ArgumentNullException(nameof(rules))).Attempt)
         {
-            _rules = rules;
+            _match = new DuckFishingMatch(rules ?? throw new ArgumentNullException(nameof(rules)));
         }
 
-        public DuckFishingViewModel(int pointsPerDuck, int startingAttempts, int duckCount, int ducksToWin)
-            : this(new DuckFishingRules(pointsPerDuck, startingAttempts, duckCount, ducksToWin))
+        public DuckFishingViewModel(int roundSeconds, int duckCount)
+            : this(new DuckFishingRules(roundSeconds, duckCount))
         {
         }
 
         public AttractionId AttractionId => AttractionId.DuckFishing;
+        public MatchPhase Phase => _match.Phase;
+        public int Score => _match.Score;
+        public int DucksCaught => _match.DucksCaught;
+        public int DuckCount => _match.DuckCount;
+        public int SecondsLeft => (int)Math.Ceiling(_match.SecondsRemaining);
+        public bool IsPlaying => Phase == MatchPhase.Playing;
+        public bool CanFish => IsPlaying;
 
-        public int DucksRemaining => TargetsRemaining;
-        public int DucksCaught => Successes;
-        public int DuckCount => _rules.DuckCount;
-        public int DucksToWin => _rules.DucksToWin;
-        public bool CanDip => CanSpendAttempt;
+        public override void StartMatch()
+        {
+            _match.Start();
+            _shownSeconds = SecondsLeft;
+            Notify();
+        }
 
-        public bool TryRegisterDip() => TrySpendAttempt();
+        public override void Restart()
+        {
+            _match.Restart();
+            _shownSeconds = SecondsLeft;
+            Notify();
+        }
 
-        public bool TryRegisterCatch() => TryRegisterSuccess();
+        public bool TryRegisterCatch() => Apply(_match.TryRegisterCatch);
 
-        public bool TryResolveDip() => TryResolveAttempt();
+        public void Tick(float deltaSeconds)
+        {
+            if (!IsPlaying)
+                return;
+
+            _match.Tick(deltaSeconds);
+            if (!IsPlaying || SecondsLeft != _shownSeconds)
+            {
+                _shownSeconds = SecondsLeft;
+                Notify();
+            }
+        }
     }
 }

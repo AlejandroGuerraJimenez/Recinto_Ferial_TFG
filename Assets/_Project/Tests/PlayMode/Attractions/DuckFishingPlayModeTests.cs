@@ -26,7 +26,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             DuckFishingViewModel viewModel = host.ViewModel;
             Assert.AreEqual(AttractionId.DuckFishing, host.AttractionId);
             Assert.AreEqual(MatchPhase.Playing, viewModel.Phase);
-            Assert.Greater(viewModel.AttemptsRemaining, 0);
+            Assert.Greater(viewModel.SecondsLeft, 0);
             Assert.AreEqual(DuckFishingBalance.DuckCount, viewModel.DuckCount);
             Assert.Greater(Object.FindObjectsByType<DuckTargetView>().Length, 0);
         }
@@ -43,7 +43,6 @@ namespace Fairground.Tests.PlayMode.Attractions
                 "DuckFishing ViewModel did not enter Playing.");
 
             DuckFishingViewModel viewModel = host.ViewModel;
-            int attempts = viewModel.AttemptsRemaining;
             var duck = AttractionSceneTestHelper.Require<DuckTargetView>();
             var hook = AttractionSceneTestHelper.Require<FishingHookView>();
 
@@ -51,8 +50,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             Assert.IsTrue(hook.TryCatch(duck));
 
             yield return AttractionSceneTestHelper.WaitUntil(
-                () => viewModel.Score == DuckFishingBalance.PointsPerDuck
-                    && viewModel.AttemptsRemaining == attempts - 1,
+                () => viewModel.Score == 1 && viewModel.DucksCaught == 1,
                 2f,
                 "Duck catch did not update the ViewModel.");
 
@@ -60,7 +58,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             yield return null;
 
             Assert.AreEqual(MatchPhase.Playing, viewModel.Phase);
-            Assert.AreEqual(attempts, viewModel.AttemptsRemaining);
+            Assert.AreEqual(DuckFishingBalance.RoundSeconds, viewModel.SecondsLeft);
             Assert.AreEqual(0, viewModel.Score);
             Assert.AreEqual(0, viewModel.DucksCaught);
         }

@@ -4,29 +4,35 @@ using UnityEngine;
 namespace Fairground.View.Attractions.DuckFishing
 {
     /// <summary>
-    /// Floating duck target. Observer: <see cref="Caught"/>.
+    /// Floating duck. The ring on its back is what the hook can catch.
     /// </summary>
-    [RequireComponent(typeof(Collider))]
     public sealed class DuckTargetView : MonoBehaviour
     {
         [SerializeField] float pathRadius = 1.35f;
         [SerializeField] float pathSpeed = 0.55f;
         [SerializeField] float bobAmplitude = 0.04f;
         [SerializeField] float bobSpeed = 2.4f;
-        [SerializeField] float catchScale = 1.25f;
-        [SerializeField] Renderer duckRenderer;
-        [SerializeField] Color caughtColor = new Color(1f, 0.9f, 0.2f, 1f);
 
         float _angle;
         float _baseY;
         bool _caught;
         Vector3 _center;
         Vector3 _restScale;
+        Transform _ring;
         Collider _collider;
-        MaterialPropertyBlock _tint;
+        Renderer[] _renderers;
 
         public event Action<DuckTargetView> Caught;
         public bool IsCaught => _caught;
+        public Vector3 RingPosition => _ring != null ? _ring.position : transform.position;
+
+        public void AssignRing(Transform ring)
+        {
+            _ring = ring;
+            var ringCollider = ring != null ? ring.GetComponent<Collider>() : null;
+            if (ringCollider != null)
+                _collider = ringCollider;
+        }
 
         public void Configure(Vector3 center, float angle, float radius, float speed)
         {
@@ -40,9 +46,7 @@ namespace Fairground.View.Attractions.DuckFishing
 
         void Awake()
         {
-            if (duckRenderer == null)
-                duckRenderer = GetComponentInChildren<Renderer>();
-
+            _renderers = GetComponentsInChildren<Renderer>(true);
             _restScale = transform.localScale;
             _collider = GetComponent<Collider>();
             _center = transform.position;
@@ -63,15 +67,21 @@ namespace Fairground.View.Attractions.DuckFishing
                 return false;
 
             _caught = true;
-            ApplyCatchFeedback();
             Caught?.Invoke(this);
             if (_collider != null)
                 _collider.enabled = false;
 
-            if (duckRenderer != null)
-                duckRenderer.enabled = false;
-
             return true;
+        }
+
+        public void Ride(Vector3 worldPosition) => transform.position = worldPosition;
+
+        public void Park(Vector3 worldPosition, Quaternion worldRotation)
+        {
+            transform.localScale = _restScale;
+            transform.SetPositionAndRotation(worldPosition, worldRotation);
+            SetRenderersEnabled(true);
+            ClearTint();
         }
 
         public void Rearm()
@@ -81,11 +91,8 @@ namespace Fairground.View.Attractions.DuckFishing
             if (_collider != null)
                 _collider.enabled = true;
 
-            if (duckRenderer == null)
-                return;
-
-            duckRenderer.enabled = true;
-            duckRenderer.SetPropertyBlock(null);
+            SetRenderersEnabled(true);
+            ClearTint();
         }
 
         void ApplyOrbitPose(float deltaTime)
@@ -101,17 +108,28 @@ namespace Fairground.View.Attractions.DuckFishing
                 transform.rotation = Quaternion.LookRotation(tangent, Vector3.up);
         }
 
-        void ApplyCatchFeedback()
+        void SetRenderersEnabled(bool enabled)
         {
-            transform.localScale *= catchScale;
-            if (duckRenderer == null)
+            if (_renderers == null)
                 return;
 
-            _tint ??= new MaterialPropertyBlock();
-            duckRenderer.GetPropertyBlock(_tint);
-            _tint.SetColor("_BaseColor", caughtColor);
-            _tint.SetColor("_Color", caughtColor);
-            duckRenderer.SetPropertyBlock(_tint);
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                if (_renderers[i] != null)
+                    _renderers[i].enabled = enabled;
+            }
+        }
+
+        void ClearTint()
+        {
+            if (_renderers == null)
+                return;
+
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                if (_renderers[i] != null)
+                    _renderers[i].SetPropertyBlock(null);
+            }
         }
     }
 }

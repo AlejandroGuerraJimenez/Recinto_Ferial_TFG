@@ -23,12 +23,11 @@ namespace Fairground.Tests.EditMode.Attractions
 
             var ducks = new DuckFishingViewModel();
             Assert.AreEqual(DuckFishingBalance.DuckCount, ducks.DuckCount);
-            Assert.AreEqual(DuckFishingBalance.DucksToWin, ducks.DucksToWin);
+            Assert.AreEqual(DuckFishingBalance.RoundSeconds, ducks.SecondsLeft);
             ducks.StartMatch();
-            Assert.IsTrue(ducks.TryRegisterDip());
             Assert.IsTrue(ducks.TryRegisterCatch());
-            Assert.AreEqual(DuckFishingBalance.PointsPerDuck, ducks.Score);
-            Assert.AreEqual(DuckFishingBalance.StartingAttempts - 1, ducks.AttemptsRemaining);
+            Assert.AreEqual(1, ducks.Score);
+            Assert.AreEqual(1, ducks.DucksCaught);
 
             var hoop = new BasketballHoopViewModel();
             hoop.StartMatch();

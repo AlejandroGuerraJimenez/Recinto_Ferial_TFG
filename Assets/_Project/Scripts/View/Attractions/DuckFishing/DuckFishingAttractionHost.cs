@@ -15,6 +15,7 @@ namespace Fairground.View.Attractions.DuckFishing
         [SerializeField] FishingRodView rod;
         [SerializeField] BoothHudView hud;
         [SerializeField] Transform pond;
+        [SerializeField] DuckPen pen;
 
         DuckFishingViewModel _viewModel;
         AttractionMatchControls _controls;
@@ -30,12 +31,14 @@ namespace Fairground.View.Attractions.DuckFishing
             FishingRodView fishingRod,
             BoothHudView hudView,
             Transform pondRoot,
+            DuckPen duckPen,
             DuckFishingViewModel viewModel)
         {
             ducks = BoothWiring.RequireAny(duckTargets, "Duck fishing", "ducks");
             rod = BoothWiring.Require(fishingRod, "Duck fishing", "a rod");
             hud = BoothWiring.Require(hudView, "Duck fishing", "a HUD");
             pond = BoothWiring.Require(pondRoot, "Duck fishing", "a pond");
+            pen = BoothWiring.Require(duckPen, "Duck fishing", "a pen");
             _viewModel = BoothWiring.Require(viewModel, "Duck fishing", "a match");
             OpenMatch();
         }
@@ -50,6 +53,8 @@ namespace Fairground.View.Attractions.DuckFishing
                 return;
 
             _controls.Tick();
+            _viewModel?.Tick(Time.deltaTime);
+            UpdateHookAvailability();
             if (_controls.Input.PlayPressed)
                 rod?.Hook?.TryStartDip();
         }
@@ -74,9 +79,8 @@ namespace Fairground.View.Attractions.DuckFishing
         {
             if (rod?.Hook != null)
             {
-                rod.Hook.DipStarted += OnDipStarted;
-                rod.Hook.DipResolved += OnDipResolved;
                 rod.Hook.DuckCaught += OnDuckCaught;
+                rod.Hook.DuckSettled += OnDuckSettled;
             }
         }
 
@@ -85,16 +89,13 @@ namespace Fairground.View.Attractions.DuckFishing
             if (rod?.Hook == null)
                 return;
 
-            rod.Hook.DipStarted -= OnDipStarted;
-            rod.Hook.DipResolved -= OnDipResolved;
             rod.Hook.DuckCaught -= OnDuckCaught;
+            rod.Hook.DuckSettled -= OnDuckSettled;
         }
 
-        void OnDipStarted() => ApplyAndRefresh(_viewModel.TryRegisterDip);
-
-        void OnDipResolved() => ApplyAndRefresh(_viewModel.TryResolveDip);
-
         void OnDuckCaught(DuckTargetView duck) => ApplyAndRefresh(_viewModel.TryRegisterCatch);
+
+        void OnDuckSettled(DuckTargetView duck) => pen?.Place(duck);
 
         void ApplyAndRefresh(System.Func<bool> action)
         {
@@ -110,7 +111,7 @@ namespace Fairground.View.Attractions.DuckFishing
             if (rod?.Hook == null || _viewModel == null)
                 return;
 
-            rod.Hook.SetEnabled(_viewModel.CanDip);
+            rod.Hook.SetEnabled(_viewModel.CanFish);
         }
 
         public void RestartMatch()
@@ -120,6 +121,7 @@ namespace Fairground.View.Attractions.DuckFishing
 
             Unsubscribe();
             _viewModel.Restart();
+            pen?.Clear();
             RebuildDucks();
             Subscribe();
             UpdateHookAvailability();
