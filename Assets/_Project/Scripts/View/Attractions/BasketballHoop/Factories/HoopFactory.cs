@@ -18,6 +18,7 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
             CreateBackboard(root.transform);
             Transform rim = CreateRim(root.transform);
             CreateSupport(root.transform);
+            CreateNet(rim);
             return CreateDetector(rim);
         }
 
@@ -41,6 +42,48 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
             square.transform.localScale = new Vector3(0.36f, 0.32f, 0.02f);
             DestroyCollider(square);
             PrimitiveMaterialApplier.Apply(square, new Color(0.85f, 0.15f, 0.12f, 1f));
+            CreateBoardFrame(parent);
+        }
+
+        static void CreateBoardFrame(Transform parent)
+        {
+            Vector3 board = BasketballHoopLayout.BackboardPosition;
+            var ink = new Color(0.1f, 0.1f, 0.12f, 1f);
+            Frame(parent, "FrameTop", board + new Vector3(0f, 0.55f, -0.04f), new Vector3(1.24f, 0.045f, 0.02f), ink);
+            Frame(parent, "FrameBottom", board + new Vector3(0f, -0.55f, -0.04f), new Vector3(1.24f, 0.045f, 0.02f), ink);
+            Frame(parent, "FrameLeft", board + new Vector3(-0.6f, 0f, -0.04f), new Vector3(0.045f, 1.1f, 0.02f), ink);
+            Frame(parent, "FrameRight", board + new Vector3(0.6f, 0f, -0.04f), new Vector3(0.045f, 1.1f, 0.02f), ink);
+        }
+
+        static void Frame(Transform parent, string name, Vector3 position, Vector3 scale, Color color)
+        {
+            var bar = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            bar.name = name;
+            bar.transform.SetParent(parent, false);
+            bar.transform.localPosition = position;
+            bar.transform.localScale = scale;
+            DestroyCollider(bar);
+            PrimitiveMaterialApplier.Apply(bar, color);
+        }
+
+        static void CreateNet(Transform rim)
+        {
+            var cord = new Color(0.95f, 0.95f, 0.92f, 1f);
+            const int strands = 12;
+            for (int i = 0; i < strands; i++)
+            {
+                float turns = i / (float)strands * Mathf.PI * 2f;
+                float x = Mathf.Cos(turns);
+                float z = Mathf.Sin(turns);
+                var strand = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                strand.name = "NetStrand";
+                strand.transform.SetParent(rim, false);
+                strand.transform.localPosition = new Vector3(x * 0.16f, -0.12f, z * 0.16f);
+                strand.transform.localRotation = Quaternion.Euler(14f * z, 0f, -14f * x);
+                strand.transform.localScale = new Vector3(0.008f, 0.13f, 0.008f);
+                DestroyCollider(strand);
+                PrimitiveMaterialApplier.Apply(strand, cord);
+            }
         }
 
         static Transform CreateRim(Transform parent)

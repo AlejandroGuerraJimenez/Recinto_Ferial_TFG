@@ -31,7 +31,23 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
             root.transform.localScale = Vector3.one * 0.22f;
             root.SetActive(false);
             PrimitiveMaterialApplier.Apply(root, BallColor);
+            AddSeam(root.transform, new Vector3(0f, 0f, 90f));
+            AddSeam(root.transform, new Vector3(90f, 0f, 0f));
+            AddSeam(root.transform, new Vector3(0f, 0f, 40f));
             return root;
+        }
+
+        static void AddSeam(Transform ball, Vector3 euler)
+        {
+            var seam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            seam.name = "Seam";
+            seam.transform.SetParent(ball, false);
+            seam.transform.localRotation = Quaternion.Euler(euler);
+            seam.transform.localScale = new Vector3(0.035f, 0.52f, 0.035f);
+            PrimitiveMaterialApplier.Apply(seam, new Color(0.08f, 0.07f, 0.06f, 1f));
+            var collider = seam.GetComponent<Collider>();
+            if (collider != null)
+                Object.Destroy(collider);
         }
 
         static void ConfigureCollider(SphereCollider collider)
