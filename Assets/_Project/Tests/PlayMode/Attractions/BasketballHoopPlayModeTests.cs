@@ -28,7 +28,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             BasketballHoopViewModel vm = controller.ViewModel;
             Assert.AreEqual(AttractionId.BasketballHoop, controller.AttractionId);
             Assert.AreEqual(MatchPhase.Playing, vm.Phase);
-            Assert.Greater(vm.AttemptsRemaining, 0);
+            Assert.Greater(vm.SecondsLeft, 0);
             Assert.AreEqual(0, vm.Score);
             Assert.IsTrue(vm.CanThrow);
             Assert.IsNotNull(Object.FindAnyObjectByType<BallSpawnerView>());
@@ -54,7 +54,6 @@ namespace Fairground.Tests.PlayMode.Attractions
                 "Ball spawner did not provide a ball.");
 
             BasketballHoopViewModel vm = controller.ViewModel;
-            int ballsBefore = vm.AttemptsRemaining;
             var detector = AttractionSceneTestHelper.Require<BasketDetectorView>();
             BasketballBallView ball = (BasketballBallView)spawner.CurrentBall;
 
@@ -63,9 +62,11 @@ namespace Fairground.Tests.PlayMode.Attractions
             spawner.LaunchCurrentBall(Vector3.down * 4f);
 
             yield return AttractionSceneTestHelper.WaitUntil(
-                () => vm.AttemptsRemaining == ballsBefore - 1,
+                () => spawner.CurrentBall != ball,
                 2f,
-                "Throw was not registered in the ViewModel.");
+                "Throw did not release the ball.");
+
+            Assert.IsTrue(vm.CanThrow);
 
             float contactDeadline = Time.realtimeSinceStartup + 2.5f;
             while (vm.Score == 0 && ball != null && Time.realtimeSinceStartup < contactDeadline)
@@ -92,7 +93,7 @@ namespace Fairground.Tests.PlayMode.Attractions
             int score = vm.Score;
             Assert.IsFalse(detector.TryRegisterScoreFrom(ball));
             Assert.AreEqual(score, vm.Score);
-            Assert.Less(vm.AttemptsRemaining, ballsBefore);
+            Assert.IsTrue(vm.CanThrow);
         }
 
         [UnityTest]
@@ -113,19 +114,19 @@ namespace Fairground.Tests.PlayMode.Attractions
                 "Ball spawner did not provide a ball.");
 
             BasketballHoopViewModel vm = controller.ViewModel;
-            int startingBalls = vm.AttemptsRemaining;
+            BasketballBallView ball = (BasketballBallView)spawner.CurrentBall;
             spawner.LaunchCurrentBall(Vector3.forward * 8f);
 
             yield return AttractionSceneTestHelper.WaitUntil(
-                () => vm.AttemptsRemaining == startingBalls - 1,
+                () => spawner.CurrentBall != ball,
                 2f,
-                "Throw was not registered before restart.");
+                "Throw did not release the ball before restart.");
 
             controller.RestartMatch();
             yield return null;
 
             Assert.AreEqual(MatchPhase.Playing, vm.Phase);
-            Assert.AreEqual(startingBalls, vm.AttemptsRemaining);
+            Assert.AreEqual(BasketballHoopBalance.RoundSeconds, vm.SecondsLeft);
             Assert.AreEqual(0, vm.Score);
             Assert.IsTrue(vm.CanThrow);
         }

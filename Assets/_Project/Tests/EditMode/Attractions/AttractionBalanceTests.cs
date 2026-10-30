@@ -31,8 +31,9 @@ namespace Fairground.Tests.EditMode.Attractions
 
             var hoop = new BasketballHoopViewModel();
             hoop.StartMatch();
-            Assert.AreEqual(BasketballHoopBalance.StartingBalls, hoop.AttemptsRemaining);
+            Assert.AreEqual(BasketballHoopBalance.RoundSeconds, hoop.SecondsLeft);
             Assert.IsTrue(hoop.TryRegisterThrow());
+            Assert.IsTrue(hoop.CanThrow);
             Assert.IsTrue(hoop.TryRegisterBasket());
             Assert.AreEqual(BasketballHoopBalance.PointsPerBasket, hoop.Score);
 

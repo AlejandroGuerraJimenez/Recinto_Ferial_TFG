@@ -10,12 +10,12 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
     {
         public static string[] Opening()
         {
-            return Lines(0, BasketballHoopBalance.StartingBalls, MatchPhase.Playing);
+            return Lines(0, BasketballHoopBalance.RoundSeconds, MatchPhase.Playing);
         }
 
         public static string[] Lines(BasketballHoopViewModel viewModel)
         {
-            return Lines(viewModel.Score, viewModel.AttemptsRemaining, viewModel.Phase);
+            return Lines(viewModel.Score, viewModel.SecondsLeft, viewModel.Phase);
         }
 
         public static string Status(BasketballHoopViewModel viewModel)
@@ -23,19 +23,19 @@ namespace Fairground.ViewModel.Attractions.BasketballHoop
             return Status(viewModel.Phase);
         }
 
-        static string[] Lines(int score, int ballsRemaining, MatchPhase phase)
+        static string[] Lines(int score, int secondsLeft, MatchPhase phase)
         {
             return new[]
             {
                 $"Puntos: {score}",
-                $"Balones: {ballsRemaining}",
+                $"Tiempo: {secondsLeft}",
                 Status(phase),
             };
         }
 
         static string Status(MatchPhase phase)
         {
-            return MatchHud.Phase(phase, "¡A la canasta!", "¡Ganaste!", "¡Sin balones!");
+            return MatchHud.Phase(phase, "¡A la canasta!", "¡Tiempo!", "¡Tiempo!");
         }
     }
 }

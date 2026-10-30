@@ -1,34 +1,26 @@
 using Fairground.Core.Attractions;
-using Fairground.Model.Attractions;
 
 namespace Fairground.Model.Attractions.BasketballHoop
 {
     /// <summary>
-    /// Immutable scoring and win/lose policy.
+    /// Round length and points per basket. Balls keep coming until the clock ends.
     /// </summary>
     public sealed class BasketballHoopRules
     {
         public const int DefaultPointsPerBasket = BasketballHoopBalance.PointsPerBasket;
-        public const int DefaultStartingBalls = BasketballHoopBalance.StartingBalls;
-        public const int DefaultWinScoreThreshold = BasketballHoopBalance.WinScoreThreshold;
+        public const int DefaultRoundSeconds = BasketballHoopBalance.RoundSeconds;
 
         public BasketballHoopRules(
             int pointsPerBasket = DefaultPointsPerBasket,
-            int startingBalls = DefaultStartingBalls,
-            int winScoreThreshold = DefaultWinScoreThreshold)
+            int roundSeconds = DefaultRoundSeconds)
         {
             RuleGuard.Positive(pointsPerBasket, nameof(pointsPerBasket));
-            RuleGuard.Positive(startingBalls, nameof(startingBalls));
-            RuleGuard.Positive(winScoreThreshold, nameof(winScoreThreshold));
+            RuleGuard.Positive(roundSeconds, nameof(roundSeconds));
             PointsPerBasket = pointsPerBasket;
-            StartingBalls = startingBalls;
-            WinScoreThreshold = winScoreThreshold;
-            Attempt = AttemptMatchRules.ByScore(pointsPerBasket, startingBalls, winScoreThreshold);
+            RoundSeconds = roundSeconds;
         }
 
         public int PointsPerBasket { get; }
-        public int StartingBalls { get; }
-        public int WinScoreThreshold { get; }
-        public AttemptMatchRules Attempt { get; }
+        public int RoundSeconds { get; }
     }
 }

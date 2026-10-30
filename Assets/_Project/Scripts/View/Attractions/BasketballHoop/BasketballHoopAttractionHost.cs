@@ -42,7 +42,16 @@ namespace Fairground.View.Attractions.BasketballHoop
             _match.Bind();
         }
 
-        void Update() => _match.Tick();
+        void Update()
+        {
+            _match?.Tick();
+            if (_viewModel == null || !_viewModel.IsPlaying)
+                return;
+
+            _viewModel.Tick(Time.deltaTime);
+            if (!_viewModel.IsPlaying)
+                ballSpawner?.SetSpawningEnabled(false);
+        }
 
         void OnDestroy()
         {

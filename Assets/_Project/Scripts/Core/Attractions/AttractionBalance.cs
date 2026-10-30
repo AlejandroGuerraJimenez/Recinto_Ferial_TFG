@@ -19,8 +19,7 @@ namespace Fairground.Core.Attractions
     public static class BasketballHoopBalance
     {
         public const int PointsPerBasket = 2;
-        public const int StartingBalls = 10;
-        public const int WinScoreThreshold = 5;
+        public const int RoundSeconds = 40;
     }
 
     public static class PunchingBallBalance

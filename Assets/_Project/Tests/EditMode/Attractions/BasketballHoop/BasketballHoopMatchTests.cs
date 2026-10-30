@@ -21,140 +21,82 @@ namespace Fairground.Tests.EditMode.Attractions.BasketballHoop
         }
 
         [Test]
-        public void Match_Start_InitializesCounters()
+        public void Match_Start_OpensTheClock()
         {
-            var session = CreateMatch(2, 10, 5);
+            var session = new BasketballHoopMatch(new BasketballHoopRules(2, 40));
             session.Start();
             Assert.AreEqual(MatchPhase.Playing, session.Phase);
             Assert.AreEqual(0, session.Score);
-            Assert.AreEqual(10, session.AttemptsRemaining);
-            Assert.AreEqual(0, session.InFlight);
+            Assert.AreEqual(40f, session.SecondsRemaining);
         }
 
         [Test]
-        public void Match_Start_DoesNotReset_RestartDoes()
+        public void Match_Basket_AddsPointsWithoutEndingTheRound()
         {
-            var session = CreateMatch(2, 2, 5);
+            var session = new BasketballHoopMatch(new BasketballHoopRules(2, 40));
             session.Start();
-            Assert.IsTrue(session.TrySpendAttempt());
-            session.Start();
-            Assert.AreEqual(1, session.AttemptsRemaining);
-            session.Restart();
-            Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.AreEqual(0, session.Score);
-            Assert.AreEqual(2, session.AttemptsRemaining);
-            Assert.AreEqual(0, session.InFlight);
-        }
-
-        [Test]
-        public void Match_Basket_AddsScoreAndCanWin()
-        {
-            var session = CreateMatch(2, 10, 4);
-            session.Start();
-            Assert.IsTrue(session.TryRegisterSuccess());
-            Assert.AreEqual(2, session.Score);
-            Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsTrue(session.TryRegisterSuccess());
+            Assert.IsTrue(session.TryRegisterBasket());
+            Assert.IsTrue(session.TryRegisterBasket());
             Assert.AreEqual(4, session.Score);
-            Assert.AreEqual(MatchPhase.Won, session.Phase);
-            Assert.IsFalse(session.TryRegisterSuccess());
+            Assert.AreEqual(MatchPhase.Playing, session.Phase);
         }
 
         [Test]
-        public void Match_BallsExhausted_LosesWhenScoreBelowThresholdAfterBallsResolve()
+        public void Match_TimeUp_LocksTheScore()
         {
-            var session = CreateMatch(1, 2, 5);
+            var session = new BasketballHoopMatch(new BasketballHoopRules(2, 10));
             session.Start();
-            Assert.IsTrue(session.TrySpendAttempt());
-            Assert.IsTrue(session.TrySpendAttempt());
-            Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsTrue(session.ResolveAttempt());
-            Assert.IsTrue(session.ResolveAttempt());
+            Assert.IsTrue(session.TryRegisterBasket());
+            session.Tick(10f);
+            Assert.AreEqual(0f, session.SecondsRemaining);
+            Assert.AreEqual(MatchPhase.Won, session.Phase);
+            Assert.AreEqual(2, session.Score);
+            Assert.IsFalse(session.TryRegisterBasket());
+        }
+
+        [Test]
+        public void Match_TimeUpWithNoBaskets_EndsWithoutPoints()
+        {
+            var session = new BasketballHoopMatch(new BasketballHoopRules(2, 5));
+            session.Start();
+            session.Tick(5f);
             Assert.AreEqual(MatchPhase.Lost, session.Phase);
-            Assert.IsFalse(session.TrySpendAttempt());
-            Assert.IsFalse(session.TryRegisterSuccess());
+            Assert.AreEqual(0, session.Score);
         }
 
         [Test]
-        public void Match_LastBall_CanWinBeforeBallResolves()
+        public void ViewModel_ThrowDoesNotSpendTheRound()
         {
-            var session = CreateMatch(5, 1, 5);
-            session.Start();
-            Assert.IsTrue(session.TrySpendAttempt());
-            Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsTrue(session.TryRegisterSuccess());
-            Assert.AreEqual(MatchPhase.Won, session.Phase);
-            Assert.IsTrue(session.ResolveAttempt());
-            Assert.AreEqual(MatchPhase.Won, session.Phase);
-        }
-
-        [Test]
-        public void Match_LastBall_LosesAfterBallResolvesWithoutBasket()
-        {
-            var session = CreateMatch(2, 1, 5);
-            session.Start();
-            Assert.IsTrue(session.TrySpendAttempt());
-            Assert.AreEqual(0, session.AttemptsRemaining);
-            Assert.AreEqual(1, session.InFlight);
-            Assert.AreEqual(MatchPhase.Playing, session.Phase);
-            Assert.IsFalse(session.TrySpendAttempt());
-            Assert.IsTrue(session.ResolveAttempt());
-            Assert.AreEqual(MatchPhase.Lost, session.Phase);
-        }
-
-        [Test]
-        public void ViewModel_NotifiesStateChanges()
-        {
-            var vm = new BasketballHoopViewModel(new BasketballHoopRules(2, 10, 5));
+            var vm = new BasketballHoopViewModel(new BasketballHoopRules(2, 40));
             int events = 0;
             vm.StateChanged += () => events++;
             vm.StartMatch();
             Assert.IsTrue(vm.TryRegisterThrow());
+            Assert.IsTrue(vm.CanThrow);
             Assert.IsTrue(vm.TryRegisterBasket());
-            Assert.AreEqual(3, events);
+            Assert.AreEqual(2, events);
             Assert.AreEqual(2, vm.Score);
-            Assert.AreEqual(9, vm.AttemptsRemaining);
+            Assert.AreEqual(40, vm.SecondsLeft);
             Assert.AreEqual("¡A la canasta!", BasketballHoopHud.Status(vm));
             Assert.AreEqual(AttractionId.BasketballHoop, vm.AttractionId);
-            Assert.AreEqual("BasketballHoop", AttractionCatalog.GetSceneName(vm.AttractionId));
         }
 
         [Test]
-        public void ViewModel_FromCounts_OwnsThrowAndRestart()
+        public void ViewModel_Tick_EndsTheRoundAndStopsThrows()
         {
-            var vm = new BasketballHoopViewModel(2, 1, 5);
+            var vm = new BasketballHoopViewModel(2, 8);
             vm.StartMatch();
-            Assert.IsTrue(vm.CanThrow);
-            Assert.AreEqual(MatchPhase.Playing, vm.Phase);
-            Assert.IsTrue(vm.TryRegisterThrow());
-            Assert.IsFalse(vm.CanThrow);
-            Assert.AreEqual(0, vm.AttemptsRemaining);
-            vm.TryResolveThrow();
-            Assert.AreEqual(MatchPhase.Lost, vm.Phase);
-            Assert.AreEqual("¡Sin balones!", BasketballHoopHud.Status(vm));
-            vm.Restart();
-            Assert.IsTrue(vm.CanThrow);
-            Assert.AreEqual(1, vm.AttemptsRemaining);
-            Assert.AreEqual(0, vm.Score);
-            Assert.AreEqual(MatchPhase.Playing, vm.Phase);
-        }
-
-        [Test]
-        public void ViewModel_ReachingThreshold_WinsAndBlocksFurtherThrows()
-        {
-            var vm = new BasketballHoopViewModel(5, 3, 5);
-            vm.StartMatch();
-            Assert.IsTrue(vm.TryRegisterBasket());
-            Assert.AreEqual(MatchPhase.Won, vm.Phase);
-            Assert.AreEqual("¡Ganaste!", BasketballHoopHud.Status(vm));
+            vm.Tick(8f);
+            Assert.AreEqual(0, vm.SecondsLeft);
             Assert.IsFalse(vm.CanThrow);
             Assert.IsFalse(vm.TryRegisterThrow());
             Assert.IsFalse(vm.TryRegisterBasket());
-        }
-
-        static AttemptMatch CreateMatch(int points, int balls, int winScore)
-        {
-            return new AttemptMatch(new BasketballHoopRules(points, balls, winScore).Attempt);
+            Assert.AreEqual("¡Tiempo!", BasketballHoopHud.Status(vm));
+            vm.Restart();
+            Assert.IsTrue(vm.CanThrow);
+            Assert.AreEqual(8, vm.SecondsLeft);
+            Assert.AreEqual(0, vm.Score);
+            Assert.AreEqual(MatchPhase.Playing, vm.Phase);
         }
     }
 }
