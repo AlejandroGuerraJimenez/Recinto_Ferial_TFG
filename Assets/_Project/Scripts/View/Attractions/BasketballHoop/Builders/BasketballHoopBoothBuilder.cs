@@ -27,9 +27,13 @@ namespace Fairground.View.Attractions.BasketballHoop.Builders
 
             Spawner = ThrownPropSpawnerFactory.Create(
                 _ballFactory.CreateTemplate(),
-                BasketballHoopLayout.SpawnerPosition,
-                BasketballHoopLayout.SpawnerPedestalRadius,
-                BasketballHoopLayout.SpawnerLocalOffset);
+                LogStump.Create(
+                    BasketballHoopLayout.SpawnerPosition,
+                    BasketballHoopLayout.SpawnerLocalOffset,
+                    BasketballHoopBoothLayout.Wood,
+                    BasketballHoopBoothLayout.LogTag,
+                    BasketballHoopLayout.SpawnerPedestalRadius,
+                    BasketballHoopLayout.SpawnerLocalOffset));
             Track(Spawner != null ? Spawner.transform : null);
         }
 

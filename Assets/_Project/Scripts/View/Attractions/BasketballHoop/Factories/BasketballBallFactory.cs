@@ -26,6 +26,57 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
 
         static GameObject CreateSphere()
         {
+            GameObject source = Resources.Load<GameObject>("Models/Basketball/Ball");
+            MeshFilter sourceMesh = source != null ? source.GetComponentInChildren<MeshFilter>() : null;
+            if (sourceMesh == null || sourceMesh.sharedMesh == null)
+                return CreatePrimitiveBall();
+
+            var root = new GameObject("BasketballTemplate");
+            GameObject visual = Object.Instantiate(source, root.transform, false);
+            visual.name = "Ball";
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.identity;
+            visual.transform.localScale = Vector3.one;
+            Collider[] colliders = visual.GetComponentsInChildren<Collider>();
+            for (int i = 0; i < colliders.Length; i++)
+                Object.Destroy(colliders[i]);
+
+            var shell = root.AddComponent<SphereCollider>();
+            shell.radius = sourceMesh.sharedMesh.bounds.extents.x;
+            Paint(visual);
+            root.SetActive(false);
+            return root;
+        }
+
+        static void Paint(GameObject visual)
+        {
+            Texture2D texture = Resources.Load<Texture2D>("Models/Basketball/BallAlbedo");
+            Material shared = PrimitiveMaterialApplier.Shared(texture != null ? Color.white : BallColor);
+            Renderer[] renderers = visual.GetComponentsInChildren<Renderer>();
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (shared == null)
+                    continue;
+
+                var material = new Material(shared);
+                if (texture != null)
+                {
+                    material.SetTexture("_BaseMap", texture);
+                    material.SetTexture("_MainTex", texture);
+                    material.color = Color.white;
+                    if (material.HasProperty("_BaseColor"))
+                        material.SetColor("_BaseColor", Color.white);
+                }
+
+                if (material.HasProperty("_Smoothness"))
+                    material.SetFloat("_Smoothness", 0.28f);
+
+                renderers[i].sharedMaterial = material;
+            }
+        }
+
+        static GameObject CreatePrimitiveBall()
+        {
             var root = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             root.name = "BasketballTemplate";
             root.transform.localScale = Vector3.one * 0.22f;

@@ -12,7 +12,7 @@ namespace Fairground.View.Attractions.BasketballHoop
         public const string LogTag = "[BasketballHoop]";
 
         public static readonly Color Sky = new Color(0.45f, 0.66f, 0.88f, 1f);
-        static readonly Color Wood = new Color(0.52f, 0.36f, 0.22f, 1f);
+        public static readonly Color Wood = new Color(0.52f, 0.36f, 0.22f, 1f);
         static readonly Color Court = new Color(0.86f, 0.45f, 0.16f, 1f);
         static readonly Color StallRed = new Color(0.78f, 0.12f, 0.14f, 1f);
         static readonly Color Cabinet = new Color(0.62f, 0.1f, 0.12f, 1f);

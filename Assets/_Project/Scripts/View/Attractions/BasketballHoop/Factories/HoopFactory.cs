@@ -18,7 +18,6 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
             CreateBackboard(root.transform);
             Transform rim = CreateRim(root.transform);
             CreateSupport(root.transform);
-            CreateNet(rim);
             return CreateDetector(rim);
         }
 
@@ -91,15 +90,94 @@ namespace Fairground.View.Attractions.BasketballHoop.Factories
             var rim = new GameObject("Rim");
             rim.transform.SetParent(parent, false);
             rim.transform.localPosition = BasketballHoopLayout.RimPosition;
-            var tube = new GameObject("RimTube");
-            tube.transform.SetParent(rim.transform, false);
+            if (!TryAttachModel(rim.transform))
+            {
+                CreateFallbackTube(rim.transform);
+                CreateNet(rim.transform);
+            }
 
+            return rim.transform;
+        }
+
+        static bool TryAttachModel(Transform rim)
+        {
+            GameObject ringSource = Resources.Load<GameObject>("Models/Basketball/Ring");
+            MeshFilter ringMesh = ringSource != null ? ringSource.GetComponentInChildren<MeshFilter>() : null;
+            if (ringMesh == null || ringMesh.sharedMesh == null)
+                return false;
+
+            GameObject ring = Object.Instantiate(ringSource, rim, false);
+            ring.name = "RingModel";
+            ring.transform.localPosition = Vector3.zero;
+            ring.transform.localRotation = Quaternion.identity;
+            ring.transform.localScale = Vector3.one;
+            Tint(ring, new Color(0.8f, 0.1f, 0.02f, 1f), 0.55f);
+            AddMeshCollider(ring);
+
+            GameObject netSource = Resources.Load<GameObject>("Models/Basketball/Net");
+            if (netSource != null)
+            {
+                GameObject net = Object.Instantiate(netSource, rim, false);
+                net.name = "NetModel";
+                net.transform.localPosition = Vector3.zero;
+                net.transform.localRotation = Quaternion.identity;
+                net.transform.localScale = Vector3.one;
+                Tint(net, new Color(0.96f, 0.96f, 0.94f, 1f), 0.12f);
+                StripColliders(net);
+            }
+
+            return true;
+        }
+
+        static void CreateFallbackTube(Transform rim)
+        {
+            var tube = new GameObject("RimTube");
+            tube.transform.SetParent(rim, false);
             Mesh mesh = CreateTorus(RimRadius, RimThickness, 48, 12);
             tube.AddComponent<MeshFilter>().sharedMesh = mesh;
             tube.AddComponent<MeshRenderer>();
             PrimitiveMaterialApplier.Apply(tube, RimColor);
             tube.AddComponent<MeshCollider>().sharedMesh = mesh;
-            return rim.transform;
+        }
+
+        static void Tint(GameObject target, Color color, float smoothness)
+        {
+            Material shared = PrimitiveMaterialApplier.Shared(color);
+            Renderer[] renderers = target.GetComponentsInChildren<Renderer>();
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (shared == null)
+                    continue;
+
+                var material = new Material(shared);
+                if (material.HasProperty("_Smoothness"))
+                    material.SetFloat("_Smoothness", smoothness);
+
+                renderers[i].sharedMaterial = material;
+            }
+        }
+
+        static void AddMeshCollider(GameObject target)
+        {
+            MeshFilter[] filters = target.GetComponentsInChildren<MeshFilter>();
+            for (int i = 0; i < filters.Length; i++)
+            {
+                StripColliders(filters[i].gameObject);
+                var collider = filters[i].gameObject.AddComponent<MeshCollider>();
+                collider.sharedMesh = filters[i].sharedMesh;
+            }
+        }
+
+        static void StripColliders(GameObject target)
+        {
+            Collider[] colliders = target.GetComponentsInChildren<Collider>();
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                if (Application.isPlaying)
+                    Object.Destroy(colliders[i]);
+                else
+                    Object.DestroyImmediate(colliders[i]);
+            }
         }
 
         static Mesh CreateTorus(float majorRadius, float minorRadius, int majorSegments, int minorSegments)

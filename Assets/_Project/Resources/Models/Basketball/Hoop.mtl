@@ -1,0 +1,6 @@
+newmtl Rim
+Kd 0.800 0.020 0.000
+Ns 90
+newmtl Net
+Kd 0.960 0.960 0.940
+Ns 10
